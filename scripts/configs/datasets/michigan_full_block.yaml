@@ -1,0 +1,29 @@
+dataset_name: MICHIGAN_FULL_BLOCK
+# Reuses the EXISTING corrected data -- no new data.pt files needed.
+# Only the block-boundary logic differs (TRIM_START=0, see MichiganFullBlock
+# in datasets/fmri_datasets.py); the underlying recordings are unchanged.
+image_path: /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_v2
+
+tasks:
+  task6:
+    downstream_task_id: 6
+    task_name: imagery_task_classification
+    downstream_task_type: classification
+    num_classes: 3
+
+defaults:
+  split_root: ./nas/splits
+  dataset_split_num: 1
+  limit_training_samples: 1.0
+  # Starting value only -- derived from the already-verified fact that every
+  # (task + trailing rest) block is 37-38 TR long (see the Michigan class
+  # docstring), so 37 (the shorter end) fits inside every block at
+  # trim_start=0 by construction. Confirm/replace this empirically with:
+  #   python scripts/window_sweep_linear_probe.py \
+  #     --image_path /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_v2\
+  #     --split_root ./nas/splits --fold 1 --trims 0 --windows 37
+  # which reports the actual max window that fits every block for every
+  # subject in the real data.pt files (a few subjects can have slightly
+  # fewer usable frames near a scan's end than the TSV alone implies).
+  sequence_length_override: 37
+  img_size_override: [96, 96, 96, 37]

@@ -45,6 +45,7 @@ if "LOCAL_RANK" in os.environ:
     os.environ["NEUROSTORM_IS_WORKER"] = "1"
 
 import torch
+import torch.nn.functional as F
 from collections import OrderedDict
 import pytorch_lightning as pl
 from pytorch_lightning.loggers.neptune import NeptuneLogger
@@ -335,6 +336,26 @@ def cli_main():
         for k, v in ckpt['state_dict'].items():
             if 'model.' in k: #transformer-related layers
                 new_state_dict[k.removeprefix("model.")] = v
+
+        # Temporal positional embeddings (pos_embeds.*.time_embed) are the only
+        # sequence-length-dependent parameters in the model -- shaped [1, C, 1, 1, 1, T]
+        # for whatever --sequence_length the checkpoint was trained/finetuned with.
+        # If this run's --sequence_length differs (e.g. finetuning with a longer
+        # window than the pretrained T), interpolate along the time axis instead of
+        # letting load_state_dict hard-fail on the shape mismatch. Every other
+        # parameter (patch embedding, Mamba/SSM blocks, patch merging) is
+        # sequence-length-agnostic and is unaffected by this.
+        target_state = model.model.state_dict()
+        for k in list(new_state_dict.keys()):
+            if k.endswith('time_embed') and k in target_state:
+                v_ckpt, v_target = new_state_dict[k], target_state[k]
+                if v_ckpt.shape != v_target.shape:
+                    c, t_old, t_new = v_ckpt.shape[1], v_ckpt.shape[-1], v_target.shape[-1]
+                    v = v_ckpt.reshape(1, c, t_old)
+                    v = F.interpolate(v, size=t_new, mode='linear', align_corners=False)
+                    new_state_dict[k] = v.reshape(1, c, 1, 1, 1, t_new)
+                    print(f'[ckpt] interpolated {k}: T={t_old} -> T={t_new}')
+
         model.model.load_state_dict(new_state_dict, strict=False)
 
     if getattr(args, 'use_strd', False):

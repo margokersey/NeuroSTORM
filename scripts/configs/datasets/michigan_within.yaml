@@ -1,0 +1,32 @@
+dataset_name: MICHIGAN_WITHIN
+# PURE WITHIN-SUBJECT decoding: one completely separate model per subject,
+# trained and tested only on that subject's own 30 task blocks (see
+# MichiganSampleSplit in datasets/fmri_datasets.py). --dataset_split_num
+# picks WHICH SUBJECT (fold 1..26 -- see nas/splits/MICHIGAN_WITHIN/
+# fold_to_subject.txt after running make_within_pooled_splits.py), not a
+# CV fold in the usual sense: each "fold" here is one person, not a
+# partition of people.
+#
+# >>> CONFIRM image_path below matches your best condition's data <<<
+# This defaults to processed_output_sub_voxel_norm (the per-voxel
+# normalization fix from project doc section 15-17), since that's the
+# corrected data underlying every real learning result so far. If your
+# actual best condition (FIXED_mich_xcpd_nosmooth_voxelznorm_tpt_strategy-none)
+# points at a DIFFERENT folder (e.g. an XCP-D-denoised copy under a
+# different name), change image_path to match exactly -- ask Claude if
+# unsure which folder that was.
+image_path: /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1
+
+tasks:
+  task6:
+    downstream_task_id: 6
+    task_name: imagery_task_classification
+    downstream_task_type: classification
+    num_classes: 3
+
+defaults:
+  split_root: ./nas/splits
+  dataset_split_num: 1
+  limit_training_samples: 1.0
+  sequence_length_override: 37
+  img_size_override: [96, 96, 96, 37]

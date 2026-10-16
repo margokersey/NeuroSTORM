@@ -1,0 +1,30 @@
+dataset_name: MICHIGAN_FULL_BLOCK
+# XCP-D-denoised reprocessing of the same task-imagery_run-1 recordings as
+# michigan.yaml: same 26 subjects, same block/task labels (tennis/navigation/
+# squeeze via timing_onehot_task1.tsv), same Michigan dataset class, and the
+# SAME nas/splits/MICHIGAN/split_fixed_N.txt split files -- dataset_name is
+# left as MICHIGAN on purpose (only image_path changes) so training reuses
+# the existing fMRIPrep-run splits/class/task wiring untouched.
+#
+# ("michigan_xcpd" was only ever the PREPROCESSING-time dataset_name passed
+# to preprocessing_volume.py / patch_add_michigan_xcpd.py, used to select
+# the XCP-D filename regex + cross-directory mask lookup while generating
+# these data.pt files. It has no relationship to this file's dataset_name
+# field, which is what main.py/data_module.py actually train against.)
+image_path: /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_smooth_voxelznorm_task-imagery_run-1
+
+tasks:
+  task6:
+    downstream_task_id: 6
+    task_name: imagery_task_classification
+    downstream_task_type: classification
+    num_classes: 3
+
+defaults:
+  split_root: ./nas/splits
+  dataset_split_num: 1
+  limit_training_samples: 1.0
+  # Block boundaries come from timing_onehot_task1.tsv, which is identical
+  # regardless of preprocessing pipeline -- no need to re-derive this.
+  sequence_length_override: 37
+  img_size_override: [96, 96, 96, 37]

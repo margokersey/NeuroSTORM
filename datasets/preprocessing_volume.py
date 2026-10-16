@@ -1,3 +1,5 @@
+import re
+
 import nibabel as nib
 import torch
 from scipy.ndimage import zoom
@@ -13,8 +15,33 @@ import numpy as np
 
 # Datasets where the foreground mask is derived from the fMRI itself (data == 0)
 # instead of from a separate mask nii file.
-NO_MASK_DATASETS = {'hcpya', 'hcpa', 'hcpd', 'ukb', 'hcptask'}
+NO_MASK_DATASETS = {'hcpya', 'hcpa', 'hcpd', 'ukb', 'hcptask', 'michigan_xcpd', 'michigan_afni'}
 
+# Only task-imagery run-1 bold files -- excludes any other task/run files
+# (e.g. task-rest, run-2/3/4) that might sit in the same raw-data folder.
+MICHIGAN_BOLD_RE = re.compile(
+    r'^sub-[^_]+_task-imagery_run-1_space-[^_]+_res-[^_]+_desc-preproc_bold\.nii\.gz$'
+)
+
+# Same idea but for the resting-state run (task-rest_run-1) instead of the
+# task-imagery run -- used for subject-level phenotype prediction (e.g. sex)
+# rather than block-level task classification.
+MICHIGAN_RESTING_BOLD_RE = re.compile(
+    r'^sub-[^_]+_task-rest_run-1_space-[^_]+_res-[^_]+_desc-preproc_bold\.nii\.gz$'
+)
+
+# Same task-imagery run, but the XCP-D DENOISED output (desc-denoised_bold)
+# living in xcp_output/ instead of fMRIPrep's desc-preproc_bold in
+# fmriprep_output/. Same block/label structure as MICHIGAN -- this is a
+# preprocessing-source variant, not a new task.
+MICHIGAN_XCPD_BOLD_RE = re.compile(
+    r'^sub-[^_]+_task-imagery_run-1_space-[^_]+_res-[^_]+_desc-denoised[^_]*+_bold\.nii\.gz$' # if using smoothed data, naming is denoisedSmoothed
+)
+
+MICHIGAN_AFNI_BOLD_RE = re.compile(
+    # Accept both .nii and .nii.gz and allow any non-slash subdirectory name (e.g. 'P01/task1.nii.gz')
+    r'^P[^/]+/task1(?:\.nii(?:\.gz)?)$'
+)
 
 def select_middle_96(vector):
     start_index, end_index = [], []
@@ -90,6 +117,32 @@ def _mask_path_for(dataset_name, path):
         if path.endswith('_desc-preproc_bold.nii.gz'):
             return path[: -len('_desc-preproc_bold.nii.gz')] + '_desc-brain_mask.nii.gz'
         return None
+    if dataset_name in ('michigan', 'michigan_resting'):
+        # fMRIPrep convention: *_desc-preproc_bold.nii.gz -> *_desc-brain_mask.nii.gz
+        # (identical convention for both the task-imagery and resting-state runs)
+        if path.endswith('_desc-preproc_bold.nii.gz'):
+            return path[: -len('_desc-preproc_bold.nii.gz')] + '_desc-brain_mask.nii.gz'
+        return None
+    # !!! XCP-D already masked the background to 0, so there's no need to load the fmriprep mask file !!
+    # if dataset_name == 'michigan_xcpd':
+    #     # XCP-D denoised bold lives in xcp_output/; the brain mask is looked up
+    #     # in the SIBLING fmriprep_output/ directory instead (XCP-D's own output
+    #     # folder may not contain one). Valid as long as space + resolution match
+    #     # -- both carry space-<...>_res-<...> tags; see _read_task_io's shape
+    #     # assertion for a runtime check of this assumption.
+    #     if path.endswith('res-03_desc-denoised_bold.nii.gz'):
+    #         stem = path[: -len('res-03_desc-denoised_bold.nii.gz')]
+    #         mask_name = os.path.basename(stem) + 'res-04_desc-brain_mask.nii.gz'
+    #         xcp_dir = os.path.dirname(path)
+    #         parent_dir = os.path.dirname(xcp_dir)
+    #         return os.path.join(parent_dir, 'fmriprep_output', mask_name)
+    #     elif path.endswith('res-03_desc-denoisedSmoothed_bold.nii.gz'):
+    #         stem = path[: -len('res-03_desc-denoisedSmoothed_bold.nii.gz')]
+    #         mask_name = os.path.basename(stem) + 'res-04_desc-brain_mask.nii.gz'
+    #         xcp_dir = os.path.dirname(path)
+    #         parent_dir = os.path.dirname(xcp_dir)
+    #         return os.path.join(parent_dir, 'fmriprep_output', mask_name)
+    #     return None
     if dataset_name == 'movie':
         return path[:-57] + 'space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz'
     if dataset_name == 'transdiag':
@@ -113,6 +166,16 @@ def _read_task_io(task):
         mask_img = nib.load(mask_path)
         mask_data = mask_img.get_fdata()
         mask_header = mask_img.header
+        # if dataset_name == 'michigan_xcpd':
+        #     # First time this codebase pulls a mask from a different directory
+        #     # than the bold file (fmriprep_output vs xcp_output) -- fail loudly
+        #     # here if a subject's grids don't actually match, rather than
+        #     # silently misaligning voxels inside the resampling pipeline.
+        #     assert mask_data.shape[:3] == data.shape[:3], (
+        #         f"michigan_xcpd: mask shape {mask_data.shape[:3]} from {mask_path} "
+        #         f"does not match bold shape {data.shape[:3]} from {path} -- "
+        #         f"space/resolution mismatch between xcp_output and fmriprep_output?"
+        #     )
     else:
         mask_data, mask_header = None, None
 
@@ -125,7 +188,7 @@ def _read_task_io(task):
     }
 
 
-def _process_task_cpu(task, io_pkg, fill_zeroback=False):
+def _process_task_cpu(task, io_pkg, fill_zeroback=True): # Original code said fill_zeroback=False, but we decided the background should be filled with 0s, not the minimum of the foreground.
     """CPU stage: resample, normalize, int8-quantize, save data.pt."""
     dataset_name, delete_after_preprocess, filename, load_root, save_root, subj_name, count, scaling_method = task
     path = io_pkg['path']
@@ -151,7 +214,7 @@ def _process_task_cpu(task, io_pkg, fill_zeroback=False):
         background = mask == 0
 
     data[background] = 0
-    data[data < 0] = 0
+    # data[data < 0] = 0 # WHY ARE THEY ZEROING NEGATIVE VALUES??? I WILL TRY REMOVING THIS BC OUR DATA HAS NEGATIVE VALUES THAT WE WANT TO KEEP.
     data = torch.Tensor(data)
 
     # normalization
@@ -161,6 +224,31 @@ def _process_task_cpu(task, io_pkg, fill_zeroback=False):
         data_temp = (data - global_mean) / global_std
     elif scaling_method == 'minmax':
         data_temp = (data - data[~background].min()) / (data[~background].max() - data[~background].min())
+    elif scaling_method == 'voxel-znorm':
+        # Per-voxel (per-timeseries) z-score, a.k.a. standard fMRI "temporal"
+        # or "voxelwise" normalization (e.g. nilearn's default
+        # standardize=True): each voxel is centered/scaled by its OWN
+        # mean/std across time, instead of the one global scalar mean/std
+        # every foreground voxel shares in the 'z-norm' branch above. This
+        # removes each voxel's baseline intensity level and noise scale
+        # individually -- exactly what a single global scalar can't touch,
+        # since those differences (tissue type, coil sensitivity, distance
+        # from coil, susceptibility dropout) vary spatially rather than
+        # being one brain-wide constant.
+        #
+        # Background voxels were already zeroed for every frame above
+        # (data[background] = 0), so their own time series is a constant
+        # zero and std() is exactly 0 there. Clamping the denominator avoids
+        # a divide-by-zero/NaN; those voxels come out as 0 either way and
+        # get overwritten by the background fill value below regardless.
+        voxel_mean = data.mean(dim=-1, keepdim=True)
+        voxel_std = data.std(dim=-1, keepdim=True).clamp(min=1e-6)
+        data_temp = (data - voxel_mean) / voxel_std
+    elif scaling_method == 'none':
+        # This would be in the case of Zirui's AFNI data which has already been voxelwise normalized, so we don't want to do any further normalization.
+        data_temp = data
+    else:
+        raise ValueError(f"unknown scaling_method: {scaling_method!r}")
 
     data_global = torch.empty(data.shape)
     data_global[background] = data_temp[~background].min() if not fill_zeroback else 0
@@ -238,14 +326,31 @@ def main():
                         help='files per worker chunk for IO lookahead. 0 = auto '
                              '(~ceil(N / (num_processes*4))). Larger means more prefetch '
                              'benefit but worse load balancing. Set to 1 to disable prefetch.')
+    parser.add_argument('--scaling_method', type=str, default='z-norm',
+                        choices=['z-norm', 'minmax', 'voxel-znorm', 'none'],
+                        help="foreground intensity normalization. 'z-norm' (default, unchanged "
+                             "behavior): one global mean/std shared by every foreground voxel. "
+                             "'voxel-znorm': each voxel z-scored independently against its own "
+                             "mean/std across time -- the standard fMRI per-voxel/temporal "
+                             "normalization (e.g. nilearn's standardize=True). 'minmax': global "
+                             "min-max scaling. none: No normalization so choose this if it's already been done to the data." \
+                             "These are alternatives -- pick one, they are not "
+                             "meant to be chained.")
     args = parser.parse_args()
 
     dataset_name = args.dataset_name
     load_root = args.load_root
     save_root = args.save_root
-    scaling_method = 'z-norm'
+    scaling_method = args.scaling_method
 
-    filenames = os.listdir(load_root)
+    # Collect nifti files recursively so datasets that store files in subdirs
+    # (e.g. `michigan_afni` with paths like 'P01/task1.nii.gz') are discovered.
+    filenames = []
+    for root, _, files in os.walk(load_root):
+        for fname in files:
+            if fname.endswith('.nii') or fname.endswith('.nii.gz'):
+                rel = os.path.relpath(os.path.join(root, fname), load_root)
+                filenames.append(rel)
     os.makedirs(os.path.join(save_root, 'img'), exist_ok=True)
     os.makedirs(os.path.join(save_root, 'metadata'), exist_ok=True)
     save_root = os.path.join(save_root, 'img')
@@ -254,7 +359,31 @@ def main():
 
     tasks = []
     for filename in sorted(filenames):
-        if not (filename.endswith('.nii.gz') or filename.endswith('.nii')) or 'mask' in filename or 'imagery' in filename or 'task-REST_acq' in filename:
+        if dataset_name == 'michigan':
+            # Strict allow-list match: only exact task-imagery run-1 bold files pass,
+            # regardless of what else (task-rest, run-2/3/4, masks, sidecars) lives
+            # in the same folder.
+            if not MICHIGAN_BOLD_RE.match(filename):
+                continue
+        elif dataset_name == 'michigan_resting':
+            # Strict allow-list match: only exact resting-state run-1 bold files pass,
+            # regardless of what else (task-imagery, run-2/3/4, masks, sidecars) lives
+            # in the same folder.
+            if not MICHIGAN_RESTING_BOLD_RE.match(filename):
+                continue
+        elif dataset_name == 'michigan_xcpd':
+            # Strict allow-list match: only exact XCP-D denoised task-imagery run-1
+            # bold files pass.
+            if not MICHIGAN_XCPD_BOLD_RE.match(filename):
+                continue
+        elif dataset_name == 'michigan_afni':
+            # Strict allow-list match: only exact AFNI task-imagery run-1 bold files pass,
+            # regardless of what else (task-rest, run-2/3/4, masks, sidecars) lives
+            # in the same folder.
+            if not MICHIGAN_AFNI_BOLD_RE.search(filename):
+                continue
+        elif not (filename.endswith('.nii.gz') or filename.endswith('.nii')) or 'mask' in filename \
+                or 'imagery' in filename or 'task-REST_acq' in filename:
             continue
 
         # Determine subject name based on dataset
@@ -325,6 +454,11 @@ def determine_subject_name(dataset_name, filename):
         return filename.split('.')[0]
     elif dataset_name == 'movie':
         return filename.split('_acq')[0]
+    elif dataset_name in ('michigan', 'michigan_resting', 'michigan_xcpd'):
+        return filename.split('_')[0]  # 'sub-02_task-imagery_run-1_..._bold.nii.gz' -> 'sub-02'
+                                        # (same split works for the resting-state and XCP-D filenames too)
+    elif dataset_name == 'michigan_afni':
+        return filename.split('/')[0]  # 'P01/task1.nii.gz' -> 'P01'
     elif dataset_name == 'transdiag':
         return filename.split('_task-testPA')[0].split('-')[1]
 

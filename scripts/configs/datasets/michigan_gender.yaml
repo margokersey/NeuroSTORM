@@ -1,0 +1,42 @@
+dataset_name: MICHIGAN_GENDER
+# Subject-level binary sex classification, now on RESTING-STATE fMRI
+# (task-rest_run-1) instead of the task-imagery scans -- preprocessed with
+# preprocessing_volume.py's standard recipe (the same one NeuroSTORM's own
+# HCP1200/ABCD/UKB subject-level phenotype benchmarks use: spatial resample
+# to 2x2x2mm, temporal resample to TR=0.8s, center crop/pad to 96^3, brain
+# mask, global per-subject z-norm, int8 quantize -- no extra per-voxel
+# correction, since that fix is specific to Michigan's block-level task
+# classification and isn't part of the paper's own recipe).
+#
+# Generate this data first (see patch_preprocessing_resting.py), THEN copy
+# participants.tsv into its metadata/ folder -- preprocessing_volume.py
+# creates an empty metadata/ dir but does not populate it:
+#   cp /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_v2/metadata/participants.tsv \
+#      /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_resting/metadata/participants.tsv
+image_path: /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_resting
+
+# Resting-state has no task blocks and no per-subject "spatial fingerprint"
+# confound risk from Michigan's own normalization diagnosis (project doc
+# section 15) beyond whatever the standard z-norm recipe already carries for
+# every other dataset in this codebase -- this is the same setup NeuroSTORM's
+# own gender/age benchmarks use, so it's the right default for this task
+# rather than a corrected variant. Still worth checking the actual M/F class
+# balance in participants.tsv before trusting accuracy alone -- a lopsided
+# split with only 26 subjects can make accuracy misleading; watch AUROC and
+# per-class recall too.
+
+tasks:
+  task7:
+    downstream_task_id: 7
+    task_name: sex
+    downstream_task_type: classification
+    num_classes: 2
+
+defaults:
+  split_root: ./nas/splits
+  dataset_split_num: 1
+  limit_training_samples: 1.0
+  # No sequence_length_override / img_size_override -- this task doesn't need
+  # Michigan's block windowing, so it uses the model's native pretrained
+  # sequence_length (20 for neurostorm.yaml), which also means NO temporal
+  # positional-embedding interpolation is needed for this dataset.

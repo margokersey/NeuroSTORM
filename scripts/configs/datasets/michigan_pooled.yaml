@@ -1,0 +1,32 @@
+dataset_name: MICHIGAN_POOLED
+# POOLED / "MIXED" decoding: ONE model trained on all 26 subjects pooled
+# together, where each subject contributes some of their own 30 task
+# blocks to train and other blocks to val/test (see MichiganSampleSplit
+# in datasets/fmri_datasets.py + assign_blocks_to_parts). Subjects appear
+# in both train and test -- this is the middle condition between MICHIGAN
+# (fully between-subject, disjoint subjects per split) and MICHIGAN_WITHIN
+# (fully within one subject, no pooling at all).
+#
+# Only one split file (split_fixed_1.txt) is needed -- there's no
+# meaningful notion of "5-fold CV" here since every subject is in every
+# fold already; dataset_split_num stays at 1.
+#
+# >>> CONFIRM image_path below matches your best condition's data <<<
+# See the same note in michigan_within.yaml -- defaults to
+# processed_output_sub_voxel_norm; change if your actual best condition
+# used a different (e.g. XCP-D) folder.
+image_path: /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1
+
+tasks:
+  task6:
+    downstream_task_id: 6
+    task_name: imagery_task_classification
+    downstream_task_type: classification
+    num_classes: 3
+
+defaults:
+  split_root: ./nas/splits
+  dataset_split_num: 1
+  limit_training_samples: 1.0
+  sequence_length_override: 37
+  img_size_override: [96, 96, 96, 37]

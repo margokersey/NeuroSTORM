@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader, Subset, ConcatDataset, Sampler
 from torch.utils.data.distributed import DistributedSampler
 from torch_geometric.data import DataLoader as GeometricDataLoader
-from .fmri_datasets import HCP1200, ABCD, UKB, Cobre, ADHD200, UCLA, HCPEP, HCPTASK, GOD, MOVIE, TransDiag, ABIDE
+from .fmri_datasets import HCP1200, ABCD, UKB, Cobre, ADHD200, UCLA, HCPEP, HCPTASK, GOD, MOVIE, TransDiag, ABIDE, Michigan, MichiganFullBlock, MichiganGender, MichiganSampleSplit
 from .roi_datasets import ROIDataset, FCDataset, FCGraphDataset
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from utils.parser import str2bool
@@ -424,6 +424,16 @@ class fMRIDataModule(pl.LightningDataModule):
             return TransDiag
         elif name == 'ABIDE':
             return ABIDE
+        elif name == 'MICHIGAN':
+            return Michigan
+        elif name == 'MICHIGAN_FULL_BLOCK':
+            return MichiganFullBlock
+        elif name == 'MICHIGAN_GENDER':
+            return MichiganGender
+        elif name == 'MICHIGAN_WITHIN':
+            return MichiganSampleSplit
+        elif name == 'MICHIGAN_POOLED':
+            return MichiganSampleSplit
         else:
             raise NotImplementedError(f"Unsupported dataset: {name}")
 
@@ -898,6 +908,84 @@ class fMRIDataModule(pl.LightningDataModule):
 
             print('Load dataset MOVIE, {} subjects'.format(len(final_dict)))
 
+        elif self.hparams.dataset_name in ("MICHIGAN", "MICHIGAN_FULL_BLOCK"):
+            # Labels live at the block level (tennis/navigation/squeeze), assigned
+            # per-clip inside Michigan._set_data (MichiganFullBlock inherits it
+            # unchanged) from timing_onehot_task1.tsv, not per-subject -- this
+            # dict just needs to enumerate subject folders. EXCEPTION:
+            # task_name == 'fmri_reid' classifies WHICH SUBJECT a window came
+            # from, so here (once, before _build_single_dataset splits this
+            # dict by train/val/test subject-name membership -- same pattern
+            # as the HCP1200 fmri_reid branch above) every subject gets a
+            # GLOBAL contiguous id as its target, and num_classes is set to
+            # the total subject count. Michigan._set_data reads this id back
+            # out of subject_dict for this task only.
+            subject_list = [subj for subj in os.listdir(img_root)]
+            if self.hparams.task_name == 'fmri_reid':
+                subj_sorted = sorted(subject_list)
+                subj_to_label = {s: idx for idx, s in enumerate(subj_sorted)}
+                self.reid_label_map = {idx: s for s, idx in subj_to_label.items()}
+                self.reid_label_inverse = subj_to_label
+                self.hparams.num_classes = len(subj_sorted)
+                for subject in subject_list:
+                    final_dict[subject] = [0, subj_to_label[subject]]  # sex unused, target = global subject id
+            else:
+                for subject in subject_list:
+                    final_dict[subject] = [0, 0]  # sex, target -- both unused/overridden
+
+            print('Load dataset {}, {} subjects'.format(self.hparams.dataset_name, len(final_dict)))
+
+        elif self.hparams.dataset_name in ("MICHIGAN_WITHIN", "MICHIGAN_POOLED"):
+            # Same block-level labeling as MICHIGAN, but MichiganSampleSplit
+            # needs virtual "<subject>::<part>" keys (part in train/val/test)
+            # so the SAME real subject can land in more than one of
+            # train_dict/val_dict/test_dict -- see patch_michigan_within_pooled.py
+            # and MichiganSampleSplit's docstring. Emit the plain 3 keys per
+            # subject (used by MICHIGAN_WITHIN's split files, and by any
+            # MICHIGAN_POOLED split file that doesn't need multiple folds)
+            # PLUS N_POOLED_FOLDS seed-tagged variants
+            # ("<subject>::<part>::<seed>") per subject, so MICHIGAN_POOLED
+            # can have 5 independently-reshuffled folds -- see
+            # patch_michigan_pooled_multifold.py and
+            # make_within_pooled_splits.py, which generates the split files
+            # that actually pick which of these keys are used for a given
+            # run. Over-provisioning both forms is cheap (subject_dict only
+            # holds placeholder [0, 0] values here, no data is loaded yet).
+            N_POOLED_FOLDS = 5
+            subject_list = [subj for subj in os.listdir(img_root)]
+            for subject in subject_list:
+                for part in ("train", "val", "test"):
+                    final_dict[f"{subject}::{part}"] = [0, 0]  # sex, target -- both unused/overridden
+                    for seed in range(N_POOLED_FOLDS):
+                        final_dict[f"{subject}::{part}::{seed}"] = [0, 0]
+
+            print('Load dataset {}, {} subjects ({} virtual keys)'.format(
+                self.hparams.dataset_name, len(subject_list), len(final_dict)))
+
+        elif self.hparams.dataset_name == "MICHIGAN_GENDER":
+            # Subject-level binary sex classification -- labels come from
+            # participants.tsv (columns: participant_id, age, sex, lor_esc,
+            # original_id), not from timing_onehot_task1.tsv. final_dict is
+            # [sex, target] with target == sex (this task predicts sex itself),
+            # matching the existing task_name == 'sex' convention used above
+            # for HCP1200/ABCD/UKB.
+            participants_path = os.path.join(self.hparams.image_path, 'metadata', 'participants.tsv')
+            participants_df = pd.read_csv(participants_path, sep='\t')
+            sex_by_subject = dict(zip(participants_df['participant_id'], participants_df['sex']))
+
+            subject_list = [subj for subj in os.listdir(img_root)]
+            skipped = []
+            for subject in subject_list:
+                if subject not in sex_by_subject:
+                    skipped.append(subject)
+                    continue
+                sex_label = 1 if str(sex_by_subject[subject]).strip().upper().startswith('M') else 0
+                final_dict[subject] = [sex_label, sex_label]
+
+            if skipped:
+                print('Skipped {} subject(s) with no participants.tsv row: {}'.format(len(skipped), skipped))
+            print('Load dataset MICHIGAN_GENDER, {} subjects'.format(len(final_dict)))
+
         elif self.hparams.dataset_name == "ABIDE":
             subject_list = [subj for subj in os.listdir(img_root)]
 
@@ -1152,7 +1240,21 @@ class fMRIDataModule(pl.LightningDataModule):
             params = {
                 "batch_size": self.hparams.batch_size if train else self.hparams.eval_batch_size,
                 "num_workers": self.hparams.num_workers,
-                "drop_last": True,
+                # drop_last only makes sense for the TRAIN loader (keeps every
+                # optimizer step at a fixed batch size). For val/test, dropping
+                # the last partial batch can drop the ENTIRE split when its
+                # sample count is below eval_batch_size -- e.g. MICHIGAN_WITHIN's
+                # per-subject val (3 samples) and test (6 samples) splits are both
+                # smaller than the eval_batch_size=8 default, so with drop_last
+                # unconditionally True here, val_dataloader/test_dataloader
+                # silently yielded ZERO batches for every single within-subject
+                # fold -- validation_epoch_end/test_epoch_end then never got any
+                # predictions to evaluate, so valid_acc/valid_AUROC/test_acc/
+                # test_AUROC were never logged (and the VALID branch below has no
+                # guard for empty output, so this actually crashes on
+                # torch.cat([], dim=0) the first time validation runs, rather than
+                # silently skipping). Keep all eval samples instead.
+                "drop_last": train,
                 "pin_memory": bool(self.hparams.pin_memory),
                 "persistent_workers": (self.hparams.num_workers > 0) and (train and (self.hparams.strategy == 'ddp')),
                 "shuffle": train,

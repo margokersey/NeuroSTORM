@@ -11,7 +11,8 @@ dataset_name: MICHIGAN_FULL_BLOCK
 # the XCP-D filename regex + cross-directory mask lookup while generating
 # these data.pt files. It has no relationship to this file's dataset_name
 # field, which is what main.py/data_module.py actually train against.)
-image_path: /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1
+#  OLD LOCATION FOR LINUX DESKTOP! # image_path: /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1
+image_path: /nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1
 
 tasks:
   task6:

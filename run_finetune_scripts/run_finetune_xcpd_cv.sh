@@ -29,7 +29,7 @@ set -euo pipefail
 
 GENERAL_CKPT="pretrained_models/pretraining/pt_neurostorm_mae_5ds.ckpt"
 # dataset for the original (no-smoothing) XCP-D outputs
-DATASET=michigan_xcpd_nosmooth_win28 #"michigan_xcpd_nosmooth_fullblock"
+DATASET="michigan_xcpd_nosmooth_fullblock"
 IMG_ROOT="/data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1/img"
 
 # dataset for the smoothed XCP-D outputs (will be run after the nosmooth run)
@@ -103,7 +103,7 @@ for i in $(seq 1 "$N_FOLDS"); do
         --max_epochs 50 --batch_size 8 --gpus 0 \
         --load_model_path "$GENERAL_CKPT" \
         -- --dataset_split_num "$i" --tpt_strategy "$strategy" \
-            --project_name "FIXED_mich_xcpd_${ds_label}_tpt_strategy-${strategy}_win28_fold-${i}"
+            --project_name "FIXED_mich_xcpd_${ds_label}_tpt_strategy-${strategy}_fold-${i}"
 done
 
 # TPT_CHOICES=("none" "prompt_ln")

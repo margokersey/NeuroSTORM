@@ -29,7 +29,7 @@ set -euo pipefail
 
 GENERAL_CKPT="pretrained_models/pretraining/pt_neurostorm_mae_5ds.ckpt"
 # dataset for the original (no-smoothing) XCP-D outputs
-DATASET=michigan_xcpd_nosmooth_fullblock
+DATASET="michigan_xcpd_nosmooth_fullblock"
 IMG_ROOT="/data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1/img"
 
 TASK="task6"

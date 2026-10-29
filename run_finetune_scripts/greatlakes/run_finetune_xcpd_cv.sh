@@ -24,7 +24,7 @@ set -euo pipefail
 GENERAL_CKPT="pretrained_models/pretraining/pt_neurostorm_mae_5ds.ckpt"
 
 # Where the preprocessed data lives. Overridable from the job file.
-DATA_ROOT="${DATA_ROOT:-/scratch/huangzu_root/huangzu0/mkersey/Michigan_Dataset_1_for_NeuroSTORM}"
+DATA_ROOT="${DATA_ROOT:-/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM}"
 
 # dataset for the original (no-smoothing) XCP-D outputs
 DATASET="michigan_xcpd_nosmooth_fullblock"
@@ -51,7 +51,6 @@ echo "Preflight: checking split-file subjects exist under $IMG_ROOT..."
 if [[ ! -d "$IMG_ROOT" ]]; then
     echo "Preflight FAILED: $IMG_ROOT does not exist -- has the data been copied/preprocessed?"
     exit 1
-fi
 fi
 if [[ ! -f "$GENERAL_CKPT" ]]; then
     echo "Preflight FAILED: checkpoint $GENERAL_CKPT not found (run from the repo root?)"

@@ -31,9 +31,9 @@
 set -euo pipefail
 
 # ── User settings (edit these) ───────────────────────────────────────────────
-REPO_DIR="$HOME/code/NeuroSTORM_custom"      # your customized clone
-FINETUNE_SCRIPT="/run_finetune_scripts/greatlakes/run_finetune_xcpd_cv.sh"    # relative to REPO_DIR
-export DATA_ROOT="/scratch/huangzu_root/huangzu0/mkersey/data/Michigan_Dataset_1_for_NeuroSTORM"
+REPO_DIR="$HOME/code/NeuroSTORM"      # your customized fork of the repo
+FINETUNE_SCRIPT="run_finetune_scripts/greatlakes/run_finetune_xcpd_cv.sh"    # relative to REPO_DIR
+export DATA_ROOT="/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM"
 
 # ── Modules ──────────────────────────────────────────────────────────────────
 module load gcc/11.2.0 cuda/12.8.1
@@ -47,6 +47,7 @@ unset __conda_setup
 conda activate neurostorm
 cd "$REPO_DIR"
 source ./set_env.sh
+export PATH="$HOME/gcc11-wrappers:$PATH"   # makes gcc-11 / g++-11 resolve to the module's GCC 11
 set -u
 
 # ── Runtime environment ──────────────────────────────────────────────────────
@@ -54,6 +55,7 @@ export FOLDS="$SLURM_ARRAY_TASK_ID"          # this task runs exactly one fold
 export NUM_GPUS="${SLURM_GPUS_ON_NODE:-1}"
 export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
 export TRITON_CACHE_DIR="/tmp/triton_cache_${SLURM_JOB_ID}"
+export TQDM_MININTERVAL=120 # Reduce TQDM chatter in the logs (default 0.1s)
 
 # ── Record what we ran on ────────────────────────────────────────────────────
 echo "Job ${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID} (fold $FOLDS) on $(hostname) at $(date)"

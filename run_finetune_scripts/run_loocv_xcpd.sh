@@ -10,21 +10,23 @@
 #
 #   5-fold CV (already run):  ~16 train / ~5 val / ~5 test subjects/fold,
 #                              5 folds total.
-#   LOOCV (this script):      24 train / 1 val / 1 test subject/fold,
-#                              26 folds total (one per subject).
+#   LOOCV (this script):      22 train / 3 val / 1 test subject/fold,
+#                              26 folds total (one held-out test subject per fold).
 #
-# Why this shows the model's "full potential": every fold trains on 24 of
+# Why this shows the model's "full potential": every fold trains on 22 of
 # 26 subjects (~50% more subjects than the 5-fold CV's ~16), so each
 # fold's model is closer to what you'd get training on essentially the
-# whole cohort -- and because the held-out set is a SINGLE subject per
-# fold, aggregating across all 26 folds gives a full per-subject
-# distribution of generalization performance (which individuals the model
-# nails vs. struggles with), not just 5 noisy group-level numbers.
+# whole cohort. The 3-subject validation set (sampled from the 22 training
+# subjects per fold) provides robust checkpoint selection without using the
+# held-out test subject. Because the test set is a SINGLE subject per fold,
+# aggregating across all 26 folds gives a full per-subject distribution of
+# generalization performance (which individuals the model nails vs. struggles
+# with), not just 5 noisy group-level numbers.
 #
 # Cost: this is 26 full fine-tunes with MORE training data per fold than
-# the 5-fold CV, i.e. roughly 26/5 x ~24/16 ~= 7-8x the total compute of
+# the 5-fold CV, i.e. roughly 26/5 x ~22/16 ~= 7-8x the total compute of
 # the 5-fold run you already did. If that's too much wall-clock, lower
-# --max_epochs below (e.g. 20) -- with 24 subjects/fold there's more data
+# --max_epochs below (e.g. 20) -- with 22 subjects/fold there's more data
 # per epoch, so fewer epochs may already saturate valid_acc; check the
 # training curves on fold 101 before committing to all 26.
 #

@@ -51,6 +51,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers.neptune import NeptuneLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers.tensorboard import TensorBoardLogger
+from callbacks.imagery_predictions_callback import ImageryPredictionsCallback
 
 # Silence Lightning's INFO-level chatter: "GPU available ... / TPU available
 # ... / Initializing distributed / LOCAL_RANK: X - CUDA_VISIBLE_DEVICES ..."
@@ -246,6 +247,12 @@ def cli_main():
     lr_monitor = LearningRateMonitor(logging_interval="step")
     callbacks = [checkpoint_callback, lr_monitor]
 
+    # Add callback to save per-sample test predictions for imagery classification
+    if (args.downstream_task_type == "classification" and 
+        args.task_name == 'imagery_task_classification' and
+        not args.pretraining):
+        callbacks.append(ImageryPredictionsCallback())
+
     from utils._step_timer import maybe_attach as _maybe_attach_step_timer
     _maybe_attach_step_timer(callbacks)
 
@@ -385,7 +392,15 @@ def cli_main():
             print(f'[diag] FIT_START resume_from={args.resume_ckpt_path} max_epochs={args.max_epochs}', flush=True)
             trainer.fit(model, datamodule=data_module, ckpt_path=args.resume_ckpt_path)
 
-        trainer.test(model, dataloaders=data_module)
+        # Test on the BEST checkpoint (not the last epoch)
+        # trainer.best_model_path will be the best checkpoint saved during training
+        best_ckpt = trainer.checkpoint_callback.best_model_path if trainer.checkpoint_callback else None
+        if best_ckpt:
+            print(f'[diag] Testing with best checkpoint: {best_ckpt}', flush=True)
+            trainer.test(model, dataloaders=data_module, ckpt_path=best_ckpt)
+        else:
+            print(f'[diag] No best checkpoint found, testing with current model', flush=True)
+            trainer.test(model, dataloaders=data_module)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,71 @@
+#!/bin/bash
+# =============================================================================
+# NeuroSTORM 26-fold LOOCV fine-tune (XCP-D nosmooth) — Great Lakes job array
+#
+# Each array task runs ONE fold on its own A40, in parallel.
+#
+# One-time setup:   mkdir -p /scratch/huangzu_root/huangzu0/mkersey/logs
+# Submit (from anywhere):
+#   sbatch run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh                # all 26 folds
+#   sbatch --array=101 run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh    # rerun just fold 101
+#   sbatch --array=101-105 run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh   # folds 101-105
+#   sbatch --array=101-126%4 run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh # folds 101-126, max 4 at once
+# Watch:   squeue -u mkersey      tail -f logs/xcpd_loocv_<jobid>_<fold>.log
+# Cancel:  scancel <jobid>   (all folds)   scancel <jobid>_101   (one fold)
+# =============================================================================
+
+#SBATCH --account=huangzu99
+#SBATCH --job-name=xcpd_loocv
+#SBATCH --chdir=/scratch/huangzu_root/huangzu0/mkersey
+#SBATCH --partition=spgpu              # A40s -- your Mamba build is sm_86 only
+#SBATCH --array=101-126                # one task per fold; %2 suffix (101-126%2) = max 2 at once
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1            # must equal --gpus-per-node
+#SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
+#SBATCH --time=12:00:00                # per fold; tune after the first one finishes
+#SBATCH --output=logs/xcpd_loocv_%A_%a.log   # %A = job id, %a = fold
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=mkersey@umich.edu
+
+set -euo pipefail
+
+# ── User settings (edit these) ───────────────────────────────────────────────
+REPO_DIR="$HOME/code/NeuroSTORM"      # your customized fork of the repo
+FINETUNE_SCRIPT="run_finetune_scripts/greatlakes/run_loocv_xcpd.sh"    # relative to REPO_DIR
+export DATA_ROOT="/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM"
+
+# ── Modules ──────────────────────────────────────────────────────────────────
+module load gcc/11.2.0 cuda/12.8.1
+module load mamba
+
+# ── Conda ────────────────────────────────────────────────────────────────────
+set +u   # conda's activate scripts reference unset variables
+__conda_setup="$('/sw/pkgs/arc/mamba/py3.12/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+eval "$__conda_setup"
+unset __conda_setup
+conda activate neurostorm
+cd "$REPO_DIR"
+source ./set_env.sh
+export PATH="$HOME/gcc11-wrappers:$PATH"   # makes gcc-11 / g++-11 resolve to the module's GCC 11
+set -u
+
+# ── Runtime environment ──────────────────────────────────────────────────────
+export FOLDS="$SLURM_ARRAY_TASK_ID"          # this task runs exactly one fold
+export NUM_GPUS="${SLURM_GPUS_ON_NODE:-1}"
+export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
+export TRITON_CACHE_DIR="/tmp/triton_cache_${SLURM_JOB_ID}"
+export TQDM_MININTERVAL=120 # Reduce TQDM chatter in the logs (default 0.1s)
+
+# ── Record what we ran on ────────────────────────────────────────────────────
+echo "Job ${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID} (fold $FOLDS) on $(hostname) at $(date)"
+echo "Repo: $REPO_DIR @ $(git rev-parse --short HEAD 2>/dev/null || echo 'not a git repo')"
+nvidia-smi --query-gpu=name,memory.total --format=csv
+python -c "import torch; assert torch.cuda.is_available(), 'No GPU visible!'; \
+print('torch', torch.__version__, '| GPUs:', torch.cuda.device_count())"
+
+# ── Run ──────────────────────────────────────────────────────────────────────
+srun bash "$FINETUNE_SCRIPT" --start_index "$SLURM_ARRAY_TASK_ID" --n_folds 1
+
+echo "Fold $SLURM_ARRAY_TASK_ID finished at $(date)"

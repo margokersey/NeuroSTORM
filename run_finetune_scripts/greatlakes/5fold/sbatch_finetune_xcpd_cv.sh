@@ -5,10 +5,10 @@
 # Each array task runs ONE fold on its own A40, in parallel.
 #
 # One-time setup:   mkdir -p /scratch/huangzu_root/huangzu0/mkersey/logs
-# Submit (from anywhere):
-#   sbatch finetune_xcpd_cv.sbatch                # all 5 folds
-#   sbatch --array=3 finetune_xcpd_cv.sbatch      # rerun just fold 3
-#   sbatch --array=1 --time=00:30:00 finetune_xcpd_cv.sbatch   # quick test
+# Submit (from the repo root):
+#   sbatch run_finetune_scripts/greatlakes/5fold/sbatch_finetune_xcpd_cv.sh                # all 5 folds
+#   sbatch --array=3 run_finetune_scripts/greatlakes/5fold/sbatch_finetune_xcpd_cv.sh  # rerun just fold 3
+#   sbatch --array=1 --time=00:30:00 run_finetune_scripts/greatlakes/5fold/sbatch_finetune_xcpd_cv.sh   # quick test
 # Watch:   squeue -u mkersey      tail -f logs/xcpd_cv_<jobid>_<fold>.log
 # Cancel:  scancel <jobid>   (all folds)   scancel <jobid>_3   (one fold)
 # =============================================================================
@@ -32,7 +32,7 @@ set -euo pipefail
 
 # ── User settings (edit these) ───────────────────────────────────────────────
 REPO_DIR="$HOME/code/NeuroSTORM"      # your customized fork of the repo
-FINETUNE_SCRIPT="run_finetune_scripts/greatlakes/run_finetune_xcpd_cv.sh"    # relative to REPO_DIR
+FINETUNE_SCRIPT="run_finetune_scripts/greatlakes/5fold/run_finetune_xcpd_cv.sh"    # relative to REPO_DIR
 export DATA_ROOT="/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM"
 
 # ── Modules ──────────────────────────────────────────────────────────────────

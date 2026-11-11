@@ -82,3 +82,4 @@ slurm-*.out
 *.npz
 /*.png
 /*.jpg
+.ipynb_checkpoints/

@@ -75,7 +75,7 @@ FOLD_ID="$SLURM_ARRAY_TASK_ID"
 PROJECT_PREFIX="xcpd_nosmooth_general"
 
 echo "============================================================================"
-echo "LOOCV Permutation Testing: Fold $FOLD_ID (Job $SLURM_JOB_ID, Task $_)"
+echo "LOOCV Permutation Testing: Fold $FOLD_ID (Job $SLURM_JOB_ID)"
 echo "============================================================================"
 echo "N_PERMUTATIONS:  $N_PERMUTATIONS"
 echo "MAX_EPOCHS:      $MAX_EPOCHS"
@@ -87,22 +87,17 @@ for perm_idx in $(seq 1 "$N_PERMUTATIONS"); do
     echo ""
     echo "─── Fold $FOLD_ID, Permutation $perm_idx / $N_PERMUTATIONS ───"
     
-    # Use original split file, but with --permute_labels flag
-    # Each permutation gets a different seed for label shuffling
+    # Uses the original split file, with --permute_labels; each permutation
+    # gets a different seed for label shuffling.
     perm_seed=$((1234 + perm_idx))
-    
-    # Train permutation model using run_loocv_xcpd.sh with permutation flag
+
     bash "$FINETUNE_SCRIPT" \
         --start_index "$FOLD_ID" \
         --n_folds 1 \
         --max_epochs "$MAX_EPOCHS" \
         --project_name_suffix "_perm${perm_idx}" \
-        --permute_labels --permutation_seed "$perm_seed"
-    
-    if [[ $? -ne 0 ]]; then
-        echo "ERROR: Training failed for fold $FOLD_ID perm $perm_idx"
-        exit 1
-    fi
+        --permute_labels --permutation_seed "$perm_seed" \
+        || { echo "ERROR: Training failed for fold $FOLD_ID perm $perm_idx"; exit 1; }
 done
 
 echo ""

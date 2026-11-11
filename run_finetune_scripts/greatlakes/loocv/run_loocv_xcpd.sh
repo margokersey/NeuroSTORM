@@ -1,11 +1,9 @@
 #!/bin/bash
-# run_loocv_xcpd.sh
-#
 # Leave-one-subject-out (LOOCV) fine-tune of the WINNING condition
 # identified by compare_conditions_v2.py -- FIXED_mich_xcpd_nosmooth_tpt_
 # strategy-none (XCP-D-denoised data, NeuroSTORM's general MAE-pretrained
 # checkpoint, --tpt_strategy none / full fine-tune) -- same model, same
-# data, same hyperparameters as run_finetune_xcpd_cv.sh's 5-fold CV, just
+# data, same hyperparameters as the 5-fold CV in 5fold/run_finetune_xcpd_cv.sh, just
 # a different subject partition:
 #
 #   5-fold CV (already run):  ~16 train / ~5 val / ~5 test subjects/fold,
@@ -47,13 +45,17 @@
 #      run -- nothing else to set up if that already worked.
 #
 # Run from the repo root:
-#   bash run_loocv_xcpd.sh
+#   bash run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh
 #
-# Optional: --start_index / --n_folds if you generated a different range,
-# --max_epochs / --batch_size / --gpus to override, or --dry_run to just
-# print the preflight + planned commands without launching anything.
+# Options: --start_index / --n_folds (if you generated a different range),
+# --max_epochs / --batch_size, --skip_folds "<comma list>", --dry_run (print
+# the preflight + planned run without launching anything), and for label
+# permutation testing --project_name_suffix, --permute_labels,
+# --permutation_seed. GPUs come from NUM_GPUS (set by the Slurm job).
 
 set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../../lib/common.sh"
 
 GENERAL_CKPT="pretrained_models/pretraining/pt_neurostorm_mae_5ds.ckpt"
 
@@ -70,7 +72,7 @@ PROJECT_PREFIX="FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv"
 
 START_INDEX=101
 N_FOLDS=26
-MAX_EPOCHS=30 # Reduced to 30 instead of 50 to save compute time (since it's been reaching max performance by 30 anyway in previous tests)
+MAX_EPOCHS=30   # 30 rather than 50 to save compute: earlier tests already peaked by epoch 30
 BATCH_SIZE=8
 
 # Number of GPUs this job can see (set by the job file; 1 if run by hand).
@@ -103,80 +105,50 @@ done
 
 END_INDEX=$((START_INDEX + N_FOLDS - 1))
 
-# ------------------------------------------------------------------
-# Preflight: confirm every LOOCV split file exists and every subject it
-# names has a preprocessed data.pt under the XCP-D image_path. Checking
-# this up front avoids discovering fold 19 of 26 is broken after 18 folds
-# have already finished.
-# ------------------------------------------------------------------
+# ── Preflight ────────────────────────────────────────────────────────────────
+# Check every LOOCV split file and its subjects up front, rather than finding
+# out fold 19 of 26 is broken after 18 folds have finished.
 echo "Preflight: checking LOOCV split files $SPLIT_DIR/split_fixed_${START_INDEX}.txt .. split_fixed_${END_INDEX}.txt ..."
-if [[ ! -d "$IMG_ROOT" ]]; then
-    echo "Preflight FAILED: $IMG_ROOT does not exist -- has the data been copied/preprocessed?"
-    exit 1
-fi
-if [[ ! -f "$GENERAL_CKPT" ]]; then
-    echo "Preflight FAILED: checkpoint $GENERAL_CKPT not found (run from the repo root?)"
-    exit 1
-fi
-if ! compgen -G "$SPLIT_DIR"/split_fixed_*.txt > /dev/null; then
-    echo "Preflight FAILED: no split files found under $SPLIT_DIR"
-    exit 1
-fi
-
-missing=0
+preflight_require_dir "$IMG_ROOT" "has the data been copied/preprocessed?"
+preflight_require_file "$GENERAL_CKPT" "run from the repo root?"
+preflight_require_splits "$SPLIT_DIR" "split_fixed_*.txt"
 for i in $(seq "$START_INDEX" "$END_INDEX"); do
     split_file="$SPLIT_DIR/split_fixed_${i}.txt"
     if [[ ! -f "$split_file" ]]; then
         echo "  MISSING split file: $split_file -- run make_loocv_splits.py first (see header comment)."
-        missing=$((missing + 1))
+        MISSING=$((MISSING + 1))
         continue
     fi
-    for subj in $(grep -vE '^(train|val|test)_subjects$' "$split_file"); do
-        [[ -z "$subj" ]] && continue
-        if [[ ! -f "$IMG_ROOT/$subj/data.pt" ]]; then
-            echo "  MISSING data.pt: $subj (referenced in $split_file)"
-            missing=$((missing + 1))
-        fi
-    done
+    preflight_check_subjects "$split_file" "$IMG_ROOT"
 done
-if [[ "$missing" -gt 0 ]]; then
-    echo "Preflight FAILED: $missing problem(s) -- fix before running folds (see above)."
-    exit 1
-fi
-echo "Preflight OK: all $N_FOLDS LOOCV split files present, all referenced subjects found."
-echo ""
+preflight_finish "all $N_FOLDS LOOCV split files present, all referenced subjects found."
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "[dry run] would run dataset_split_num $START_INDEX..$END_INDEX with:"
-    echo "  --max_epochs $MAX_EPOCHS --batch_size $BATCH_SIZE --gpus $GPUS"
+    echo "  --max_epochs $MAX_EPOCHS --batch_size $BATCH_SIZE --gpus $GPU_IDS"
     echo "  --project_name ${PROJECT_PREFIX}_fold-<split_num>"
     exit 0
 fi
 
-# ------------------------------------------------------------------
-# 26-fold LOOCV finetune. Note the braces around ${i} in --project_name:
-# without them, "$i_general" would mean the unset variable "i_general",
-# and every fold would silently get the same project name.
-# ------------------------------------------------------------------
+# ── LOOCV fine-tune ──────────────────────────────────────────────────────────
 for i in $(seq "$START_INDEX" "$END_INDEX"); do
-        # skip folds listed in SKIP_FOLDS
-        if [[ -n "$SKIP_FOLDS" && ",${SKIP_FOLDS}," == *",${i},"* ]]; then
-                echo "Skipping fold $i per SKIP_FOLDS"
-                continue
-        fi
-        echo "=== LOOCV fold $i (held-out subject $((i - START_INDEX + 1))/$N_FOLDS) ==="
-        bash scripts/run_experiment.sh \
-            --model neurostorm --dataset "$DATASET" --task "$TASK" --mode finetune \
-            --max_epochs "$MAX_EPOCHS" --batch_size "$BATCH_SIZE" --gpus "$GPU_IDS" \
-            --load_model_path "$GENERAL_CKPT" \
-            -- --dataset_split_num "$i" --tpt_strategy none \
-                 --project_name "${PROJECT_PREFIX}_fold-${i}${PROJECT_NAME_SUFFIX}" \
-                 $PERMUTE_LABELS $PERMUTATION_SEED
+    if [[ -n "$SKIP_FOLDS" && ",${SKIP_FOLDS}," == *",${i},"* ]]; then
+        echo "Skipping fold $i per SKIP_FOLDS"
+        continue
+    fi
+    echo "=== LOOCV fold $i (held-out subject $((i - START_INDEX + 1))/$N_FOLDS) ==="
+    bash scripts/run_experiment.sh \
+        --model neurostorm --dataset "$DATASET" --task "$TASK" --mode finetune \
+        --max_epochs "$MAX_EPOCHS" --batch_size "$BATCH_SIZE" --gpus "$GPU_IDS" \
+        --load_model_path "$GENERAL_CKPT" \
+        -- --dataset_split_num "$i" --tpt_strategy none \
+             --project_name "${PROJECT_PREFIX}_fold-${i}${PROJECT_NAME_SUFFIX}" \
+             $PERMUTE_LABELS $PERMUTATION_SEED   # intentionally unquoted: empty or "--flag value"
 done
 
 echo ""
 echo "All $N_FOLDS folds done. Summarize with:"
-echo "  python compare_conditions_v2.py \\"
+echo "  python analysis/compare_conditions_v2.py \\"
 echo "    --condition \"LOOCV (best model)|${PROJECT_PREFIX}_fold-*\""
 echo ""
 echo "Note: this is a standalone condition (26 folds, fold numbers ${START_INDEX}-${END_INDEX})"

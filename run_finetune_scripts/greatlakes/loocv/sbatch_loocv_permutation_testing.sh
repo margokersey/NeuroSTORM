@@ -33,7 +33,7 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G                      # change back to 64 once ready to run for real!!!
-#SBATCH --time=02:00:00                # 3 permutations × 12 hours each, per fold
+#SBATCH --time=06:00:00                # 3 permutations × 12 hours each, per fold
 #SBATCH --output=logs/xcpd_loocv_perm_%A_%a.log
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=mkersey@umich.edu

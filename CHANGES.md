@@ -1,5 +1,12 @@
 # Changes
 
+## Add local no-GPU testing sandbox
+
+- New `scripts/sandbox/`: cross-platform conda env (`environment-local.yml`), a pure-PyTorch `mamba_ssm` shim, a synthetic Michigan dataset generator, and `run_smoke.sh` which runs the real `main.py` train/val/test on CPU in ~10 s. `make sandbox-env | sandbox | sandbox-test`. Docs: `notes/local_sandbox.md`. Added `tests/test_sandbox_shim.py`.
+- `make sandbox-gl` (`scripts/sandbox/run_greatlakes_checks.sh`, `verify_run.py`, `check_real_ckpt_compat.py`): runs the Great Lakes 5-fold/LOOCV/permutation launchers unmodified on synthetic data and verifies fine-tuning, checkpoints and predictions per fold.
+- Local vs. cluster is chosen by the `NEUROSTORM_ENV` env var (`utils/runtime_env.py`): `set_env.sh` (sourced by every `sbatch_*`) exports `greatlakes`; the sandbox scripts export `local`. Only `local` skips the CUDA-only NVTX markers (`models/patchembedding.py`) and CUDA event timers (`LightningModel.on_train_epoch_start`); unset/`greatlakes` runs the original unguarded code.
+- Michigan datasets never fall back to a random split: `MICHIGAN_FULL_BLOCK` now reads `nas/splits/MICHIGAN/` (`SPLIT_DIR_ALIASES`), a missing split file raises, and split files with empty sets or train/val/test overlap (incl. val == test) are rejected (`datasets/data_module.py`, `tests/test_split_guard.py`).
+
 ## Reorganize and clean up `run_finetune_scripts/`
 
 - Grouped the workstation launchers by experiment: `local/5fold/`, `local/loocv/`, `local/reid/`, `local/within/` (moved with `git mv`; run them from the repo root, e.g. `bash run_finetune_scripts/local/5fold/run_finetune_xcpd_cv.sh`). `greatlakes/` is unchanged in layout.

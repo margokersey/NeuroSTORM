@@ -186,3 +186,7 @@ srun bash "$FINETUNE_SCRIPT" --start_index "$SLURM_ARRAY_TASK_ID" --n_folds 1
 - Removed root-level result PNGs; root `loocv_permutation_*.png` now ignored.
 - Moved custom scripts (`compare_conditions*.py`, `backfill_*best_ckpt_test.sh`) to `analysis/`.
 - Moved kept workflow docs to `notes/`; removed empty/duplicate/superseded guides (recoverable from git history).
+
+## Michigan XCP-D preprocessing for other runs
+- `datasets/preprocessing_volume.py`: `michigan_xcpd` now takes `--task` / `--run` (default imagery run-1, unchanged), matches files by basename so `sub-XX/func/` layouts work.
+- New `scripts/preprocess_michigan_xcpd_runs.sh`: Slurm array for imagery 2-4 and rest 1-2 -> `FIXED_xcp_nosmooth_task-<task>_run-<N>/img`.

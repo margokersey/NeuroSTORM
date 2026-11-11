@@ -38,6 +38,13 @@ MICHIGAN_XCPD_BOLD_RE = re.compile(
     r'^sub-[^_]+_task-imagery_run-1_space-[^_]+_res-[^_]+_desc-denoised[^_]*+_bold\.nii\.gz$' # if using smoothed data, naming is denoisedSmoothed
 )
 
+def michigan_xcpd_bold_re(task='imagery', run='1'):
+    """Same as MICHIGAN_XCPD_BOLD_RE but for any task/run (e.g. imagery run-2, rest run-1)."""
+    return re.compile(
+        r'^sub-[^_]+_task-%s_run-0?%s_space-[^_]+_res-[^_]+_desc-denoised[^_]*+_bold\.nii\.gz$'
+        % (re.escape(task), re.escape(str(run)))
+    )
+
 MICHIGAN_AFNI_BOLD_RE = re.compile(
     # Accept both .nii and .nii.gz and allow any non-slash subdirectory name (e.g. 'P01/task1.nii.gz')
     r'^P[^/]+/task1(?:\.nii(?:\.gz)?)$'
@@ -336,6 +343,10 @@ def main():
                              "min-max scaling. none: No normalization so choose this if it's already been done to the data." \
                              "These are alternatives -- pick one, they are not "
                              "meant to be chained.")
+    parser.add_argument('--task', type=str, default='imagery',
+                        help="michigan_xcpd only: BIDS task label to process (imagery or rest)")
+    parser.add_argument('--run', type=str, default='1',
+                        help="michigan_xcpd only: run number to process (1, 2, ... ; matches run-1 and run-01)")
     args = parser.parse_args()
 
     dataset_name = args.dataset_name
@@ -357,6 +368,7 @@ def main():
 
     count = 0
 
+    xcpd_re = michigan_xcpd_bold_re(args.task, args.run)
     tasks = []
     for filename in sorted(filenames):
         if dataset_name == 'michigan':
@@ -372,9 +384,9 @@ def main():
             if not MICHIGAN_RESTING_BOLD_RE.match(filename):
                 continue
         elif dataset_name == 'michigan_xcpd':
-            # Strict allow-list match: only exact XCP-D denoised task-imagery run-1
-            # bold files pass.
-            if not MICHIGAN_XCPD_BOLD_RE.match(filename):
+            # Strict allow-list match: only XCP-D denoised bold files for --task/--run
+            # (default imagery run-1) pass.
+            if not xcpd_re.match(os.path.basename(filename)):
                 continue
         elif dataset_name == 'michigan_afni':
             # Strict allow-list match: only exact AFNI task-imagery run-1 bold files pass,
@@ -455,7 +467,7 @@ def determine_subject_name(dataset_name, filename):
     elif dataset_name == 'movie':
         return filename.split('_acq')[0]
     elif dataset_name in ('michigan', 'michigan_resting', 'michigan_xcpd'):
-        return filename.split('_')[0]  # 'sub-02_task-imagery_run-1_..._bold.nii.gz' -> 'sub-02'
+        return os.path.basename(filename).split('_')[0]  # (basename: files may sit in sub-XX/func/) 'sub-02_task-imagery_run-1_..._bold.nii.gz' -> 'sub-02'
                                         # (same split works for the resting-state and XCP-D filenames too)
     elif dataset_name == 'michigan_afni':
         return filename.split('/')[0]  # 'P01/task1.nii.gz' -> 'P01'

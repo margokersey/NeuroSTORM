@@ -159,7 +159,7 @@ WHAT IT PRODUCES
 
 USAGE (Margo's current 10-condition comparison, split into "none" vs
 "prompt_ln" facets):
-    python "Claude outputs/compare_conditions.py" \
+    python analysis/compare_conditions.py \
       --condition "No smooth, none|FIXED_mich_xcpd_nosmooth_tpt_strategy-none_fold-*|No smooth|none" \
       --condition "No smooth, prompt_ln|FIXED_mich_xcpd_nosmooth_tpt_strategy-prompt_ln_fold-*|No smooth|prompt_ln" \
       --condition "Smooth, none|FIXED_mich_xcpd_smooth_tpt_strategy-none_fold-*|Smooth|none" \
@@ -178,7 +178,7 @@ unfaceted comparison.
 
 Optional:
     --output_root nas/output/neurostorm     (default)
-    --out_dir "Claude outputs/condition_sweep"   (default; created if missing)
+    --out_dir "output/condition_sweep"   (default; created if missing)
     --test_metrics acc,AUROC                (default; comma-separated,
                                               matched against test_<metric>
                                               scalar tags; raincloud plot)
@@ -1198,7 +1198,7 @@ def aggregate_and_plot_confusions(conditions, out_dir, class_names, output_root)
     rerun this script -- rerunning compare_conditions_v2.py never generates
     it, since this script only READS existing event/dump files, it never runs
     the model. Fix: re-test those folds with the patch applied, e.g.
-      bash "Claude outputs/backfill_best_ckpt_test.sh" \\
+      bash analysis/backfill_best_ckpt_test.sh \\
         --project_base <condition's project name minus _fold-N> \\
         --dataset <dataset> --task <task> --tpt_strategy <strategy>
     which reloads each fold's saved checkpoint (no retraining) and writes a
@@ -1277,7 +1277,7 @@ def aggregate_and_plot_confusions(conditions, out_dir, class_names, output_root)
         print("See this function's docstring: test_predictions.pt only exists for folds")
         print("tested (mode=='test') AFTER patch_add_eval_metrics_and_dump.py was applied.")
         print("If your folds predate that patch, re-test them first, e.g.:")
-        print('  bash "Claude outputs/backfill_best_ckpt_test.sh" \\')
+        print('  bash analysis/backfill_best_ckpt_test.sh \\')
         print("    --project_base <project name minus _fold-N> --dataset <dataset> \\")
         print("    --task <task> --tpt_strategy <strategy>")
         return

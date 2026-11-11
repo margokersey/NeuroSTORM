@@ -132,7 +132,7 @@ WHAT IT PRODUCES
 
 USAGE (Margo's current 10-condition comparison, split into "none" vs
 "prompt_ln" facets):
-    python "Claude outputs/compare_conditions.py" \
+    python analysis/compare_conditions.py \
       --condition "No smooth, none|FIXED_mich_xcpd_nosmooth_tpt_strategy-none_fold-*|No smooth|none" \
       --condition "No smooth, prompt_ln|FIXED_mich_xcpd_nosmooth_tpt_strategy-prompt_ln_fold-*|No smooth|prompt_ln" \
       --condition "Smooth, none|FIXED_mich_xcpd_smooth_tpt_strategy-none_fold-*|Smooth|none" \
@@ -151,7 +151,7 @@ unfaceted comparison.
 
 Optional:
     --output_root nas/output/neurostorm     (default)
-    --out_dir "Claude outputs/condition_sweep"   (default; created if missing)
+    --out_dir "output/condition_sweep"   (default; created if missing)
     --test_metrics acc,AUROC                (default; comma-separated,
                                               matched against test_<metric>
                                               scalar tags; raincloud plot)
@@ -739,7 +739,7 @@ def main():
     ap.add_argument("--condition", action="append", required=True, dest="conditions",
                      help="Repeatable. 'label|project_name_glob[|group[|facet]]'. See module docstring.")
     ap.add_argument("--output_root", default="nas/output/neurostorm")
-    ap.add_argument("--out_dir", default="Claude outputs/condition_sweep")
+    ap.add_argument("--out_dir", default="output/condition_sweep")
     ap.add_argument("--test_metrics", default="acc,AUROC")
     ap.add_argument("--perclass_metrics", default="pred_frac,f1")
     ap.add_argument("--curve_metrics", default="loss,acc")

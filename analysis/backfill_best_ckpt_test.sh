@@ -26,7 +26,7 @@
 # needed on their end.
 #
 # Usage:
-#   bash "Claude outputs/backfill_best_ckpt_test.sh" \
+#   bash analysis/backfill_best_ckpt_test.sh \
 #     --project_base mich_xcpd_nosmooth_tpt_strategy-none \
 #     --dataset michigan_xcpd --task task6 --tpt_strategy none
 #

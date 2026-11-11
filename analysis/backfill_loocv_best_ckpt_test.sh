@@ -11,7 +11,7 @@
 # version_N folder (the checkpoint dir itself is untouched).
 #
 # Usage:
-#   bash backfill_loocv_best_ckpt_test.sh [--start_fold 101] [--end_fold 126] [--n_permutations 3]
+#   bash analysis/backfill_loocv_best_ckpt_test.sh [--start_fold 101] [--end_fold 126] [--n_permutations 3]
 #
 # Environment:
 #   REPO_DIR: defaults to $HOME/code/NeuroSTORM

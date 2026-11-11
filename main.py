@@ -94,6 +94,7 @@ def cli_main():
     parser.add_argument("--test_only", action='store_true', help="Whether to test the checkpoints (model weights)")
     parser.add_argument("--validate_only", action='store_true', help="Run trainer.validate on the ckpt and exit (covers both val + test loaders)")
     parser.add_argument("--test_ckpt_path", type=str, help="A path to the previous checkpoint that intends to evaluate (--test_only should be True)")
+    parser.add_argument("--final_test_ckpt", type=str, default="best", choices=["best", "last"], help="Which weights the automatic post-fit trainer.test() uses: 'best' = checkpoint with the best monitored validation metric (default), 'last' = final-epoch weights")
     parser.add_argument("--print_flops", action='store_true', help="Whether to print the number of FLOPs")
     parser.add_argument("--gpu_ids", type=str, default=None, help="Comma-separated list of GPU IDs to use (e.g., '0,1,2'). If not specified, uses all available GPUs")
     parser.add_argument("--num_gpus", type=int, default=None, help="Number of GPUs to use. If not specified, uses all available GPUs or those specified by --gpu_ids")
@@ -392,7 +393,18 @@ def cli_main():
             print(f'[diag] FIT_START resume_from={args.resume_ckpt_path} max_epochs={args.max_epochs}', flush=True)
             trainer.fit(model, datamodule=data_module, ckpt_path=args.resume_ckpt_path)
 
-        trainer.test(model, dataloaders=data_module)
+        # Evaluate the best-validation checkpoint (what ModelCheckpoint kept),
+        # not the last-epoch weights. Pretraining has no meaningful test set.
+        test_ckpt = None
+        if args.final_test_ckpt == "best" and not args.pretraining:
+            best = checkpoint_callback.best_model_path
+            if best and os.path.isfile(best):
+                test_ckpt = best
+                print(f'[test] using best checkpoint: {best} '
+                      f'({checkpoint_callback.monitor}={float(checkpoint_callback.best_model_score):.4f})', flush=True)
+            else:
+                print('[test] WARNING: no best checkpoint found; testing last-epoch weights', flush=True)
+        trainer.test(model, dataloaders=data_module, ckpt_path=test_ckpt)
 
 
 if __name__ == "__main__":

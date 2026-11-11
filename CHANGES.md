@@ -1,5 +1,10 @@
 # Changes
 
+## Final test uses the best-validation checkpoint
+
+- `main.py`: the automatic post-fit `trainer.test()` now loads `checkpoint_callback.best_model_path` (best `valid_acc` / `valid_mse` / `valid_reid_top1`) instead of the last-epoch weights. New flag `--final_test_ckpt {best,last}` (default `best`); falls back to last-epoch weights with a warning if no best checkpoint exists. Pretraining is unchanged.
+- The `analysis/backfill_*best_ckpt_test.sh` scripts are only needed for runs finished before this change.
+
 ## Add local no-GPU testing sandbox
 
 - New `scripts/sandbox/`: cross-platform conda env (`environment-local.yml`), a pure-PyTorch `mamba_ssm` shim, a synthetic Michigan dataset generator, and `run_smoke.sh` which runs the real `main.py` train/val/test on CPU in ~10 s. `make sandbox-env | sandbox | sandbox-test`. Docs: `notes/local_sandbox.md`. Added `tests/test_sandbox_shim.py`.

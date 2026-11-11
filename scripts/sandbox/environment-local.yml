@@ -1,0 +1,41 @@
+# Minimal, cross-platform (macOS arm64/x86, Linux) env for the local no-GPU sandbox.
+# Unlike neurostorm_hpc.yml (a linux-64 + CUDA export) this resolves on a Mac.
+# No mamba-ssm / causal-conv1d / CUDA: scripts/sandbox/shims/mamba_ssm stands in.
+#
+#   conda env create -f scripts/sandbox/environment-local.yml
+#   conda activate neurostorm-sandbox
+#   make sandbox
+#
+# Versions mirror requirements.txt / the cluster env where it matters
+# (torch 2.7.1, pytorch-lightning 1.9.4, transformers 4.39.3).
+name: neurostorm-sandbox
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - torch==2.7.1
+      - torchvision==0.22.1
+      - setuptools<81
+      - pytorch-lightning==1.9.4
+      - torchmetrics
+      - tensorboard
+      - tensorboardX
+      - neptune
+      - huggingface_hub
+      - transformers==4.39.3
+      - monai
+      - nibabel
+      - nilearn
+      - numpy
+      - scipy
+      - pandas
+      - scikit-learn
+      - einops
+      - thop
+      - torchsummary
+      - torch-geometric
+      - tqdm
+      - pyyaml
+      - pytest

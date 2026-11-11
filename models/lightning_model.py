@@ -29,6 +29,7 @@ import nibabel as nb
 from .load_model import load_model
 from utils.metrics import Metrics
 from utils.parser import str2bool
+from utils.runtime_env import is_local
 from utils.losses import NTXentLoss, global_local_temporal_contrastive
 from utils.lr_scheduler import WarmupCosineSchedule, CosineAnnealingWarmUpRestarts
 
@@ -809,7 +810,9 @@ class LightningModel(pl.LightningModule):
                       f"skipping test metrics (check eval_batch_size vs. test split size)")
     
     def on_train_epoch_start(self) -> None:
-        self.starter, self.ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
+        # CUDA events need a CUDA build; skipped only when NEUROSTORM_ENV=local (utils/runtime_env.py)
+        if not is_local():
+            self.starter, self.ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
         self.total_time = 0
         self.repetitions = 200
         self.gpu_warmup = 50

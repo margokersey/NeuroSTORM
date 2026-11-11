@@ -1,6 +1,7 @@
 from unittest.mock import patch
 from torch import nn as nn
 import torch
+from utils.runtime_env import is_local
 
 class PatchEmbed(nn.Module):
     """ 4D Image to Patch Embedding
@@ -37,7 +38,10 @@ class PatchEmbed(nn.Module):
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
 
     def forward(self, x):
-        torch.cuda.nvtx.range_push("PatchEmbed")
+        # NVTX markers need a CUDA build; skipped only when NEUROSTORM_ENV=local (utils/runtime_env.py)
+        use_nvtx = not is_local()
+        if use_nvtx:
+            torch.cuda.nvtx.range_push("PatchEmbed")
         B, C, H, W, D, T = x.shape
         assert H == self.img_size[0], f"Input image height ({H}) doesn't match model ({self.img_size[0]})."
         assert W == self.img_size[1], f"Input image width ({W}) doesn't match model ({self.img_size[1]})."
@@ -46,7 +50,8 @@ class PatchEmbed(nn.Module):
         if self.flatten:
             x = x.flatten(2).transpose(1, 2)  # BCHW -> BNC
         x = self.norm(x)
-        torch.cuda.nvtx.range_pop()
+        if use_nvtx:
+            torch.cuda.nvtx.range_pop()
         return x
 
     def proj(self, x):

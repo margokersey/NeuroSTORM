@@ -28,9 +28,14 @@ elif [ -z "$CUDA_HOME" ]; then
     fi
 fi
 
+# Tell the code which machine this is (see utils/runtime_env.py). "local" is set by the
+# laptop sandbox scripts instead; anything other than "local" runs the original GPU code.
+export NEUROSTORM_ENV="${NEUROSTORM_ENV:-greatlakes}"
+
 echo "Setting up NeuroSTORM environment..."
 echo "Conda environment: $CONDA_ENV_PATH"
 echo "CUDA home: $CUDA_HOME"
+echo "NEUROSTORM_ENV: $NEUROSTORM_ENV"
 
 # Set GCC paths (for conda-installed GCC)
 if [ -d "$CONDA_ENV_PATH/x86_64-conda-linux-gnu/lib64" ]; then

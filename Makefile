@@ -1,4 +1,4 @@
-.PHONY: hooks test test-unit test-integration test-cov test-fast lint format clean help
+.PHONY: sandbox-gl sandbox sandbox-env sandbox-test hooks test test-unit test-integration test-cov test-fast lint format clean help
 
 help:  ## Show this help message
 	@echo "NeuroSTORM Test Commands"
@@ -59,3 +59,16 @@ ci:  ## Run CI checks locally
 
 hooks:  ## Enable repo git hooks (blocks large files/checkpoints/stray outputs)
 	git config core.hooksPath .githooks
+
+# ---- Local (no-GPU) sandbox: see notes/local_sandbox.md ----
+sandbox-env:  ## Create the laptop conda env (neurostorm-sandbox, CPU/MPS, no CUDA)
+	conda env create -f scripts/sandbox/environment-local.yml
+
+sandbox:  ## Tiny synthetic-data end-to-end train/val/test run on CPU (~10 s)
+	bash scripts/sandbox/run_smoke.sh
+
+sandbox-test:  ## pytest suite with the pure-PyTorch mamba_ssm shim on the path
+	PYTHONPATH=scripts/sandbox/shims:. pytest tests/ -m "not slow"
+
+sandbox-gl:  ## Run the Great Lakes 5-fold/LOOCV/sbatch launchers on synthetic data (~10 min)
+	bash scripts/sandbox/run_greatlakes_checks.sh all

@@ -1,0 +1,1501 @@
+condition,group,facet,fold_id,tag,epoch,value
+"No smooth, none",No smooth,,1,valid_acc,0,0.3333333432674408
+"No smooth, none",No smooth,,1,valid_acc,1,0.3333333432674408
+"No smooth, none",No smooth,,1,valid_acc,2,0.5555555820465088
+"No smooth, none",No smooth,,1,valid_acc,3,0.5347222089767456
+"No smooth, none",No smooth,,1,valid_acc,4,0.5555555820465088
+"No smooth, none",No smooth,,1,valid_acc,5,0.6805555820465088
+"No smooth, none",No smooth,,1,valid_acc,6,0.6736111044883728
+"No smooth, none",No smooth,,1,valid_acc,7,0.6805555820465088
+"No smooth, none",No smooth,,1,valid_acc,8,0.7361111044883728
+"No smooth, none",No smooth,,1,valid_acc,9,0.8125
+"No smooth, none",No smooth,,1,valid_acc,10,0.8611111640930176
+"No smooth, none",No smooth,,1,valid_acc,11,0.8333332538604736
+"No smooth, none",No smooth,,1,valid_acc,12,0.8472222089767456
+"No smooth, none",No smooth,,1,valid_acc,13,0.8472222089767456
+"No smooth, none",No smooth,,1,valid_acc,14,0.8541666269302368
+"No smooth, none",No smooth,,1,valid_acc,15,0.8541666269302368
+"No smooth, none",No smooth,,1,valid_acc,16,0.8194444179534912
+"No smooth, none",No smooth,,1,valid_acc,17,0.7916666865348816
+"No smooth, none",No smooth,,1,valid_acc,18,0.875
+"No smooth, none",No smooth,,1,valid_acc,19,0.861111044883728
+"No smooth, none",No smooth,,1,valid_acc,20,0.8888888955116272
+"No smooth, none",No smooth,,1,valid_acc,21,0.8888888955116272
+"No smooth, none",No smooth,,1,valid_acc,22,0.8888888955116272
+"No smooth, none",No smooth,,1,valid_acc,23,0.8611111044883728
+"No smooth, none",No smooth,,1,valid_acc,24,0.8819444179534912
+"No smooth, none",No smooth,,1,valid_acc,25,0.8819444179534912
+"No smooth, none",No smooth,,1,valid_acc,26,0.8888888359069824
+"No smooth, none",No smooth,,1,valid_acc,27,0.8888888359069824
+"No smooth, none",No smooth,,1,valid_acc,28,0.8819444179534912
+"No smooth, none",No smooth,,1,valid_acc,29,0.8819444179534912
+"No smooth, none",No smooth,,1,valid_acc,30,0.875
+"No smooth, none",No smooth,,1,valid_acc,31,0.875
+"No smooth, none",No smooth,,1,valid_acc,32,0.868055522441864
+"No smooth, none",No smooth,,1,valid_acc,33,0.8888888359069824
+"No smooth, none",No smooth,,1,valid_acc,34,0.8472222089767456
+"No smooth, none",No smooth,,1,valid_acc,35,0.8888888359069824
+"No smooth, none",No smooth,,1,valid_acc,36,0.8680555820465088
+"No smooth, none",No smooth,,1,valid_acc,37,0.875
+"No smooth, none",No smooth,,1,valid_acc,38,0.8958333134651184
+"No smooth, none",No smooth,,1,valid_acc,39,0.9027777314186096
+"No smooth, none",No smooth,,1,valid_acc,40,0.8680555820465088
+"No smooth, none",No smooth,,1,valid_acc,41,0.8819444179534912
+"No smooth, none",No smooth,,1,valid_acc,42,0.8819444179534912
+"No smooth, none",No smooth,,1,valid_acc,43,0.8888888359069824
+"No smooth, none",No smooth,,1,valid_acc,44,0.8888888359069824
+"No smooth, none",No smooth,,1,valid_acc,45,0.8888888359069824
+"No smooth, none",No smooth,,1,valid_acc,46,0.8888888359069824
+"No smooth, none",No smooth,,1,valid_acc,47,0.8402777910232544
+"No smooth, none",No smooth,,1,valid_acc,48,0.8333333730697632
+"No smooth, none",No smooth,,1,valid_acc,49,0.8680555820465088
+"No smooth, none",No smooth,,1,train_acc,0,0.375
+"No smooth, none",No smooth,,1,train_acc,1,0.625
+"No smooth, none",No smooth,,1,train_acc,2,0.375
+"No smooth, none",No smooth,,1,train_acc,3,0.75
+"No smooth, none",No smooth,,1,train_acc,4,0.375
+"No smooth, none",No smooth,,1,train_acc,5,0.75
+"No smooth, none",No smooth,,1,train_acc,6,0.625
+"No smooth, none",No smooth,,1,train_acc,7,0.75
+"No smooth, none",No smooth,,1,train_acc,8,0.875
+"No smooth, none",No smooth,,1,train_acc,9,0.75
+"No smooth, none",No smooth,,1,train_acc,10,0.875
+"No smooth, none",No smooth,,1,train_acc,11,0.5
+"No smooth, none",No smooth,,1,train_acc,12,1.0
+"No smooth, none",No smooth,,1,train_acc,13,0.875
+"No smooth, none",No smooth,,1,train_acc,14,1.0
+"No smooth, none",No smooth,,1,train_acc,15,0.875
+"No smooth, none",No smooth,,1,train_acc,16,1.0
+"No smooth, none",No smooth,,1,train_acc,17,1.0
+"No smooth, none",No smooth,,1,train_acc,18,0.875
+"No smooth, none",No smooth,,1,train_acc,19,1.0
+"No smooth, none",No smooth,,1,train_acc,20,0.8125
+"No smooth, none",No smooth,,1,train_acc,21,0.875
+"No smooth, none",No smooth,,1,train_acc,22,1.0
+"No smooth, none",No smooth,,1,train_acc,23,1.0
+"No smooth, none",No smooth,,1,train_acc,24,1.0
+"No smooth, none",No smooth,,1,train_acc,25,0.75
+"No smooth, none",No smooth,,1,train_acc,26,1.0
+"No smooth, none",No smooth,,1,train_acc,27,1.0
+"No smooth, none",No smooth,,1,train_acc,28,1.0
+"No smooth, none",No smooth,,1,train_acc,29,1.0
+"No smooth, none",No smooth,,1,train_acc,30,1.0
+"No smooth, none",No smooth,,1,train_acc,31,1.0
+"No smooth, none",No smooth,,1,train_acc,32,0.875
+"No smooth, none",No smooth,,1,train_acc,33,1.0
+"No smooth, none",No smooth,,1,train_acc,34,1.0
+"No smooth, none",No smooth,,1,train_acc,35,1.0
+"No smooth, none",No smooth,,1,train_acc,36,1.0
+"No smooth, none",No smooth,,1,train_acc,37,1.0
+"No smooth, none",No smooth,,1,train_acc,38,1.0
+"No smooth, none",No smooth,,1,train_acc,39,1.0
+"No smooth, none",No smooth,,1,train_acc,40,1.0
+"No smooth, none",No smooth,,1,train_acc,41,1.0
+"No smooth, none",No smooth,,1,train_acc,42,1.0
+"No smooth, none",No smooth,,1,train_acc,43,1.0
+"No smooth, none",No smooth,,1,train_acc,44,1.0
+"No smooth, none",No smooth,,1,train_acc,45,1.0
+"No smooth, none",No smooth,,1,train_acc,46,1.0
+"No smooth, none",No smooth,,1,train_acc,47,1.0
+"No smooth, none",No smooth,,1,train_acc,48,0.875
+"No smooth, none",No smooth,,1,train_acc,49,0.9375
+"No smooth, prompt_ln",No smooth,,3,valid_acc,0,0.3333333432674408
+"No smooth, prompt_ln",No smooth,,3,valid_acc,1,0.3333333432674408
+"No smooth, prompt_ln",No smooth,,3,valid_acc,2,0.3263888955116272
+"No smooth, prompt_ln",No smooth,,3,valid_acc,3,0.3541666567325592
+"No smooth, prompt_ln",No smooth,,3,valid_acc,4,0.3888888955116272
+"No smooth, prompt_ln",No smooth,,3,valid_acc,5,0.3819444477558136
+"No smooth, prompt_ln",No smooth,,3,valid_acc,6,0.3888888955116272
+"No smooth, prompt_ln",No smooth,,3,valid_acc,7,0.4166666567325592
+"No smooth, prompt_ln",No smooth,,3,valid_acc,8,0.3819444179534912
+"No smooth, prompt_ln",No smooth,,3,valid_acc,9,0.3888888955116272
+"No smooth, prompt_ln",No smooth,,3,valid_acc,10,0.4375
+"No smooth, prompt_ln",No smooth,,3,valid_acc,11,0.4236111044883728
+"No smooth, prompt_ln",No smooth,,3,valid_acc,12,0.4305555820465088
+"No smooth, prompt_ln",No smooth,,3,valid_acc,13,0.4375
+"No smooth, prompt_ln",No smooth,,3,valid_acc,14,0.4375
+"No smooth, prompt_ln",No smooth,,3,valid_acc,15,0.375
+"No smooth, prompt_ln",No smooth,,3,valid_acc,16,0.3680555522441864
+"No smooth, prompt_ln",No smooth,,3,valid_acc,17,0.375
+"No smooth, prompt_ln",No smooth,,3,valid_acc,18,0.3888888955116272
+"No smooth, prompt_ln",No smooth,,3,valid_acc,19,0.4236111044883728
+"No smooth, prompt_ln",No smooth,,3,valid_acc,20,0.4305555522441864
+"No smooth, prompt_ln",No smooth,,3,valid_acc,21,0.3611111044883728
+"No smooth, prompt_ln",No smooth,,3,valid_acc,22,0.340277761220932
+"No smooth, prompt_ln",No smooth,,3,valid_acc,23,0.4722222089767456
+"No smooth, prompt_ln",No smooth,,3,valid_acc,24,0.3888888955116272
+"No smooth, prompt_ln",No smooth,,3,valid_acc,25,0.4097222089767456
+"No smooth, prompt_ln",No smooth,,3,valid_acc,26,0.4444444179534912
+"No smooth, prompt_ln",No smooth,,3,valid_acc,27,0.4166666567325592
+"No smooth, prompt_ln",No smooth,,3,valid_acc,28,0.4166666865348816
+"No smooth, prompt_ln",No smooth,,3,valid_acc,29,0.409722238779068
+"No smooth, prompt_ln",No smooth,,3,valid_acc,30,0.4166666567325592
+"No smooth, prompt_ln",No smooth,,3,valid_acc,31,0.465277761220932
+"No smooth, prompt_ln",No smooth,,3,valid_acc,32,0.347222238779068
+"No smooth, prompt_ln",No smooth,,3,valid_acc,33,0.3472222089767456
+"No smooth, prompt_ln",No smooth,,3,valid_acc,34,0.4236111044883728
+"No smooth, prompt_ln",No smooth,,3,valid_acc,35,0.347222238779068
+"No smooth, prompt_ln",No smooth,,3,valid_acc,36,0.4305555522441864
+"No smooth, prompt_ln",No smooth,,3,valid_acc,37,0.340277761220932
+"No smooth, prompt_ln",No smooth,,3,valid_acc,38,0.4583333134651184
+"No smooth, prompt_ln",No smooth,,3,valid_acc,39,0.4722222089767456
+"No smooth, prompt_ln",No smooth,,3,valid_acc,40,0.4930555820465088
+"No smooth, prompt_ln",No smooth,,3,valid_acc,41,0.4236111044883728
+"No smooth, prompt_ln",No smooth,,3,valid_acc,42,0.4236111044883728
+"No smooth, prompt_ln",No smooth,,3,valid_acc,43,0.4097222089767456
+"No smooth, prompt_ln",No smooth,,3,valid_acc,44,0.4236111044883728
+"No smooth, prompt_ln",No smooth,,3,valid_acc,45,0.4166666567325592
+"No smooth, prompt_ln",No smooth,,3,valid_acc,46,0.375
+"No smooth, prompt_ln",No smooth,,3,valid_acc,47,0.3541666865348816
+"No smooth, prompt_ln",No smooth,,3,valid_acc,48,0.4375
+"No smooth, prompt_ln",No smooth,,3,valid_acc,49,0.3680555522441864
+"No smooth, prompt_ln",No smooth,,3,train_acc,0,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,1,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,2,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,3,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,4,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,5,0.1875
+"No smooth, prompt_ln",No smooth,,3,train_acc,6,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,7,0.625
+"No smooth, prompt_ln",No smooth,,3,train_acc,8,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,9,0.0
+"No smooth, prompt_ln",No smooth,,3,train_acc,10,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,11,0.1875
+"No smooth, prompt_ln",No smooth,,3,train_acc,12,0.125
+"No smooth, prompt_ln",No smooth,,3,train_acc,13,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,14,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,15,0.875
+"No smooth, prompt_ln",No smooth,,3,train_acc,16,0.6875
+"No smooth, prompt_ln",No smooth,,3,train_acc,17,0.5
+"No smooth, prompt_ln",No smooth,,3,train_acc,18,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,19,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,20,0.125
+"No smooth, prompt_ln",No smooth,,3,train_acc,21,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,22,0.6875
+"No smooth, prompt_ln",No smooth,,3,train_acc,23,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,24,0.625
+"No smooth, prompt_ln",No smooth,,3,train_acc,25,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,26,0.625
+"No smooth, prompt_ln",No smooth,,3,train_acc,27,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,28,0.5
+"No smooth, prompt_ln",No smooth,,3,train_acc,29,0.125
+"No smooth, prompt_ln",No smooth,,3,train_acc,30,0.625
+"No smooth, prompt_ln",No smooth,,3,train_acc,31,0.125
+"No smooth, prompt_ln",No smooth,,3,train_acc,32,0.5
+"No smooth, prompt_ln",No smooth,,3,train_acc,33,0.5
+"No smooth, prompt_ln",No smooth,,3,train_acc,34,0.125
+"No smooth, prompt_ln",No smooth,,3,train_acc,35,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,36,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,37,0.5
+"No smooth, prompt_ln",No smooth,,3,train_acc,38,0.5625
+"No smooth, prompt_ln",No smooth,,3,train_acc,39,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,40,0.5
+"No smooth, prompt_ln",No smooth,,3,train_acc,41,0.5
+"No smooth, prompt_ln",No smooth,,3,train_acc,42,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,43,0.5
+"No smooth, prompt_ln",No smooth,,3,train_acc,44,0.25
+"No smooth, prompt_ln",No smooth,,3,train_acc,45,0.5
+"No smooth, prompt_ln",No smooth,,3,train_acc,46,0.5
+"No smooth, prompt_ln",No smooth,,3,train_acc,47,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,48,0.375
+"No smooth, prompt_ln",No smooth,,3,train_acc,49,0.4375
+"Smooth, none",Smooth,,2,valid_acc,0,0.3333333432674408
+"Smooth, none",Smooth,,2,valid_acc,1,0.3333333432674408
+"Smooth, none",Smooth,,2,valid_acc,2,0.3819444477558136
+"Smooth, none",Smooth,,2,valid_acc,3,0.5694444179534912
+"Smooth, none",Smooth,,2,valid_acc,4,0.5763888955116272
+"Smooth, none",Smooth,,2,valid_acc,5,0.7152777910232544
+"Smooth, none",Smooth,,2,valid_acc,6,0.6875
+"Smooth, none",Smooth,,2,valid_acc,7,0.7083333730697632
+"Smooth, none",Smooth,,2,valid_acc,8,0.7847222089767456
+"Smooth, none",Smooth,,2,valid_acc,9,0.8125
+"Smooth, none",Smooth,,2,valid_acc,10,0.8055555820465088
+"Smooth, none",Smooth,,2,valid_acc,11,0.805555522441864
+"Smooth, none",Smooth,,2,valid_acc,12,0.7986111640930176
+"Smooth, none",Smooth,,2,valid_acc,13,0.8194444179534912
+"Smooth, none",Smooth,,2,valid_acc,14,0.8194444179534912
+"Smooth, none",Smooth,,2,valid_acc,15,0.7986111640930176
+"Smooth, none",Smooth,,2,valid_acc,16,0.7986111640930176
+"Smooth, none",Smooth,,2,valid_acc,17,0.7361111640930176
+"Smooth, none",Smooth,,2,valid_acc,18,0.7847222089767456
+"Smooth, none",Smooth,,2,valid_acc,19,0.7222222089767456
+"Smooth, none",Smooth,,2,valid_acc,20,0.7777777910232544
+"Smooth, none",Smooth,,2,valid_acc,21,0.7986111044883728
+"Smooth, none",Smooth,,2,valid_acc,22,0.7916666269302368
+"Smooth, none",Smooth,,2,valid_acc,23,0.7847222089767456
+"Smooth, none",Smooth,,2,valid_acc,24,0.8055555820465088
+"Smooth, none",Smooth,,2,valid_acc,25,0.7916666269302368
+"Smooth, none",Smooth,,2,valid_acc,26,0.8055555820465088
+"Smooth, none",Smooth,,2,valid_acc,27,0.805555522441864
+"Smooth, none",Smooth,,2,valid_acc,28,0.8125
+"Smooth, none",Smooth,,2,valid_acc,29,0.798611044883728
+"Smooth, none",Smooth,,2,valid_acc,30,0.7847222089767456
+"Smooth, none",Smooth,,2,valid_acc,31,0.7777777910232544
+"Smooth, none",Smooth,,2,valid_acc,32,0.7847222089767456
+"Smooth, none",Smooth,,2,valid_acc,33,0.8055555820465088
+"Smooth, none",Smooth,,2,valid_acc,34,0.7986111044883728
+"Smooth, none",Smooth,,2,valid_acc,35,0.8125
+"Smooth, none",Smooth,,2,valid_acc,36,0.8055555820465088
+"Smooth, none",Smooth,,2,valid_acc,37,0.8125
+"Smooth, none",Smooth,,2,valid_acc,38,0.7916666865348816
+"Smooth, none",Smooth,,2,valid_acc,39,0.8263888955116272
+"Smooth, none",Smooth,,2,valid_acc,40,0.7916666865348816
+"Smooth, none",Smooth,,2,valid_acc,41,0.7638888955116272
+"Smooth, none",Smooth,,2,valid_acc,42,0.7986111044883728
+"Smooth, none",Smooth,,2,valid_acc,43,0.7986111044883728
+"Smooth, none",Smooth,,2,valid_acc,44,0.7986111044883728
+"Smooth, none",Smooth,,2,valid_acc,45,0.8055555820465088
+"Smooth, none",Smooth,,2,valid_acc,46,0.8125
+"Smooth, none",Smooth,,2,valid_acc,47,0.798611044883728
+"Smooth, none",Smooth,,2,valid_acc,48,0.7430555820465088
+"Smooth, none",Smooth,,2,valid_acc,49,0.8055555820465088
+"Smooth, none",Smooth,,2,train_acc,0,0.25
+"Smooth, none",Smooth,,2,train_acc,1,0.375
+"Smooth, none",Smooth,,2,train_acc,2,0.625
+"Smooth, none",Smooth,,2,train_acc,3,0.5
+"Smooth, none",Smooth,,2,train_acc,4,0.75
+"Smooth, none",Smooth,,2,train_acc,5,0.875
+"Smooth, none",Smooth,,2,train_acc,6,0.75
+"Smooth, none",Smooth,,2,train_acc,7,0.75
+"Smooth, none",Smooth,,2,train_acc,8,1.0
+"Smooth, none",Smooth,,2,train_acc,9,1.0
+"Smooth, none",Smooth,,2,train_acc,10,0.75
+"Smooth, none",Smooth,,2,train_acc,11,0.875
+"Smooth, none",Smooth,,2,train_acc,12,1.0
+"Smooth, none",Smooth,,2,train_acc,13,1.0
+"Smooth, none",Smooth,,2,train_acc,14,1.0
+"Smooth, none",Smooth,,2,train_acc,15,1.0
+"Smooth, none",Smooth,,2,train_acc,16,0.8125
+"Smooth, none",Smooth,,2,train_acc,17,1.0
+"Smooth, none",Smooth,,2,train_acc,18,0.875
+"Smooth, none",Smooth,,2,train_acc,19,1.0
+"Smooth, none",Smooth,,2,train_acc,20,1.0
+"Smooth, none",Smooth,,2,train_acc,21,1.0
+"Smooth, none",Smooth,,2,train_acc,22,1.0
+"Smooth, none",Smooth,,2,train_acc,23,1.0
+"Smooth, none",Smooth,,2,train_acc,24,0.875
+"Smooth, none",Smooth,,2,train_acc,25,1.0
+"Smooth, none",Smooth,,2,train_acc,26,1.0
+"Smooth, none",Smooth,,2,train_acc,27,1.0
+"Smooth, none",Smooth,,2,train_acc,28,1.0
+"Smooth, none",Smooth,,2,train_acc,29,1.0
+"Smooth, none",Smooth,,2,train_acc,30,1.0
+"Smooth, none",Smooth,,2,train_acc,31,1.0
+"Smooth, none",Smooth,,2,train_acc,32,1.0
+"Smooth, none",Smooth,,2,train_acc,33,1.0
+"Smooth, none",Smooth,,2,train_acc,34,1.0
+"Smooth, none",Smooth,,2,train_acc,35,1.0
+"Smooth, none",Smooth,,2,train_acc,36,1.0
+"Smooth, none",Smooth,,2,train_acc,37,1.0
+"Smooth, none",Smooth,,2,train_acc,38,1.0
+"Smooth, none",Smooth,,2,train_acc,39,1.0
+"Smooth, none",Smooth,,2,train_acc,40,1.0
+"Smooth, none",Smooth,,2,train_acc,41,1.0
+"Smooth, none",Smooth,,2,train_acc,42,1.0
+"Smooth, none",Smooth,,2,train_acc,43,1.0
+"Smooth, none",Smooth,,2,train_acc,44,1.0
+"Smooth, none",Smooth,,2,train_acc,45,1.0
+"Smooth, none",Smooth,,2,train_acc,46,1.0
+"Smooth, none",Smooth,,2,train_acc,47,1.0
+"Smooth, none",Smooth,,2,train_acc,48,1.0
+"Smooth, none",Smooth,,2,train_acc,49,1.0
+"Smooth, prompt_ln",Smooth,,2,valid_acc,0,0.3333333432674408
+"Smooth, prompt_ln",Smooth,,2,valid_acc,1,0.3333333432674408
+"Smooth, prompt_ln",Smooth,,2,valid_acc,2,0.3194444477558136
+"Smooth, prompt_ln",Smooth,,2,valid_acc,3,0.3194444477558136
+"Smooth, prompt_ln",Smooth,,2,valid_acc,4,0.381944477558136
+"Smooth, prompt_ln",Smooth,,2,valid_acc,5,0.3194444477558136
+"Smooth, prompt_ln",Smooth,,2,valid_acc,6,0.3402777910232544
+"Smooth, prompt_ln",Smooth,,2,valid_acc,7,0.3541666865348816
+"Smooth, prompt_ln",Smooth,,2,valid_acc,8,0.3819444179534912
+"Smooth, prompt_ln",Smooth,,2,valid_acc,9,0.375
+"Smooth, prompt_ln",Smooth,,2,valid_acc,10,0.3958333432674408
+"Smooth, prompt_ln",Smooth,,2,valid_acc,11,0.3541666567325592
+"Smooth, prompt_ln",Smooth,,2,valid_acc,12,0.3680555820465088
+"Smooth, prompt_ln",Smooth,,2,valid_acc,13,0.3541666567325592
+"Smooth, prompt_ln",Smooth,,2,valid_acc,14,0.3541666567325592
+"Smooth, prompt_ln",Smooth,,2,valid_acc,15,0.3611111342906952
+"Smooth, prompt_ln",Smooth,,2,valid_acc,16,0.3263888955116272
+"Smooth, prompt_ln",Smooth,,2,valid_acc,17,0.3263888955116272
+"Smooth, prompt_ln",Smooth,,2,valid_acc,18,0.3680555820465088
+"Smooth, prompt_ln",Smooth,,2,valid_acc,19,0.4097222089767456
+"Smooth, prompt_ln",Smooth,,2,valid_acc,20,0.409722238779068
+"Smooth, prompt_ln",Smooth,,2,valid_acc,21,0.4027777314186096
+"Smooth, prompt_ln",Smooth,,2,valid_acc,22,0.3958333134651184
+"Smooth, prompt_ln",Smooth,,2,valid_acc,23,0.3958333432674408
+"Smooth, prompt_ln",Smooth,,2,valid_acc,24,0.3541666567325592
+"Smooth, prompt_ln",Smooth,,2,valid_acc,25,0.3680555522441864
+"Smooth, prompt_ln",Smooth,,2,valid_acc,26,0.409722238779068
+"Smooth, prompt_ln",Smooth,,2,valid_acc,27,0.4097222089767456
+"Smooth, prompt_ln",Smooth,,2,valid_acc,28,0.402777761220932
+"Smooth, prompt_ln",Smooth,,2,valid_acc,29,0.402777761220932
+"Smooth, prompt_ln",Smooth,,2,valid_acc,30,0.4097222089767456
+"Smooth, prompt_ln",Smooth,,2,valid_acc,31,0.4166666567325592
+"Smooth, prompt_ln",Smooth,,2,valid_acc,32,0.3680555522441864
+"Smooth, prompt_ln",Smooth,,2,valid_acc,33,0.402777761220932
+"Smooth, prompt_ln",Smooth,,2,valid_acc,34,0.3680555522441864
+"Smooth, prompt_ln",Smooth,,2,valid_acc,35,0.375
+"Smooth, prompt_ln",Smooth,,2,valid_acc,36,0.3958333432674408
+"Smooth, prompt_ln",Smooth,,2,valid_acc,37,0.3541666567325592
+"Smooth, prompt_ln",Smooth,,2,valid_acc,38,0.4027777910232544
+"Smooth, prompt_ln",Smooth,,2,valid_acc,39,0.4652777910232544
+"Smooth, prompt_ln",Smooth,,2,valid_acc,40,0.4583333134651184
+"Smooth, prompt_ln",Smooth,,2,valid_acc,41,0.4166666865348816
+"Smooth, prompt_ln",Smooth,,2,valid_acc,42,0.409722238779068
+"Smooth, prompt_ln",Smooth,,2,valid_acc,43,0.409722238779068
+"Smooth, prompt_ln",Smooth,,2,valid_acc,44,0.4166666865348816
+"Smooth, prompt_ln",Smooth,,2,valid_acc,45,0.3958333134651184
+"Smooth, prompt_ln",Smooth,,2,valid_acc,46,0.4027777910232544
+"Smooth, prompt_ln",Smooth,,2,valid_acc,47,0.4097222089767456
+"Smooth, prompt_ln",Smooth,,2,valid_acc,48,0.5208333134651184
+"Smooth, prompt_ln",Smooth,,2,valid_acc,49,0.3472222089767456
+"Smooth, prompt_ln",Smooth,,2,train_acc,0,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,1,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,2,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,3,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,4,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,5,0.3125
+"Smooth, prompt_ln",Smooth,,2,train_acc,6,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,7,0.5
+"Smooth, prompt_ln",Smooth,,2,train_acc,8,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,9,0.0
+"Smooth, prompt_ln",Smooth,,2,train_acc,10,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,11,0.1875
+"Smooth, prompt_ln",Smooth,,2,train_acc,12,0.125
+"Smooth, prompt_ln",Smooth,,2,train_acc,13,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,14,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,15,0.625
+"Smooth, prompt_ln",Smooth,,2,train_acc,16,0.75
+"Smooth, prompt_ln",Smooth,,2,train_acc,17,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,18,0.125
+"Smooth, prompt_ln",Smooth,,2,train_acc,19,0.5
+"Smooth, prompt_ln",Smooth,,2,train_acc,20,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,21,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,22,0.625
+"Smooth, prompt_ln",Smooth,,2,train_acc,23,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,24,0.5
+"Smooth, prompt_ln",Smooth,,2,train_acc,25,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,26,0.625
+"Smooth, prompt_ln",Smooth,,2,train_acc,27,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,28,0.625
+"Smooth, prompt_ln",Smooth,,2,train_acc,29,0.125
+"Smooth, prompt_ln",Smooth,,2,train_acc,30,0.5
+"Smooth, prompt_ln",Smooth,,2,train_acc,31,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,32,0.5
+"Smooth, prompt_ln",Smooth,,2,train_acc,33,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,34,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,35,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,36,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,37,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,38,0.5625
+"Smooth, prompt_ln",Smooth,,2,train_acc,39,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,40,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,41,0.25
+"Smooth, prompt_ln",Smooth,,2,train_acc,42,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,43,0.75
+"Smooth, prompt_ln",Smooth,,2,train_acc,44,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,45,0.5
+"Smooth, prompt_ln",Smooth,,2,train_acc,46,0.375
+"Smooth, prompt_ln",Smooth,,2,train_acc,47,0.5
+"Smooth, prompt_ln",Smooth,,2,train_acc,48,0.5
+"Smooth, prompt_ln",Smooth,,2,train_acc,49,0.4375
+"Smooth, prompt_ln",Smooth,,3,valid_acc,0,0.3333333432674408
+"Smooth, prompt_ln",Smooth,,3,valid_acc,1,0.3333333432674408
+"Smooth, prompt_ln",Smooth,,3,valid_acc,2,0.3472222089767456
+"Smooth, prompt_ln",Smooth,,3,valid_acc,3,0.3541666567325592
+"Smooth, prompt_ln",Smooth,,3,valid_acc,4,0.4236111044883728
+"Smooth, prompt_ln",Smooth,,3,valid_acc,5,0.375
+"Smooth, prompt_ln",Smooth,,3,valid_acc,6,0.409722238779068
+"Smooth, prompt_ln",Smooth,,3,valid_acc,7,0.4375
+"Smooth, prompt_ln",Smooth,,3,valid_acc,8,0.402777761220932
+"Smooth, prompt_ln",Smooth,,3,valid_acc,9,0.444444477558136
+"Smooth, prompt_ln",Smooth,,3,valid_acc,10,0.4583333134651184
+"Smooth, prompt_ln",Smooth,,3,valid_acc,11,0.4513888657093048
+"Smooth, prompt_ln",Smooth,,3,valid_acc,12,0.4583333432674408
+"Smooth, prompt_ln",Smooth,,3,valid_acc,13,0.4583333134651184
+"Smooth, prompt_ln",Smooth,,3,valid_acc,14,0.4583333134651184
+"Smooth, prompt_ln",Smooth,,3,valid_acc,15,0.4236111044883728
+"Smooth, prompt_ln",Smooth,,3,valid_acc,16,0.3958333432674408
+"Smooth, prompt_ln",Smooth,,3,valid_acc,17,0.375
+"Smooth, prompt_ln",Smooth,,3,valid_acc,18,0.430555522441864
+"Smooth, prompt_ln",Smooth,,3,valid_acc,19,0.4791666567325592
+"Smooth, prompt_ln",Smooth,,3,valid_acc,20,0.4722222089767456
+"Smooth, prompt_ln",Smooth,,3,valid_acc,21,0.4097222089767456
+"Smooth, prompt_ln",Smooth,,3,valid_acc,22,0.4166666567325592
+"Smooth, prompt_ln",Smooth,,3,valid_acc,23,0.5138888955116272
+"Smooth, prompt_ln",Smooth,,3,valid_acc,24,0.4375
+"Smooth, prompt_ln",Smooth,,3,valid_acc,25,0.4513888955116272
+"Smooth, prompt_ln",Smooth,,3,valid_acc,26,0.4791666269302368
+"Smooth, prompt_ln",Smooth,,3,valid_acc,27,0.4583333134651184
+"Smooth, prompt_ln",Smooth,,3,valid_acc,28,0.465277761220932
+"Smooth, prompt_ln",Smooth,,3,valid_acc,29,0.4583333134651184
+"Smooth, prompt_ln",Smooth,,3,valid_acc,30,0.4583333134651184
+"Smooth, prompt_ln",Smooth,,3,valid_acc,31,0.5347222685813904
+"Smooth, prompt_ln",Smooth,,3,valid_acc,32,0.3611111044883728
+"Smooth, prompt_ln",Smooth,,3,valid_acc,33,0.4236111342906952
+"Smooth, prompt_ln",Smooth,,3,valid_acc,34,0.4861111044883728
+"Smooth, prompt_ln",Smooth,,3,valid_acc,35,0.375
+"Smooth, prompt_ln",Smooth,,3,valid_acc,36,0.4791666567325592
+"Smooth, prompt_ln",Smooth,,3,valid_acc,37,0.375
+"Smooth, prompt_ln",Smooth,,3,valid_acc,38,0.5416666865348816
+"Smooth, prompt_ln",Smooth,,3,valid_acc,39,0.5277777910232544
+"Smooth, prompt_ln",Smooth,,3,valid_acc,40,0.5208333730697632
+"Smooth, prompt_ln",Smooth,,3,valid_acc,41,0.5138888955116272
+"Smooth, prompt_ln",Smooth,,3,valid_acc,42,0.5138888955116272
+"Smooth, prompt_ln",Smooth,,3,valid_acc,43,0.5138888955116272
+"Smooth, prompt_ln",Smooth,,3,valid_acc,44,0.5208333134651184
+"Smooth, prompt_ln",Smooth,,3,valid_acc,45,0.4791666567325592
+"Smooth, prompt_ln",Smooth,,3,valid_acc,46,0.4513888955116272
+"Smooth, prompt_ln",Smooth,,3,valid_acc,47,0.3958333432674408
+"Smooth, prompt_ln",Smooth,,3,valid_acc,48,0.5277777910232544
+"Smooth, prompt_ln",Smooth,,3,valid_acc,49,0.4236111342906952
+"Smooth, prompt_ln",Smooth,,3,train_acc,0,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,1,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,2,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,3,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,4,0.0
+"Smooth, prompt_ln",Smooth,,3,train_acc,5,0.3125
+"Smooth, prompt_ln",Smooth,,3,train_acc,6,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,7,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,8,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,9,0.0
+"Smooth, prompt_ln",Smooth,,3,train_acc,10,0.5
+"Smooth, prompt_ln",Smooth,,3,train_acc,11,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,12,0.125
+"Smooth, prompt_ln",Smooth,,3,train_acc,13,0.5
+"Smooth, prompt_ln",Smooth,,3,train_acc,14,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,15,0.625
+"Smooth, prompt_ln",Smooth,,3,train_acc,16,0.5
+"Smooth, prompt_ln",Smooth,,3,train_acc,17,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,18,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,19,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,20,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,21,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,22,0.6875
+"Smooth, prompt_ln",Smooth,,3,train_acc,23,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,24,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,25,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,26,0.625
+"Smooth, prompt_ln",Smooth,,3,train_acc,27,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,28,0.5
+"Smooth, prompt_ln",Smooth,,3,train_acc,29,0.125
+"Smooth, prompt_ln",Smooth,,3,train_acc,30,0.75
+"Smooth, prompt_ln",Smooth,,3,train_acc,31,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,32,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,33,0.4375
+"Smooth, prompt_ln",Smooth,,3,train_acc,34,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,35,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,36,0.125
+"Smooth, prompt_ln",Smooth,,3,train_acc,37,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,38,0.5625
+"Smooth, prompt_ln",Smooth,,3,train_acc,39,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,40,0.625
+"Smooth, prompt_ln",Smooth,,3,train_acc,41,0.5
+"Smooth, prompt_ln",Smooth,,3,train_acc,42,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,43,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,44,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,45,0.375
+"Smooth, prompt_ln",Smooth,,3,train_acc,46,0.625
+"Smooth, prompt_ln",Smooth,,3,train_acc,47,0.25
+"Smooth, prompt_ln",Smooth,,3,train_acc,48,0.5
+"Smooth, prompt_ln",Smooth,,3,train_acc,49,0.4375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,0,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,1,0.3402777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,2,0.3263888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,3,0.3125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,4,0.4097222089767456
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,5,0.347222238779068
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,6,0.3611111044883728
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,7,0.3749999701976776
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,8,0.3819444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,9,0.3750000298023224
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,10,0.3611111342906952
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,11,0.381944477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,12,0.402777761220932
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,13,0.3958333134651184
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,14,0.3958333134651184
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,15,0.3611111044883728
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,16,0.3680555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,17,0.3680555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,18,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,19,0.4166666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,20,0.5069444179534912
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,21,0.3333333134651184
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,22,0.4027777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,23,0.3819444179534912
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,24,0.3680555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,25,0.3819444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,26,0.340277761220932
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,27,0.347222238779068
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,28,0.3263888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,29,0.3263888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,30,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,31,0.4166666567325592
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,32,0.3611111342906952
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,33,0.3958333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,34,0.3680555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,35,0.3611111342906952
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,36,0.3958333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,37,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,38,0.3819444179534912
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,39,0.4375000298023224
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,40,0.493055522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,41,0.4097222089767456
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,42,0.4027777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,43,0.4027777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,44,0.4097222089767456
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,45,0.3680555820465088
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,46,0.3888888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,47,0.3680555820465088
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,48,0.5277777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,49,0.3263888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,0,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,1,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,2,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,3,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,4,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,5,0.3125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,6,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,7,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,8,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,9,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,10,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,11,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,12,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,13,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,14,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,15,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,16,0.5625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,17,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,18,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,19,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,20,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,21,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,22,0.5625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,23,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,24,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,25,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,26,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,27,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,28,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,29,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,30,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,31,0.0
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,32,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,33,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,34,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,35,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,36,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,37,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,38,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,39,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,40,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,41,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,42,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,43,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,44,0.3125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,45,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,46,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,47,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,48,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,train_acc,49,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,0,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,1,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,2,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,3,0.3402777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,4,0.3888888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,5,0.3611111044883728
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,6,0.4166666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,7,0.409722238779068
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,8,0.4513888657093048
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,9,0.4444444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,10,0.4583333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,11,0.4305555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,12,0.4166666567325592
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,13,0.4375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,14,0.4375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,15,0.4305555820465088
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,16,0.3541666567325592
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,17,0.4027777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,18,0.4444444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,19,0.4444444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,20,0.4513888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,21,0.4513888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,22,0.3611111044883728
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,23,0.4305555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,24,0.4166666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,25,0.4444444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,26,0.4861111342906952
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,27,0.4791666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,28,0.4791666567325592
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,29,0.4861111342906952
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,30,0.4861111342906952
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,31,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,32,0.347222238779068
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,33,0.3749999701976776
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,34,0.4166666269302368
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,35,0.3402777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,36,0.465277761220932
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,37,0.3472222089767456
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,38,0.4305555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,39,0.4583333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,40,0.4791666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,41,0.4583333134651184
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,42,0.4583333134651184
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,43,0.4583333134651184
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,44,0.4583333134651184
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,45,0.4791666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,46,0.430555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,47,0.3541666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,48,0.430555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,49,0.3402777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,0,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,1,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,2,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,3,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,4,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,5,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,6,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,7,0.75
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,8,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,9,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,10,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,11,0.1875
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,12,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,13,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,14,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,15,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,16,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,17,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,18,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,19,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,20,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,21,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,22,0.5625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,23,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,24,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,25,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,26,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,27,0.3125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,28,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,29,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,30,0.75
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,31,0.0
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,32,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,33,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,34,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,35,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,36,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,37,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,38,0.5625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,39,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,40,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,41,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,42,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,43,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,44,0.3125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,45,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,46,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,47,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,48,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,train_acc,49,0.4375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,0,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,1,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,2,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,3,0.3263888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,4,0.4444444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,5,0.4166666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,6,0.4305555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,7,0.4513888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,8,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,9,0.4027777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,10,0.4166666567325592
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,11,0.4444444179534912
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,12,0.4513888657093048
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,13,0.4513888657093048
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,14,0.4583333134651184
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,15,0.4097222089767456
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,16,0.3958333134651184
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,17,0.4305555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,18,0.4166666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,19,0.4375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,20,0.4861111044883728
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,21,0.3888888657093048
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,22,0.3611111342906952
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,23,0.4791666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,24,0.4375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,25,0.4444444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,26,0.4166666567325592
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,27,0.3888888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,28,0.3819444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,29,0.3888888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,30,0.3888888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,31,0.4513888657093048
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,32,0.3402777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,33,0.3888888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,34,0.4305555522441864
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,35,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,36,0.4583333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,37,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,38,0.4444444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,39,0.4861111044883728
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,40,0.506944477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,41,0.4722222089767456
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,42,0.4930555820465088
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,43,0.4861111342906952
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,44,0.4583333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,45,0.4375000298023224
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,46,0.4652777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,47,0.347222238779068
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,48,0.4513888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,49,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,0,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,1,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,2,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,3,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,4,0.0
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,5,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,6,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,7,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,8,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,9,0.0
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,10,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,11,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,12,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,13,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,14,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,15,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,16,0.5625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,17,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,18,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,19,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,20,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,21,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,22,0.5625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,23,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,24,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,25,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,26,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,27,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,28,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,29,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,30,0.875
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,31,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,32,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,33,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,34,0.0
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,35,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,36,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,37,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,38,0.5625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,39,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,40,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,41,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,42,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,43,0.75
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,44,0.3125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,45,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,46,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,47,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,48,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,train_acc,49,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,0,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,1,0.33898305892944336
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,2,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,3,0.41642314195632935
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,4,0.33917784690856934
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,5,0.3506721258163452
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,6,0.33372294902801514
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,7,0.34521719813346863
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,8,0.39791542291641235
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,9,0.404052197933197
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,10,0.3981102705001831
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,11,0.39197349548339844
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,12,0.39197349548339844
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,13,0.397623211145401
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,14,0.3863237798213959
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,15,0.40872782468795776
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,16,0.37054356932640076
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,17,0.36635497212409973
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,18,0.3567114770412445
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,19,0.3830118775367737
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,20,0.4194428324699402
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,21,0.3795051574707031
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,22,0.3852522671222687
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,23,0.4025910496711731
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,24,0.4101889729499817
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,25,0.4096045196056366
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,26,0.393142431974411
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,27,0.39840248227119446
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,28,0.404052197933197
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,29,0.39840248227119446
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,30,0.39840248227119446
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,31,0.4167153835296631
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,32,0.40278589725494385
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,33,0.41535162925720215
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,34,0.43668419122695923
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,35,0.39285019040107727
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,36,0.4138904809951782
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,37,0.4063900113105774
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,38,0.443405419588089
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,39,0.3927527666091919
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,40,0.42061173915863037
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,41,0.4499318301677704
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,42,0.4210013449192047
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,43,0.4210013449192047
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,44,0.4210013449192047
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,45,0.42031949758529663
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,46,0.3796999752521515
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,47,0.414085328578949
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,48,0.3966491222381592
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,49,0.42626142501831055
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,0,0.3125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,1,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,2,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,3,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,4,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,5,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,6,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,7,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,8,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,9,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,10,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,11,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,12,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,13,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,14,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,15,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,16,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,17,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,18,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,19,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,20,0.3125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,21,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,22,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,23,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,24,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,25,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,26,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,27,0.75
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,28,0.0
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,29,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,30,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,31,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,32,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,33,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,34,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,35,0.125
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,36,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,37,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,38,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,39,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,40,0.5625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,41,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,42,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,43,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,44,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,45,0.75
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,46,0.625
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,47,0.5
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,48,0.25
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,train_acc,49,0.3125
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,0,0.3333333432674408
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,1,0.3333333432674408
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,2,0.3680555820465088
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,3,0.5555555820465088
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,4,0.6666666865348816
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,5,0.7291666269302368
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,6,0.7222222089767456
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,7,0.6388888955116272
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,8,0.743055522441864
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,9,0.75
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,10,0.826388955116272
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,11,0.8125
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,12,0.8472222685813904
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,13,0.8541666269302368
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,14,0.868055522441864
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,15,0.8125
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,16,0.7083333730697632
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,17,0.8125
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,18,0.7569444179534912
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,19,0.8402777910232544
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,20,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,21,0.8611111640930176
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,22,0.8888888359069824
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,23,0.8819444179534912
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,24,0.8541666269302368
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,25,0.8680555820465088
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,26,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,27,0.8611111640930176
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,28,0.8680555820465088
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,29,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,30,0.8611111640930176
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,31,0.7986111640930176
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,32,0.7986111044883728
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,33,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,34,0.8263888955116272
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,35,0.8402777910232544
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,36,0.8402777910232544
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,37,0.8333333730697632
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,38,0.8541666269302368
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,39,0.8541666269302368
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,40,0.8611111640930176
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,41,0.8680555820465088
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,42,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,43,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,44,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,45,0.8680555820465088
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,46,0.8888888359069824
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,47,0.8333333730697632
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,48,0.7083333730697632
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,49,0.8819444179534912
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,0,0.25
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,1,0.375
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,2,0.625
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,3,0.625
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,4,0.75
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,5,0.75
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,6,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,7,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,8,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,9,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,10,0.75
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,11,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,12,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,13,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,14,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,15,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,16,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,17,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,18,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,19,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,20,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,21,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,22,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,23,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,24,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,25,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,26,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,27,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,28,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,29,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,30,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,31,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,32,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,33,0.9375
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,34,0.875
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,35,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,36,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,37,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,38,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,39,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,40,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,41,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,42,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,43,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,44,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,45,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,46,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,47,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,48,1.0
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,train_acc,49,0.9375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,0,0.3333333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,1,0.3194444477558136
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,2,0.3055555522441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,3,0.2986111342906952
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,4,0.3472222089767456
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,5,0.2916666567325592
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,6,0.2916666567325592
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,7,0.3194444477558136
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,8,0.3333333134651184
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,9,0.3125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,10,0.340277761220932
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,11,0.3055555522441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,12,0.3194444477558136
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,13,0.3125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,14,0.3125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,15,0.3333333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,16,0.3055555820465088
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,17,0.2986111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,18,0.3125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,19,0.3611111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,20,0.3958333134651184
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,21,0.3333333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,22,0.3819444179534912
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,23,0.3541666567325592
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,24,0.3125000298023224
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,25,0.3333333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,26,0.3541666567325592
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,27,0.3333333134651184
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,28,0.3333333134651184
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,29,0.3333333134651184
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,30,0.3333333134651184
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,31,0.3472222089767456
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,32,0.3611111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,33,0.3958333134651184
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,34,0.3611111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,35,0.3680555522441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,36,0.3402777910232544
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,37,0.3402777910232544
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,38,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,39,0.402777761220932
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,40,0.3958333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,41,0.3611111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,42,0.3611111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,43,0.3611111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,44,0.3611111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,45,0.3680555522441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,46,0.347222238779068
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,47,0.3680555522441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,48,0.4861111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,49,0.3333333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,0,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,1,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,2,0.125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,3,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,4,0.125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,5,0.1875
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,6,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,7,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,8,0.125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,9,0.125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,10,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,11,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,12,0.125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,13,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,14,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,15,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,16,0.5625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,17,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,18,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,19,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,20,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,21,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,22,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,23,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,24,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,25,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,26,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,27,0.1875
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,28,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,29,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,30,0.75
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,31,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,32,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,33,0.4375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,34,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,35,0.125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,36,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,37,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,38,0.5625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,39,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,40,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,41,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,42,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,43,0.75
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,44,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,45,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,46,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,47,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,48,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,train_acc,49,0.3125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,0,0.3333333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,1,0.3333333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,2,0.3680555522441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,3,0.3888888955116272
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,4,0.3541666567325592
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,5,0.3472222089767456
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,6,0.3333333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,7,0.3680555820465088
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,8,0.3819444477558136
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,9,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,10,0.3888888657093048
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,11,0.3541666865348816
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,12,0.3819444477558136
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,13,0.3611111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,14,0.3611111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,15,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,16,0.340277761220932
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,17,0.3333333134651184
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,18,0.3819444477558136
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,19,0.4027777910232544
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,20,0.4375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,21,0.4097222089767456
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,22,0.402777761220932
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,23,0.4375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,24,0.4027777910232544
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,25,0.402777761220932
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,26,0.4652777910232544
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,27,0.4305555522441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,28,0.4375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,29,0.4375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,30,0.4375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,31,0.4583333730697632
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,32,0.3402777910232544
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,33,0.4027777910232544
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,34,0.4236111342906952
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,35,0.3541666865348816
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,36,0.4444444179534912
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,37,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,38,0.472222238779068
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,39,0.5208333134651184
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,40,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,41,0.4791666567325592
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,42,0.472222238779068
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,43,0.472222238779068
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,44,0.472222238779068
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,45,0.4375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,46,0.4375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,47,0.3958333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,48,0.4513888955116272
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,49,0.4305555522441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,0,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,1,0.125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,2,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,3,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,4,0.0
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,5,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,6,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,7,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,8,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,9,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,10,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,11,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,12,0.125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,13,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,14,0.75
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,15,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,16,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,17,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,18,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,19,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,20,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,21,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,22,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,23,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,24,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,25,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,26,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,27,0.3125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,28,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,29,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,30,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,31,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,32,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,33,0.4375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,34,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,35,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,36,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,37,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,38,0.5625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,39,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,40,0.125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,41,0.5
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,42,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,43,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,44,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,45,0.25
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,46,0.625
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,47,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,48,0.375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,train_acc,49,0.4375
+"AFNI, none",AFNI,,5,valid_acc,0,0.3333333432674408
+"AFNI, none",AFNI,,5,valid_acc,1,0.42889147996902466
+"AFNI, none",AFNI,,5,valid_acc,2,0.3502824902534485
+"AFNI, none",AFNI,,5,valid_acc,3,0.5471459031105042
+"AFNI, none",AFNI,,5,valid_acc,4,0.6039353013038635
+"AFNI, none",AFNI,,5,valid_acc,5,0.51412433385849
+"AFNI, none",AFNI,,5,valid_acc,6,0.6634521484375
+"AFNI, none",AFNI,,5,valid_acc,7,0.6946230530738831
+"AFNI, none",AFNI,,5,valid_acc,8,0.669101893901825
+"AFNI, none",AFNI,,5,valid_acc,9,0.8075200319290161
+"AFNI, none",AFNI,,5,valid_acc,10,0.8066433072090149
+"AFNI, none",AFNI,,5,valid_acc,11,0.8299239873886108
+"AFNI, none",AFNI,,5,valid_acc,12,0.8243716955184937
+"AFNI, none",AFNI,,5,valid_acc,13,0.8242743015289307
+"AFNI, none",AFNI,,5,valid_acc,14,0.8242743015289307
+"AFNI, none",AFNI,,5,valid_acc,15,0.7889149188995361
+"AFNI, none",AFNI,,5,valid_acc,16,0.795051634311676
+"AFNI, none",AFNI,,5,valid_acc,17,0.8528151512145996
+"AFNI, none",AFNI,,5,valid_acc,18,0.8189167976379395
+"AFNI, none",AFNI,,5,valid_acc,19,0.8583674430847168
+"AFNI, none",AFNI,,5,valid_acc,20,0.8301188945770264
+"AFNI, none",AFNI,,5,valid_acc,21,0.8355737328529358
+"AFNI, none",AFNI,,5,valid_acc,22,0.8643094301223755
+"AFNI, none",AFNI,,5,valid_acc,23,0.8751218318939209
+"AFNI, none",AFNI,,5,valid_acc,24,0.880966305732727
+"AFNI, none",AFNI,,5,valid_acc,25,0.8695694208145142
+"AFNI, none",AFNI,,5,valid_acc,26,0.8753166198730469
+"AFNI, none",AFNI,,5,valid_acc,27,0.8696669340133667
+"AFNI, none",AFNI,,5,valid_acc,28,0.864017128944397
+"AFNI, none",AFNI,,5,valid_acc,29,0.864017128944397
+"AFNI, none",AFNI,,5,valid_acc,30,0.8694720268249512
+"AFNI, none",AFNI,,5,valid_acc,31,0.8018702864646912
+"AFNI, none",AFNI,,5,valid_acc,32,0.8356711864471436
+"AFNI, none",AFNI,,5,valid_acc,33,0.8305084705352783
+"AFNI, none",AFNI,,5,valid_acc,34,0.8021625280380249
+"AFNI, none",AFNI,,5,valid_acc,35,0.8470680713653564
+"AFNI, none",AFNI,,5,valid_acc,36,0.8807715177536011
+"AFNI, none",AFNI,,5,valid_acc,37,0.8583674430847168
+"AFNI, none",AFNI,,5,valid_acc,38,0.8807715177536011
+"AFNI, none",AFNI,,5,valid_acc,39,0.863919734954834
+"AFNI, none",AFNI,,5,valid_acc,40,0.8695694208145142
+"AFNI, none",AFNI,,5,valid_acc,41,0.863822340965271
+"AFNI, none",AFNI,,5,valid_acc,42,0.8751218318939209
+"AFNI, none",AFNI,,5,valid_acc,43,0.8751218318939209
+"AFNI, none",AFNI,,5,valid_acc,44,0.8751218318939209
+"AFNI, none",AFNI,,5,valid_acc,45,0.8580751419067383
+"AFNI, none",AFNI,,5,valid_acc,46,0.8751217126846313
+"AFNI, none",AFNI,,5,valid_acc,47,0.8187220096588135
+"AFNI, none",AFNI,,5,valid_acc,48,0.88106369972229
+"AFNI, none",AFNI,,5,valid_acc,49,0.88106369972229
+"AFNI, none",AFNI,,5,train_acc,0,0.375
+"AFNI, none",AFNI,,5,train_acc,1,0.625
+"AFNI, none",AFNI,,5,train_acc,2,0.375
+"AFNI, none",AFNI,,5,train_acc,3,0.625
+"AFNI, none",AFNI,,5,train_acc,4,0.625
+"AFNI, none",AFNI,,5,train_acc,5,0.75
+"AFNI, none",AFNI,,5,train_acc,6,0.75
+"AFNI, none",AFNI,,5,train_acc,7,0.75
+"AFNI, none",AFNI,,5,train_acc,8,0.75
+"AFNI, none",AFNI,,5,train_acc,9,1.0
+"AFNI, none",AFNI,,5,train_acc,10,0.875
+"AFNI, none",AFNI,,5,train_acc,11,1.0
+"AFNI, none",AFNI,,5,train_acc,12,0.875
+"AFNI, none",AFNI,,5,train_acc,13,0.875
+"AFNI, none",AFNI,,5,train_acc,14,0.875
+"AFNI, none",AFNI,,5,train_acc,15,0.875
+"AFNI, none",AFNI,,5,train_acc,16,0.75
+"AFNI, none",AFNI,,5,train_acc,17,0.875
+"AFNI, none",AFNI,,5,train_acc,18,0.875
+"AFNI, none",AFNI,,5,train_acc,19,1.0
+"AFNI, none",AFNI,,5,train_acc,20,0.9375
+"AFNI, none",AFNI,,5,train_acc,21,1.0
+"AFNI, none",AFNI,,5,train_acc,22,1.0
+"AFNI, none",AFNI,,5,train_acc,23,1.0
+"AFNI, none",AFNI,,5,train_acc,24,1.0
+"AFNI, none",AFNI,,5,train_acc,25,1.0
+"AFNI, none",AFNI,,5,train_acc,26,1.0
+"AFNI, none",AFNI,,5,train_acc,27,1.0
+"AFNI, none",AFNI,,5,train_acc,28,1.0
+"AFNI, none",AFNI,,5,train_acc,29,1.0
+"AFNI, none",AFNI,,5,train_acc,30,1.0
+"AFNI, none",AFNI,,5,train_acc,31,1.0
+"AFNI, none",AFNI,,5,train_acc,32,1.0
+"AFNI, none",AFNI,,5,train_acc,33,1.0
+"AFNI, none",AFNI,,5,train_acc,34,1.0
+"AFNI, none",AFNI,,5,train_acc,35,1.0
+"AFNI, none",AFNI,,5,train_acc,36,1.0
+"AFNI, none",AFNI,,5,train_acc,37,1.0
+"AFNI, none",AFNI,,5,train_acc,38,1.0
+"AFNI, none",AFNI,,5,train_acc,39,1.0
+"AFNI, none",AFNI,,5,train_acc,40,1.0
+"AFNI, none",AFNI,,5,train_acc,41,1.0
+"AFNI, none",AFNI,,5,train_acc,42,1.0
+"AFNI, none",AFNI,,5,train_acc,43,1.0
+"AFNI, none",AFNI,,5,train_acc,44,1.0
+"AFNI, none",AFNI,,5,train_acc,45,1.0
+"AFNI, none",AFNI,,5,train_acc,46,0.875
+"AFNI, none",AFNI,,5,train_acc,47,1.0
+"AFNI, none",AFNI,,5,train_acc,48,1.0
+"AFNI, none",AFNI,,5,train_acc,49,1.0
+"AFNI, prompt_ln",AFNI,,3,valid_acc,0,0.3333333432674408
+"AFNI, prompt_ln",AFNI,,3,valid_acc,1,0.3333333432674408
+"AFNI, prompt_ln",AFNI,,3,valid_acc,2,0.3541666865348816
+"AFNI, prompt_ln",AFNI,,3,valid_acc,3,0.375
+"AFNI, prompt_ln",AFNI,,3,valid_acc,4,0.4791666865348816
+"AFNI, prompt_ln",AFNI,,3,valid_acc,5,0.3750000298023224
+"AFNI, prompt_ln",AFNI,,3,valid_acc,6,0.4097222089767456
+"AFNI, prompt_ln",AFNI,,3,valid_acc,7,0.4444444477558136
+"AFNI, prompt_ln",AFNI,,3,valid_acc,8,0.4374999701976776
+"AFNI, prompt_ln",AFNI,,3,valid_acc,9,0.4444444477558136
+"AFNI, prompt_ln",AFNI,,3,valid_acc,10,0.4652777910232544
+"AFNI, prompt_ln",AFNI,,3,valid_acc,11,0.4722222089767456
+"AFNI, prompt_ln",AFNI,,3,valid_acc,12,0.472222238779068
+"AFNI, prompt_ln",AFNI,,3,valid_acc,13,0.4722222089767456
+"AFNI, prompt_ln",AFNI,,3,valid_acc,14,0.4722222089767456
+"AFNI, prompt_ln",AFNI,,3,valid_acc,15,0.409722238779068
+"AFNI, prompt_ln",AFNI,,3,valid_acc,16,0.3680555522441864
+"AFNI, prompt_ln",AFNI,,3,valid_acc,17,0.402777761220932
+"AFNI, prompt_ln",AFNI,,3,valid_acc,18,0.4236111044883728
+"AFNI, prompt_ln",AFNI,,3,valid_acc,19,0.4652777910232544
+"AFNI, prompt_ln",AFNI,,3,valid_acc,20,0.5416666269302368
+"AFNI, prompt_ln",AFNI,,3,valid_acc,21,0.4236111044883728
+"AFNI, prompt_ln",AFNI,,3,valid_acc,22,0.4583333134651184
+"AFNI, prompt_ln",AFNI,,3,valid_acc,23,0.5138888955116272
+"AFNI, prompt_ln",AFNI,,3,valid_acc,24,0.4305555522441864
+"AFNI, prompt_ln",AFNI,,3,valid_acc,25,0.4722222089767456
+"AFNI, prompt_ln",AFNI,,3,valid_acc,26,0.5208333134651184
+"AFNI, prompt_ln",AFNI,,3,valid_acc,27,0.472222238779068
+"AFNI, prompt_ln",AFNI,,3,valid_acc,28,0.4722222089767456
+"AFNI, prompt_ln",AFNI,,3,valid_acc,29,0.4791666567325592
+"AFNI, prompt_ln",AFNI,,3,valid_acc,30,0.4722222089767456
+"AFNI, prompt_ln",AFNI,,3,valid_acc,31,0.5416666269302368
+"AFNI, prompt_ln",AFNI,,3,valid_acc,32,0.3958333432674408
+"AFNI, prompt_ln",AFNI,,3,valid_acc,33,0.4722222089767456
+"AFNI, prompt_ln",AFNI,,3,valid_acc,34,0.4583333134651184
+"AFNI, prompt_ln",AFNI,,3,valid_acc,35,0.409722238779068
+"AFNI, prompt_ln",AFNI,,3,valid_acc,36,0.4930555522441864
+"AFNI, prompt_ln",AFNI,,3,valid_acc,37,0.4097222089767456
+"AFNI, prompt_ln",AFNI,,3,valid_acc,38,0.5208333134651184
+"AFNI, prompt_ln",AFNI,,3,valid_acc,39,0.5763888955116272
+"AFNI, prompt_ln",AFNI,,3,valid_acc,40,0.5833333134651184
+"AFNI, prompt_ln",AFNI,,3,valid_acc,41,0.5069444179534912
+"AFNI, prompt_ln",AFNI,,3,valid_acc,42,0.5069444179534912
+"AFNI, prompt_ln",AFNI,,3,valid_acc,43,0.5
+"AFNI, prompt_ln",AFNI,,3,valid_acc,44,0.5138888955116272
+"AFNI, prompt_ln",AFNI,,3,valid_acc,45,0.4791666865348816
+"AFNI, prompt_ln",AFNI,,3,valid_acc,46,0.4791666865348816
+"AFNI, prompt_ln",AFNI,,3,valid_acc,47,0.4652777910232544
+"AFNI, prompt_ln",AFNI,,3,valid_acc,48,0.5347222089767456
+"AFNI, prompt_ln",AFNI,,3,valid_acc,49,0.4166666567325592
+"AFNI, prompt_ln",AFNI,,3,train_acc,0,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,1,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,2,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,3,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,4,0.125
+"AFNI, prompt_ln",AFNI,,3,train_acc,5,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,6,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,7,0.5
+"AFNI, prompt_ln",AFNI,,3,train_acc,8,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,9,0.5
+"AFNI, prompt_ln",AFNI,,3,train_acc,10,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,11,0.3125
+"AFNI, prompt_ln",AFNI,,3,train_acc,12,0.125
+"AFNI, prompt_ln",AFNI,,3,train_acc,13,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,14,0.5
+"AFNI, prompt_ln",AFNI,,3,train_acc,15,0.5
+"AFNI, prompt_ln",AFNI,,3,train_acc,16,0.5
+"AFNI, prompt_ln",AFNI,,3,train_acc,17,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,18,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,19,0.5
+"AFNI, prompt_ln",AFNI,,3,train_acc,20,0.125
+"AFNI, prompt_ln",AFNI,,3,train_acc,21,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,22,0.75
+"AFNI, prompt_ln",AFNI,,3,train_acc,23,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,24,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,25,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,26,0.625
+"AFNI, prompt_ln",AFNI,,3,train_acc,27,0.1875
+"AFNI, prompt_ln",AFNI,,3,train_acc,28,0.75
+"AFNI, prompt_ln",AFNI,,3,train_acc,29,0.125
+"AFNI, prompt_ln",AFNI,,3,train_acc,30,0.75
+"AFNI, prompt_ln",AFNI,,3,train_acc,31,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,32,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,33,0.5
+"AFNI, prompt_ln",AFNI,,3,train_acc,34,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,35,0.5
+"AFNI, prompt_ln",AFNI,,3,train_acc,36,0.5
+"AFNI, prompt_ln",AFNI,,3,train_acc,37,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,38,0.5625
+"AFNI, prompt_ln",AFNI,,3,train_acc,39,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,40,0.625
+"AFNI, prompt_ln",AFNI,,3,train_acc,41,0.5
+"AFNI, prompt_ln",AFNI,,3,train_acc,42,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,43,0.75
+"AFNI, prompt_ln",AFNI,,3,train_acc,44,0.3125
+"AFNI, prompt_ln",AFNI,,3,train_acc,45,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,46,0.625
+"AFNI, prompt_ln",AFNI,,3,train_acc,47,0.375
+"AFNI, prompt_ln",AFNI,,3,train_acc,48,0.25
+"AFNI, prompt_ln",AFNI,,3,train_acc,49,0.4375
+"AFNI, prompt_ln",AFNI,,5,valid_acc,0,0.3333333432674408
+"AFNI, prompt_ln",AFNI,,5,valid_acc,1,0.3333333134651184
+"AFNI, prompt_ln",AFNI,,5,valid_acc,2,0.33898305892944336
+"AFNI, prompt_ln",AFNI,,5,valid_acc,3,0.4902591109275818
+"AFNI, prompt_ln",AFNI,,5,valid_acc,4,0.3506721258163452
+"AFNI, prompt_ln",AFNI,,5,valid_acc,5,0.3507695496082306
+"AFNI, prompt_ln",AFNI,,5,valid_acc,6,0.36255601048469543
+"AFNI, prompt_ln",AFNI,,5,valid_acc,7,0.32875511050224304
+"AFNI, prompt_ln",AFNI,,5,valid_acc,8,0.4432106018066406
+"AFNI, prompt_ln",AFNI,,5,valid_acc,9,0.38700565695762634
+"AFNI, prompt_ln",AFNI,,5,valid_acc,10,0.43220335245132446
+"AFNI, prompt_ln",AFNI,,5,valid_acc,11,0.3752191960811615
+"AFNI, prompt_ln",AFNI,,5,valid_acc,12,0.3752191960811615
+"AFNI, prompt_ln",AFNI,,5,valid_acc,13,0.3808688819408417
+"AFNI, prompt_ln",AFNI,,5,valid_acc,14,0.38086891174316406
+"AFNI, prompt_ln",AFNI,,5,valid_acc,15,0.35213324427604675
+"AFNI, prompt_ln",AFNI,,5,valid_acc,16,0.30245471000671387
+"AFNI, prompt_ln",AFNI,,5,valid_acc,17,0.3490161895751953
+"AFNI, prompt_ln",AFNI,,5,valid_acc,18,0.3289499282836914
+"AFNI, prompt_ln",AFNI,,5,valid_acc,19,0.3658679127693176
+"AFNI, prompt_ln",AFNI,,5,valid_acc,20,0.4198324680328369
+"AFNI, prompt_ln",AFNI,,5,valid_acc,21,0.4025910496711731
+"AFNI, prompt_ln",AFNI,,5,valid_acc,22,0.37989479303359985
+"AFNI, prompt_ln",AFNI,,5,valid_acc,23,0.3914864659309387
+"AFNI, prompt_ln",AFNI,,5,valid_acc,24,0.4100915789604187
+"AFNI, prompt_ln",AFNI,,5,valid_acc,25,0.39246055483818054
+"AFNI, prompt_ln",AFNI,,5,valid_acc,26,0.37599843740463257
+"AFNI, prompt_ln",AFNI,,5,valid_acc,27,0.3812585175037384
+"AFNI, prompt_ln",AFNI,,5,valid_acc,28,0.39840248227119446
+"AFNI, prompt_ln",AFNI,,5,valid_acc,29,0.3927527666091919
+"AFNI, prompt_ln",AFNI,,5,valid_acc,30,0.39285019040107727
+"AFNI, prompt_ln",AFNI,,5,valid_acc,31,0.4557763338088989
+"AFNI, prompt_ln",AFNI,,5,valid_acc,32,0.32368984818458557
+"AFNI, prompt_ln",AFNI,,5,valid_acc,33,0.3920709192752838
+"AFNI, prompt_ln",AFNI,,5,valid_acc,34,0.45392560958862305
+"AFNI, prompt_ln",AFNI,,5,valid_acc,35,0.3420027196407318
+"AFNI, prompt_ln",AFNI,,5,valid_acc,36,0.4143775403499603
+"AFNI, prompt_ln",AFNI,,5,valid_acc,37,0.4677576422691345
+"AFNI, prompt_ln",AFNI,,5,valid_acc,38,0.43765830993652344
+"AFNI, prompt_ln",AFNI,,5,valid_acc,39,0.37551140785217285
+"AFNI, prompt_ln",AFNI,,5,valid_acc,40,0.39236313104629517
+"AFNI, prompt_ln",AFNI,,5,valid_acc,41,0.43834012746810913
+"AFNI, prompt_ln",AFNI,,5,valid_acc,42,0.40940970182418823
+"AFNI, prompt_ln",AFNI,,5,valid_acc,43,0.40940970182418823
+"AFNI, prompt_ln",AFNI,,5,valid_acc,44,0.40940970182418823
+"AFNI, prompt_ln",AFNI,,5,valid_acc,45,0.397720605134964
+"AFNI, prompt_ln",AFNI,,5,valid_acc,46,0.3574907183647156
+"AFNI, prompt_ln",AFNI,,5,valid_acc,47,0.39733099937438965
+"AFNI, prompt_ln",AFNI,,5,valid_acc,48,0.43103447556495667
+"AFNI, prompt_ln",AFNI,,5,valid_acc,49,0.39236313104629517
+"AFNI, prompt_ln",AFNI,,5,train_acc,0,0.3125
+"AFNI, prompt_ln",AFNI,,5,train_acc,1,0.125
+"AFNI, prompt_ln",AFNI,,5,train_acc,2,0.125
+"AFNI, prompt_ln",AFNI,,5,train_acc,3,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,4,0.125
+"AFNI, prompt_ln",AFNI,,5,train_acc,5,0.25
+"AFNI, prompt_ln",AFNI,,5,train_acc,6,0.25
+"AFNI, prompt_ln",AFNI,,5,train_acc,7,0.5
+"AFNI, prompt_ln",AFNI,,5,train_acc,8,0.75
+"AFNI, prompt_ln",AFNI,,5,train_acc,9,0.625
+"AFNI, prompt_ln",AFNI,,5,train_acc,10,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,11,0.125
+"AFNI, prompt_ln",AFNI,,5,train_acc,12,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,13,0.5
+"AFNI, prompt_ln",AFNI,,5,train_acc,14,0.5
+"AFNI, prompt_ln",AFNI,,5,train_acc,15,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,16,0.75
+"AFNI, prompt_ln",AFNI,,5,train_acc,17,0.125
+"AFNI, prompt_ln",AFNI,,5,train_acc,18,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,19,0.625
+"AFNI, prompt_ln",AFNI,,5,train_acc,20,0.3125
+"AFNI, prompt_ln",AFNI,,5,train_acc,21,0.25
+"AFNI, prompt_ln",AFNI,,5,train_acc,22,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,23,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,24,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,25,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,26,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,27,0.625
+"AFNI, prompt_ln",AFNI,,5,train_acc,28,0.0
+"AFNI, prompt_ln",AFNI,,5,train_acc,29,0.25
+"AFNI, prompt_ln",AFNI,,5,train_acc,30,0.1875
+"AFNI, prompt_ln",AFNI,,5,train_acc,31,0.25
+"AFNI, prompt_ln",AFNI,,5,train_acc,32,0.25
+"AFNI, prompt_ln",AFNI,,5,train_acc,33,0.625
+"AFNI, prompt_ln",AFNI,,5,train_acc,34,0.5
+"AFNI, prompt_ln",AFNI,,5,train_acc,35,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,36,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,37,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,38,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,39,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,40,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,41,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,42,0.125
+"AFNI, prompt_ln",AFNI,,5,train_acc,43,0.5
+"AFNI, prompt_ln",AFNI,,5,train_acc,44,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,45,0.75
+"AFNI, prompt_ln",AFNI,,5,train_acc,46,0.75
+"AFNI, prompt_ln",AFNI,,5,train_acc,47,0.5
+"AFNI, prompt_ln",AFNI,,5,train_acc,48,0.375
+"AFNI, prompt_ln",AFNI,,5,train_acc,49,0.4375

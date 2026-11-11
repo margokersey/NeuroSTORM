@@ -1,0 +1,271 @@
+condition,group,facet,fold_id,metric,value
+"No smooth, none",No smooth,,1,test_acc,0.8699591159820557
+"No smooth, none",No smooth,,1,test_AUROC,0.9743950963020325
+"No smooth, none",No smooth,,1,valid_acc,0.8680555820465088
+"No smooth, none",No smooth,,1,valid_AUROC,0.9704861640930176
+"No smooth, none",No smooth,,1,pred_frac_tennis,0.2443181872367859
+"No smooth, none",No smooth,,1,pred_frac_navigation,0.41477271914482117
+"No smooth, none",No smooth,,1,pred_frac_squeeze,0.34090909361839294
+"No smooth, none",No smooth,,1,f1_tennis,0.8039215207099915
+"No smooth, none",No smooth,,1,f1_navigation,0.8702290058135986
+"No smooth, none",No smooth,,1,f1_squeeze,0.924369752407074
+"No smooth, prompt_ln",No smooth,,1,test_acc,0.4150594174861908
+"No smooth, prompt_ln",No smooth,,1,test_AUROC,0.6301349997520447
+"No smooth, prompt_ln",No smooth,,1,pred_frac_tennis,0.4943181872367859
+"No smooth, prompt_ln",No smooth,,1,pred_frac_navigation,0.375
+"No smooth, prompt_ln",No smooth,,1,pred_frac_squeeze,0.1306818127632141
+"No smooth, prompt_ln",No smooth,,1,f1_tennis,0.4383561611175537
+"No smooth, prompt_ln",No smooth,,1,f1_navigation,0.4354839026927948
+"No smooth, prompt_ln",No smooth,,1,f1_squeeze,0.3414634168148041
+"No smooth, prompt_ln",No smooth,,2,test_acc,0.5208333730697632
+"No smooth, prompt_ln",No smooth,,2,test_AUROC,0.5845630764961243
+"No smooth, prompt_ln",No smooth,,2,pred_frac_tennis,0.0069444444961845875
+"No smooth, prompt_ln",No smooth,,2,pred_frac_navigation,0.5138888955116272
+"No smooth, prompt_ln",No smooth,,2,pred_frac_squeeze,0.4791666567325592
+"No smooth, prompt_ln",No smooth,,2,f1_tennis,0.0
+"No smooth, prompt_ln",No smooth,,2,f1_navigation,0.6229508519172668
+"No smooth, prompt_ln",No smooth,,2,f1_squeeze,0.6324785947799683
+"No smooth, prompt_ln",No smooth,,3,test_acc,0.3819444179534912
+"No smooth, prompt_ln",No smooth,,3,test_AUROC,0.5906395316123962
+"No smooth, prompt_ln",No smooth,,3,valid_acc,0.3680555522441864
+"No smooth, prompt_ln",No smooth,,3,valid_AUROC,0.6528501510620117
+"No smooth, prompt_ln",No smooth,,3,pred_frac_tennis,0.3194444477558136
+"No smooth, prompt_ln",No smooth,,3,pred_frac_navigation,0.4930555522441864
+"No smooth, prompt_ln",No smooth,,3,pred_frac_squeeze,0.1875
+"No smooth, prompt_ln",No smooth,,3,f1_tennis,0.23404255509376526
+"No smooth, prompt_ln",No smooth,,3,f1_navigation,0.5042017102241516
+"No smooth, prompt_ln",No smooth,,3,f1_squeeze,0.37333330512046814
+"No smooth, prompt_ln",No smooth,,4,test_acc,0.4652777910232544
+"No smooth, prompt_ln",No smooth,,4,test_AUROC,0.6312934160232544
+"No smooth, prompt_ln",No smooth,,4,pred_frac_tennis,0.2638888955116272
+"No smooth, prompt_ln",No smooth,,4,pred_frac_navigation,0.4930555522441864
+"No smooth, prompt_ln",No smooth,,4,pred_frac_squeeze,0.2430555522441864
+"No smooth, prompt_ln",No smooth,,4,f1_tennis,0.44186046719551086
+"No smooth, prompt_ln",No smooth,,4,f1_navigation,0.47058823704719543
+"No smooth, prompt_ln",No smooth,,4,f1_squeeze,0.48192769289016724
+"No smooth, prompt_ln",No smooth,,5,test_acc,0.4861111044883728
+"No smooth, prompt_ln",No smooth,,5,test_AUROC,0.6236255764961243
+"No smooth, prompt_ln",No smooth,,5,pred_frac_tennis,0.5138888955116272
+"No smooth, prompt_ln",No smooth,,5,pred_frac_navigation,0.2708333432674408
+"No smooth, prompt_ln",No smooth,,5,pred_frac_squeeze,0.2152777761220932
+"No smooth, prompt_ln",No smooth,,5,f1_tennis,0.5081967115402222
+"No smooth, prompt_ln",No smooth,,5,f1_navigation,0.4367816150188446
+"No smooth, prompt_ln",No smooth,,5,f1_squeeze,0.5063291192054749
+"Smooth, none",Smooth,,2,test_acc,0.8611111640930176
+"Smooth, none",Smooth,,2,test_AUROC,0.9799623489379883
+"Smooth, none",Smooth,,2,valid_acc,0.8055555820465088
+"Smooth, none",Smooth,,2,valid_AUROC,0.9311342835426331
+"Smooth, none",Smooth,,2,pred_frac_tennis,0.3680555522441864
+"Smooth, none",Smooth,,2,pred_frac_navigation,0.3263888955116272
+"Smooth, none",Smooth,,2,pred_frac_squeeze,0.3055555522441864
+"Smooth, none",Smooth,,2,f1_tennis,0.8316831588745117
+"Smooth, none",Smooth,,2,f1_navigation,0.8631579279899597
+"Smooth, none",Smooth,,2,f1_squeeze,0.8913043737411499
+"Smooth, prompt_ln",Smooth,,1,test_acc,0.46697837114334106
+"Smooth, prompt_ln",Smooth,,1,test_AUROC,0.6470219492912292
+"Smooth, prompt_ln",Smooth,,1,pred_frac_tennis,0.34090909361839294
+"Smooth, prompt_ln",Smooth,,1,pred_frac_navigation,0.4886363744735718
+"Smooth, prompt_ln",Smooth,,1,pred_frac_squeeze,0.17045454680919647
+"Smooth, prompt_ln",Smooth,,1,f1_tennis,0.42016807198524475
+"Smooth, prompt_ln",Smooth,,1,f1_navigation,0.5277777314186096
+"Smooth, prompt_ln",Smooth,,1,f1_squeeze,0.4269663095474243
+"Smooth, prompt_ln",Smooth,,2,test_acc,0.5138888955116272
+"Smooth, prompt_ln",Smooth,,2,test_AUROC,0.626953125
+"Smooth, prompt_ln",Smooth,,2,valid_acc,0.3472222089767456
+"Smooth, prompt_ln",Smooth,,2,valid_AUROC,0.6209490895271301
+"Smooth, prompt_ln",Smooth,,2,pred_frac_tennis,0.02083333395421505
+"Smooth, prompt_ln",Smooth,,2,pred_frac_navigation,0.4583333432674408
+"Smooth, prompt_ln",Smooth,,2,pred_frac_squeeze,0.5208333134651184
+"Smooth, prompt_ln",Smooth,,2,f1_tennis,0.0
+"Smooth, prompt_ln",Smooth,,2,f1_navigation,0.6491227746009827
+"Smooth, prompt_ln",Smooth,,2,f1_squeeze,0.6016260385513306
+"Smooth, prompt_ln",Smooth,,3,test_acc,0.4166666567325592
+"Smooth, prompt_ln",Smooth,,3,test_AUROC,0.6208043694496155
+"Smooth, prompt_ln",Smooth,,3,valid_acc,0.4236111342906952
+"Smooth, prompt_ln",Smooth,,3,valid_AUROC,0.6831597685813904
+"Smooth, prompt_ln",Smooth,,3,pred_frac_tennis,0.2152777761220932
+"Smooth, prompt_ln",Smooth,,3,pred_frac_navigation,0.625
+"Smooth, prompt_ln",Smooth,,3,pred_frac_squeeze,0.1597222238779068
+"Smooth, prompt_ln",Smooth,,3,f1_tennis,0.202531635761261
+"Smooth, prompt_ln",Smooth,,3,f1_navigation,0.5797101259231567
+"Smooth, prompt_ln",Smooth,,3,f1_squeeze,0.3380281627178192
+"Smooth, prompt_ln",Smooth,,4,test_acc,0.4791666865348816
+"Smooth, prompt_ln",Smooth,,4,test_AUROC,0.6320891380310059
+"Smooth, prompt_ln",Smooth,,4,pred_frac_tennis,0.4375
+"Smooth, prompt_ln",Smooth,,4,pred_frac_navigation,0.3472222089767456
+"Smooth, prompt_ln",Smooth,,4,pred_frac_squeeze,0.2152777761220932
+"Smooth, prompt_ln",Smooth,,4,f1_tennis,0.5225225687026978
+"Smooth, prompt_ln",Smooth,,4,f1_navigation,0.40816327929496765
+"Smooth, prompt_ln",Smooth,,4,f1_squeeze,0.5063291192054749
+"Smooth, prompt_ln",Smooth,,5,test_acc,0.5208333134651184
+"Smooth, prompt_ln",Smooth,,5,test_AUROC,0.6490885019302368
+"Smooth, prompt_ln",Smooth,,5,pred_frac_tennis,0.3541666567325592
+"Smooth, prompt_ln",Smooth,,5,pred_frac_navigation,0.3680555522441864
+"Smooth, prompt_ln",Smooth,,5,pred_frac_squeeze,0.2777777910232544
+"Smooth, prompt_ln",Smooth,,5,f1_tennis,0.5050504803657532
+"Smooth, prompt_ln",Smooth,,5,f1_navigation,0.49504947662353516
+"Smooth, prompt_ln",Smooth,,5,f1_squeeze,0.5681818127632141
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,1,test_acc,0.40395480394363403
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,1,test_AUROC,0.657674252986908
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,1,pred_frac_tennis,0.5909090638160706
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,1,pred_frac_navigation,0.375
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,1,pred_frac_squeeze,0.034090910106897354
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,1,f1_tennis,0.47852760553359985
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,1,f1_navigation,0.4677419364452362
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,1,f1_squeeze,0.0923076868057251
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,test_acc,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,test_AUROC,0.5869502425193787
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_acc,0.3263888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,valid_AUROC,0.596788227558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,pred_frac_tennis,0.9861111044883728
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,pred_frac_navigation,0.013888888992369175
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,pred_frac_squeeze,0.0
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,f1_tennis,0.49473685026168823
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,f1_navigation,0.04000000283122063
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,2,f1_squeeze,0.0
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,test_acc,0.3194444477558136
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,test_AUROC,0.6177662014961243
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_acc,0.3402777910232544
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,valid_AUROC,0.6545138359069824
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,pred_frac_tennis,0.9583333134651184
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,pred_frac_navigation,0.0347222238779068
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,pred_frac_squeeze,0.0069444444961845875
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,f1_tennis,0.47311830520629883
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,f1_navigation,0.07547169923782349
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,3,f1_squeeze,0.0
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,test_acc,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,test_AUROC,0.6388888955116272
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_acc,0.3333333432674408
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,valid_AUROC,0.6657986640930176
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,pred_frac_tennis,0.9791666865348816
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,pred_frac_navigation,0.0069444444961845875
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,pred_frac_squeeze,0.013888888992369175
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,f1_tennis,0.49735450744628906
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,f1_navigation,0.0
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,4,f1_squeeze,0.04000000283122063
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,test_acc,0.4513888657093048
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,test_AUROC,0.6689090728759766
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_acc,0.42626142501831055
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,valid_AUROC,0.658726155757904
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,pred_frac_tennis,0.6944444179534912
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,pred_frac_navigation,0.2986111044883728
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,pred_frac_squeeze,0.0069444444961845875
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,f1_tennis,0.5405405759811401
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,f1_navigation,0.5274725556373596
+"No smooth + voxel-znorm, prompt_ln",No smooth + voxel-znorm,,5,f1_squeeze,0.040816325694322586
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,test_acc,0.7986111044883728
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,test_AUROC,0.922743022441864
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_acc,0.8819444179534912
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,valid_AUROC,0.9732349514961243
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,pred_frac_tennis,0.2569444477558136
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,pred_frac_navigation,0.3194444477558136
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,pred_frac_squeeze,0.4236111044883728
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,f1_tennis,0.729411780834198
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,f1_navigation,0.7872340083122253
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,3,f1_squeeze,0.8623853325843811
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,5,test_acc,0.8680555820465088
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,5,test_AUROC,0.9670138955116272
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,5,pred_frac_tennis,0.3402777910232544
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,5,pred_frac_navigation,0.3472222089767456
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,5,pred_frac_squeeze,0.3125
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,5,f1_tennis,0.8041236996650696
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,5,f1_navigation,0.8571428656578064
+"Smooth + voxel-znorm, none",Smooth + voxel-znorm,,5,f1_squeeze,0.9462365508079529
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,1,test_acc,0.4662964940071106
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,1,test_AUROC,0.6533565521240234
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,1,pred_frac_tennis,0.5965909361839294
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,1,pred_frac_navigation,0.3238636255264282
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,1,pred_frac_squeeze,0.07954545319080353
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,1,f1_tennis,0.5121951103210449
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,1,f1_navigation,0.539130449295044
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,1,f1_squeeze,0.24657534062862396
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,test_acc,0.5277777910232544
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,test_AUROC,0.6208767294883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_acc,0.3333333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,valid_AUROC,0.5747974514961243
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,pred_frac_tennis,0.0416666679084301
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,pred_frac_navigation,0.5347222089767456
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,pred_frac_squeeze,0.4236111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,f1_tennis,0.1111111119389534
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,f1_navigation,0.656000018119812
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,2,f1_squeeze,0.5871559977531433
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,test_acc,0.4444444179534912
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,test_AUROC,0.5821035504341125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_acc,0.4305555522441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,valid_AUROC,0.655164897441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,pred_frac_tennis,0.4166666567325592
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,pred_frac_navigation,0.4027777910232544
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,pred_frac_squeeze,0.1805555522441864
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,f1_tennis,0.37037038803100586
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,f1_navigation,0.5660377740859985
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,3,f1_squeeze,0.37837839126586914
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,4,test_acc,0.4652777910232544
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,4,test_AUROC,0.62109375
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,4,pred_frac_tennis,0.3125
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,4,pred_frac_navigation,0.4236111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,4,pred_frac_squeeze,0.2638888955116272
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,4,f1_tennis,0.4516128897666931
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,4,f1_navigation,0.47706422209739685
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,4,f1_squeeze,0.4651162922382355
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,5,test_acc,0.472222238779068
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,5,test_AUROC,0.6765769124031067
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,5,pred_frac_tennis,0.4861111044883728
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,5,pred_frac_navigation,0.4583333432674408
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,5,pred_frac_squeeze,0.0555555559694767
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,5,f1_tennis,0.49152544140815735
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,5,f1_navigation,0.5789473652839661
+"Smooth + voxel-znorm, prompt_ln",Smooth + voxel-znorm,,5,f1_squeeze,0.2142857164144516
+"AFNI, none",AFNI,,5,test_acc,0.8819444179534912
+"AFNI, none",AFNI,,5,test_AUROC,0.9680989384651184
+"AFNI, none",AFNI,,5,valid_acc,0.88106369972229
+"AFNI, none",AFNI,,5,valid_AUROC,0.9672476649284363
+"AFNI, none",AFNI,,5,pred_frac_tennis,0.3333333432674408
+"AFNI, none",AFNI,,5,pred_frac_navigation,0.3194444477558136
+"AFNI, none",AFNI,,5,pred_frac_squeeze,0.3472222089767456
+"AFNI, none",AFNI,,5,f1_tennis,0.8333333134651184
+"AFNI, none",AFNI,,5,f1_navigation,0.8510637879371643
+"AFNI, none",AFNI,,5,f1_squeeze,0.9591836929321289
+"AFNI, prompt_ln",AFNI,,1,test_acc,0.4835379123687744
+"AFNI, prompt_ln",AFNI,,1,test_AUROC,0.6265541911125183
+"AFNI, prompt_ln",AFNI,,1,pred_frac_tennis,0.3636363744735718
+"AFNI, prompt_ln",AFNI,,1,pred_frac_navigation,0.3863636255264282
+"AFNI, prompt_ln",AFNI,,1,pred_frac_squeeze,0.25
+"AFNI, prompt_ln",AFNI,,1,f1_tennis,0.3414634168148041
+"AFNI, prompt_ln",AFNI,,1,f1_navigation,0.5396825671195984
+"AFNI, prompt_ln",AFNI,,1,f1_squeeze,0.5825242400169373
+"AFNI, prompt_ln",AFNI,,2,test_acc,0.4305555522441864
+"AFNI, prompt_ln",AFNI,,2,test_AUROC,0.5893374085426331
+"AFNI, prompt_ln",AFNI,,2,pred_frac_tennis,0.3402777910232544
+"AFNI, prompt_ln",AFNI,,2,pred_frac_navigation,0.4861111044883728
+"AFNI, prompt_ln",AFNI,,2,pred_frac_squeeze,0.1736111044883728
+"AFNI, prompt_ln",AFNI,,2,f1_tennis,0.3298968970775604
+"AFNI, prompt_ln",AFNI,,2,f1_navigation,0.5084745287895203
+"AFNI, prompt_ln",AFNI,,2,f1_squeeze,0.4383561611175537
+"AFNI, prompt_ln",AFNI,,3,test_acc,0.4444444179534912
+"AFNI, prompt_ln",AFNI,,3,test_AUROC,0.6001157164573669
+"AFNI, prompt_ln",AFNI,,3,valid_acc,0.4166666567325592
+"AFNI, prompt_ln",AFNI,,3,valid_AUROC,0.6809172630310059
+"AFNI, prompt_ln",AFNI,,3,pred_frac_tennis,0.2083333283662796
+"AFNI, prompt_ln",AFNI,,3,pred_frac_navigation,0.5138888955116272
+"AFNI, prompt_ln",AFNI,,3,pred_frac_squeeze,0.2777777910232544
+"AFNI, prompt_ln",AFNI,,3,f1_tennis,0.1794871836900711
+"AFNI, prompt_ln",AFNI,,3,f1_navigation,0.5901640057563782
+"AFNI, prompt_ln",AFNI,,3,f1_squeeze,0.4772726893424988
+"AFNI, prompt_ln",AFNI,,4,test_acc,0.5416666865348816
+"AFNI, prompt_ln",AFNI,,4,test_AUROC,0.669921875
+"AFNI, prompt_ln",AFNI,,4,pred_frac_tennis,0.0
+"AFNI, prompt_ln",AFNI,,4,pred_frac_navigation,0.5555555820465088
+"AFNI, prompt_ln",AFNI,,4,pred_frac_squeeze,0.4444444477558136
+"AFNI, prompt_ln",AFNI,,4,f1_tennis,0.0
+"AFNI, prompt_ln",AFNI,,4,f1_navigation,0.640625
+"AFNI, prompt_ln",AFNI,,4,f1_squeeze,0.6607142686843872
+"AFNI, prompt_ln",AFNI,,5,test_acc,0.4652777910232544
+"AFNI, prompt_ln",AFNI,,5,test_AUROC,0.5988860130310059
+"AFNI, prompt_ln",AFNI,,5,valid_acc,0.39236313104629517
+"AFNI, prompt_ln",AFNI,,5,valid_AUROC,0.6501225829124451
+"AFNI, prompt_ln",AFNI,,5,pred_frac_tennis,0.0555555559694767
+"AFNI, prompt_ln",AFNI,,5,pred_frac_navigation,0.6736111044883728
+"AFNI, prompt_ln",AFNI,,5,pred_frac_squeeze,0.2708333432674408
+"AFNI, prompt_ln",AFNI,,5,f1_tennis,0.0714285746216774
+"AFNI, prompt_ln",AFNI,,5,f1_navigation,0.565517246723175
+"AFNI, prompt_ln",AFNI,,5,f1_squeeze,0.5517241954803467

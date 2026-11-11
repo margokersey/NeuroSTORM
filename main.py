@@ -45,6 +45,7 @@ if "LOCAL_RANK" in os.environ:
     os.environ["NEUROSTORM_IS_WORKER"] = "1"
 
 import torch
+import torch.nn.functional as F
 from collections import OrderedDict
 import pytorch_lightning as pl
 from pytorch_lightning.loggers.neptune import NeptuneLogger
@@ -296,19 +297,10 @@ def cli_main():
         )
 
     # ------------ model -------------
-    if args.load_model_path is not None and os.path.exists(args.load_model_path):
-        try:
-            _peek = torch.load(args.load_model_path, map_location="cpu", weights_only=False)
-            _hp = _peek.get("hyper_parameters", {})
-            _ckpt_tpt = _hp.get("tpt_strategy", "none")
-            if _ckpt_tpt and _ckpt_tpt != "none" and getattr(args, "tpt_strategy", "none") == "none":
-                args.tpt_strategy = _ckpt_tpt
-                args.prompt_len = int(_hp.get("prompt_len", args.prompt_len))
-                print(f"[TPT auto-load] inherited from ckpt: tpt_strategy={args.tpt_strategy}, prompt_len={args.prompt_len}")
-            del _peek, _hp
-        except Exception as e:
-            print(f"[TPT auto-load] skipped (could not peek ckpt hparams): {e}")
-
+    # (TPT auto-load-from-checkpoint block removed -- it silently overrode an
+    # explicit --tpt_strategy none whenever the checkpoint's own saved hparams
+    # carried a different value, since "none" is indistinguishable from "not
+    # set". --tpt_strategy is now always exactly what was passed on the CLI.)
     model = LightningModel(data_module = data_module, **vars(args))
 
     path = None
@@ -335,6 +327,26 @@ def cli_main():
         for k, v in ckpt['state_dict'].items():
             if 'model.' in k: #transformer-related layers
                 new_state_dict[k.removeprefix("model.")] = v
+
+        # Temporal positional embeddings (pos_embeds.*.time_embed) are the only
+        # sequence-length-dependent parameters in the model -- shaped [1, C, 1, 1, 1, T]
+        # for whatever --sequence_length the checkpoint was trained/finetuned with.
+        # If this run's --sequence_length differs (e.g. finetuning with a longer
+        # window than the pretrained T), interpolate along the time axis instead of
+        # letting load_state_dict hard-fail on the shape mismatch. Every other
+        # parameter (patch embedding, Mamba/SSM blocks, patch merging) is
+        # sequence-length-agnostic and is unaffected by this.
+        target_state = model.model.state_dict()
+        for k in list(new_state_dict.keys()):
+            if k.endswith('time_embed') and k in target_state:
+                v_ckpt, v_target = new_state_dict[k], target_state[k]
+                if v_ckpt.shape != v_target.shape:
+                    c, t_old, t_new = v_ckpt.shape[1], v_ckpt.shape[-1], v_target.shape[-1]
+                    v = v_ckpt.reshape(1, c, t_old)
+                    v = F.interpolate(v, size=t_new, mode='linear', align_corners=False)
+                    new_state_dict[k] = v.reshape(1, c, 1, 1, 1, t_new)
+                    print(f'[ckpt] interpolated {k}: T={t_old} -> T={t_new}')
+
         model.model.load_state_dict(new_state_dict, strict=False)
 
     if getattr(args, 'use_strd', False):
@@ -364,7 +376,22 @@ def cli_main():
             print(f'[diag] FIT_START resume_from={args.resume_ckpt_path} max_epochs={args.max_epochs}', flush=True)
             trainer.fit(model, datamodule=data_module, ckpt_path=args.resume_ckpt_path)
 
-        trainer.test(model, dataloaders=data_module)
+        # Evaluate the BEST-validation checkpoint (per checkpoint_callback's
+        # monitor metric above), not whatever weights happen to be in memory
+        # after the last training epoch -- matching Wang et al. 2026's own
+        # stated protocol ("the checkpoint with the lowest validation loss
+        # (or highest relevant metric) was subsequently evaluated on the
+        # test set"). Without this, trainer.test() below would silently
+        # evaluate last-epoch weights even though ModelCheckpoint has been
+        # saving a separate best-val checkpoint to disk the whole time.
+        best_ckpt_path = getattr(checkpoint_callback, 'best_model_path', '') or ''
+        if best_ckpt_path:
+            print(f'[diag] TEST_START using best-val checkpoint: {best_ckpt_path}', flush=True)
+            trainer.test(model, dataloaders=data_module, ckpt_path=best_ckpt_path)
+        else:
+            print('[diag] TEST_START no best_model_path recorded (monitor metric never '
+                  'logged?) -- falling back to in-memory (last-epoch) weights', flush=True)
+            trainer.test(model, dataloaders=data_module)
 
 
 if __name__ == "__main__":

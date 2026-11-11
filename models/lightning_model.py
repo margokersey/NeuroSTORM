@@ -11,7 +11,7 @@ import time
 
 import torchmetrics
 import torchmetrics.classification
-from torchmetrics.classification import BinaryAccuracy, BinaryAUROC, MulticlassAccuracy, MulticlassAUROC
+from torchmetrics.classification import BinaryAccuracy, BinaryAUROC, MulticlassAccuracy, MulticlassAUROC, MulticlassConfusionMatrix
 from torchmetrics import  PearsonCorrCoef # Accuracy,
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_curve
 import monai.transforms as monai_t
@@ -409,6 +409,122 @@ class LightningModel(pl.LightningModule):
             self.log(f"{mode}_acc", acc, sync_dist=True)
             return
 
+        if self.hparams.task_name == 'imagery_task_classification':
+            # Michigan blocks are per-block labeled (tennis/navigation/squeeze), so a
+            # single subject contributes many blocks spanning ALL classes -- unlike
+            # sex/age/diagnosis-style tasks where one subject has one label. The
+            # subject-averaging path below (built for the latter) would average
+            # together logits from all 3 classes per subject and compare against only
+            # the first block's label, silently degenerating AUROC/accuracy. Evaluate
+            # directly over every block-level prediction instead.
+            imagery_class_names = {0: 'tennis', 1: 'navigation', 2: 'squeeze'}
+            class_names = [imagery_class_names.get(i, str(i)) for i in range(self.hparams.num_classes)]
+
+            targets = total_out_target.long()
+            preds = total_out_logits.argmax(dim=1)
+
+            acc_func = MulticlassAccuracy(num_classes=self.hparams.num_classes).to(total_out_logits.device)
+            auroc_func = MulticlassAUROC(num_classes=self.hparams.num_classes).to(total_out_logits.device)
+            cm_func = MulticlassConfusionMatrix(num_classes=self.hparams.num_classes).to(total_out_logits.device)
+
+            acc = acc_func(total_out_logits, targets)
+            auroc = auroc_func(total_out_logits, targets)
+            cm = cm_func(total_out_logits, targets)
+
+            self.log(f"{mode}_acc", acc, sync_dist=True)
+            self.log(f"{mode}_AUROC", auroc, sync_dist=True)
+
+            # Per-class precision / recall / F1, derived from the confusion matrix
+            # (rows = true class, cols = predicted class). Logged as plain scalars
+            # so they're always recoverable from TensorBoard -- unlike the
+            # confusion matrix itself, which is only numeric when matplotlib is
+            # ABSENT (add_figure() below renders a picture, not data, when it IS
+            # installed). Classes with zero predictions/support get precision/
+            # recall 0 rather than NaN (same convention as sklearn's
+            # zero_division=0), since a class that never appears in a small test
+            # fold shouldn't crash the eval.
+            cm_f = cm.float()
+            tp = cm_f.diag()
+            predicted_count = cm_f.sum(dim=0)
+            support = cm_f.sum(dim=1)
+            precision = tp / predicted_count.clamp(min=1)
+            recall = tp / support.clamp(min=1)
+            f1 = 2 * precision * recall / (precision + recall).clamp(min=1e-8)
+            for ci, cname in enumerate(class_names):
+                self.log(f"{mode}_precision_{cname}", precision[ci], sync_dist=True)
+                self.log(f"{mode}_recall_{cname}", recall[ci], sync_dist=True)
+                self.log(f"{mode}_f1_{cname}", f1[ci], sync_dist=True)
+
+            # Per-class prediction fraction: how often each class is predicted,
+            # regardless of true label. Shows up as scalar line charts in TensorBoard
+            # and flags a model that has collapsed onto predicting one class.
+            n = preds.numel()
+            for ci, cname in enumerate(class_names):
+                frac = (preds == ci).float().mean() if n > 0 else torch.tensor(0.0, device=preds.device)
+                self.log(f"{mode}_pred_frac_{cname}", frac, sync_dist=True)
+
+            # Log the confusion matrix (rows = true class, cols = predicted class) as
+            # a TensorBoard figure. matplotlib isn't in requirements.txt, so fall back
+            # to a plain-text dump under the same tag rather than crashing training.
+            try:
+                import matplotlib
+                matplotlib.use('Agg')
+                import matplotlib.pyplot as plt
+
+                cm_np = cm.cpu().numpy()
+                fig, ax = plt.subplots(figsize=(4, 4))
+                im = ax.imshow(cm_np, cmap='Blues')
+                ax.set_xticks(range(len(class_names)))
+                ax.set_yticks(range(len(class_names)))
+                ax.set_xticklabels(class_names, rotation=45, ha='right')
+                ax.set_yticklabels(class_names)
+                ax.set_xlabel('Predicted')
+                ax.set_ylabel('True')
+                ax.set_title(f'{mode} confusion matrix (epoch {self.current_epoch})')
+                cm_max = cm_np.max() if cm_np.size > 0 else 0
+                for i in range(cm_np.shape[0]):
+                    for j in range(cm_np.shape[1]):
+                        ax.text(j, i, int(cm_np[i, j]), ha='center', va='center',
+                                color='white' if cm_np[i, j] > cm_max / 2 else 'black')
+                fig.colorbar(im, ax=ax)
+                fig.tight_layout()
+
+                if self.logger is not None and hasattr(self.logger, 'experiment'):
+                    self.logger.experiment.add_figure(f'{mode}_confusion_matrix', fig, global_step=self.current_epoch)
+                plt.close(fig)
+            except ImportError:
+                if not getattr(self, '_warned_no_matplotlib', False):
+                    print('[warn] matplotlib not installed -- skipping confusion matrix figure logging. '
+                          'Run `pip install matplotlib` in this env to enable it. Logging a text dump instead.')
+                    self._warned_no_matplotlib = True
+                if self.logger is not None and hasattr(self.logger, 'experiment'):
+                    self.logger.experiment.add_text(f'{mode}_confusion_matrix', str(cm.cpu().numpy().tolist()), global_step=self.current_epoch)
+
+            # Per-sample test-time dump for confidence/calibration analysis
+            # (Wang et al. 2026 Fig. 6b-style: distribution of the softmax
+            # probability assigned to the TRUE class, split correct vs.
+            # incorrect). Only written at test time -- not every val epoch --
+            # to <fold's log_dir>/test_predictions.pt.
+            if mode == 'test':
+                try:
+                    probs = torch.softmax(total_out_logits, dim=1)
+                    log_dir = getattr(self.trainer, 'log_dir', None) if self.trainer is not None else None
+                    if log_dir is not None:
+                        dump_path = os.path.join(log_dir, 'test_predictions.pt')
+                        torch.save({
+                            'probs': probs.detach().cpu(),
+                            'preds': preds.detach().cpu(),
+                            'targets': targets.detach().cpu(),
+                            'class_names': class_names,
+                        }, dump_path)
+                        print(f'[test predictions] saved per-sample probs/preds/targets to {dump_path}')
+                    else:
+                        print('[test predictions] skipped saving dump: trainer.log_dir is None')
+                except Exception as e:
+                    print(f'[test predictions] skipped saving dump: {e}')
+
+            return
+
         if self.hparams.num_classes == 1:
             for subj in subjects:
                 subj_logits = total_out_logits[subj_array == subj]
@@ -568,16 +684,31 @@ class LightningModel(pl.LightningModule):
                 out_test_feat_list.append(out[2])
             subj_valid = np.array(subj_valid)
             subj_test = np.array(subj_test)
-            total_out_valid_logits = torch.cat(out_valid_logits_list, dim=0)
-            total_out_valid_target = torch.cat(out_valid_target_list, dim=0)
 
-            if self.hparams.task_name == 'fmri_reid':
-                valid_feat_list = [f for f in out_valid_feat_list if f is not None]
-                if len(valid_feat_list) > 0:
-                    total_out_valid_feat = torch.cat(valid_feat_list, dim=0)
-                    self._evaluate_reid(subj_valid, total_out_valid_feat, total_out_valid_target, mode="valid")
+            # Guard mirrors the existing `if len(out_test_logits_list) > 0:` guard
+            # below. Without it, a val split smaller than eval_batch_size (e.g.
+            # MICHIGAN_WITHIN's 3-sample-per-subject val set with drop_last on the
+            # eval loader) makes out_valid_logits_list empty, and
+            # torch.cat([], dim=0) raises immediately -- crashing training the
+            # first time validation runs, before valid_acc/valid_AUROC/etc. are
+            # ever logged. Skip evaluation for this epoch instead of crashing;
+            # fix the underlying empty-eval-split cause (eval_batch_size vs.
+            # split size, drop_last on eval loaders) rather than relying on this
+            # guard to mask it.
+            if len(out_valid_logits_list) > 0:
+                total_out_valid_logits = torch.cat(out_valid_logits_list, dim=0)
+                total_out_valid_target = torch.cat(out_valid_target_list, dim=0)
+
+                if self.hparams.task_name == 'fmri_reid':
+                    valid_feat_list = [f for f in out_valid_feat_list if f is not None]
+                    if len(valid_feat_list) > 0:
+                        total_out_valid_feat = torch.cat(valid_feat_list, dim=0)
+                        self._evaluate_reid(subj_valid, total_out_valid_feat, total_out_valid_target, mode="valid")
+                else:
+                    self._evaluate_metrics(subj_valid, total_out_valid_logits, total_out_valid_target, mode="valid")
             else:
-                self._evaluate_metrics(subj_valid, total_out_valid_logits, total_out_valid_target, mode="valid")
+                print(f"WARNING: validation dataloader produced 0 batches this epoch -- "
+                      f"skipping valid metrics (check eval_batch_size vs. val split size)")
 
             if len(out_test_logits_list) > 0:
                 total_out_test_logits = torch.cat(out_test_logits_list, dim=0)
@@ -655,18 +786,27 @@ class LightningModel(pl.LightningModule):
                 out_test_target_list.append(out[1])
                 out_test_feat_list.append(out[2])
             subj_test = np.array(subj_test)
-            total_out_test_logits = torch.cat(out_test_logits_list, dim=0)
-            total_out_test_target = torch.cat(out_test_target_list, dim=0)
 
-            if self.hparams.task_name == 'fmri_reid':
-                feat_list = [f for f in out_test_feat_list if f is not None]
-                if len(feat_list) == 0:
-                    self._evaluate_reid(subj_test, torch.empty((0, 0), device=total_out_test_target.device), total_out_test_target, mode="test")
+            # Same empty-dataloader guard as validation_epoch_end -- a test split
+            # smaller than eval_batch_size with drop_last on the eval loader
+            # otherwise crashes trainer.test() on torch.cat([], dim=0) before any
+            # test_acc/test_AUROC/test_reid_top1 is logged.
+            if len(out_test_logits_list) > 0:
+                total_out_test_logits = torch.cat(out_test_logits_list, dim=0)
+                total_out_test_target = torch.cat(out_test_target_list, dim=0)
+
+                if self.hparams.task_name == 'fmri_reid':
+                    feat_list = [f for f in out_test_feat_list if f is not None]
+                    if len(feat_list) == 0:
+                        self._evaluate_reid(subj_test, torch.empty((0, 0), device=total_out_test_target.device), total_out_test_target, mode="test")
+                    else:
+                        total_out_test_feat = torch.cat(feat_list, dim=0)
+                        self._evaluate_reid(subj_test, total_out_test_feat, total_out_test_target, mode="test")
                 else:
-                    total_out_test_feat = torch.cat(feat_list, dim=0)
-                    self._evaluate_reid(subj_test, total_out_test_feat, total_out_test_target, mode="test")
+                    self._evaluate_metrics(subj_test, total_out_test_logits, total_out_test_target, mode="test")
             else:
-                self._evaluate_metrics(subj_test, total_out_test_logits, total_out_test_target, mode="test")
+                print(f"WARNING: test dataloader produced 0 batches -- "
+                      f"skipping test metrics (check eval_batch_size vs. test split size)")
     
     def on_train_epoch_start(self) -> None:
         self.starter, self.ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)

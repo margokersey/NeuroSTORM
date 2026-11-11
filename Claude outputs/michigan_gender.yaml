@@ -1,0 +1,37 @@
+dataset_name: MICHIGAN_GENDER
+# Q2: subject-level binary sex classification on the same recordings, using
+# participants.tsv instead of block-level TSV labels. Reuses the corrected
+# data processed_output_sub_voxel_norm by default -- change to processed_output_v2 if you specifically want
+# the uncorrected version (see caveat below).
+image_path: /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_v2
+
+# CAVEAT worth checking before trusting results here: the per-subject
+# "spatial fingerprint" confound diagnosed in project-doc section 15 (a
+# static per-subject pattern baked in by global rather than per-voxel
+# normalization) is a subject-identifying signal -- which is exactly the
+# kind of thing that could make a SUBJECT-level task like sex classification
+# look artificially easy (the model partially "recognizes" individual
+# subjects rather than learning real sex-related neuroanatomy/function),
+# especially with only 26 subjects. This risk is smaller on
+# processed_output_sub_voxel_norm (fingerprint largely removed) than on
+# processed_output_v2, which is the main reason sub_voxel_norm is the
+# default image_path here. Also check the actual class balance in
+# participants.tsv before training -- a lopsided M/F split with only 26
+# subjects can make accuracy alone misleading; watch AUROC and per-class
+# recall too.
+
+tasks:
+  task7:
+    downstream_task_id: 7
+    task_name: sex
+    downstream_task_type: classification
+    num_classes: 2
+
+defaults:
+  split_root: ./nas/splits
+  dataset_split_num: 1
+  limit_training_samples: 1.0
+  # No sequence_length_override / img_size_override -- this task doesn't need
+  # Michigan's block windowing, so it uses the model's native pretrained
+  # sequence_length (20 for neurostorm.yaml), which also means NO temporal
+  # positional-embedding interpolation is needed for this dataset.

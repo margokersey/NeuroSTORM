@@ -1,0 +1,1001 @@
+<title>Fine-Tuning NeuroSTORM</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,450;0,6..72,500;0,6..72,600;1,6..72,500&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+/* ---------- tokens ---------- */
+:root{
+  --bg:#F2F5F5;
+  --surface:#FFFFFF;
+  --surface-2:#E7EDED;
+  --surface-3:#DCE4E4;
+  --ink:#131B22;
+  --ink-2:#3E4C54;
+  --ink-3:#6C7B82;
+  --border:#CBD6D6;
+  --border-strong:#AEBCBC;
+  --accent:#0088A8;
+  --accent-strong:#016E8A;
+  --accent-soft:#DDF0F3;
+  --on-accent:#FFFFFF;
+  --cat-1:#0088A8;   /* none / full fine-tune */
+  --cat-2:#B8791F;   /* prompt */
+  --cat-3:#7A4C8C;   /* prompt_ln */
+  --good:#2E8F5C;
+  --good-soft:#DEF1E7;
+  --warn:#B8621F;
+  --warn-soft:#F6E6D6;
+  --crit:#B8452E;
+  --crit-soft:#F7E1DB;
+  --info:#3B6FA0;
+  --info-soft:#DEE9F3;
+  --shadow-slide: 0 1px 0 rgba(19,27,34,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E151B;
+    --surface:#151E26;
+    --surface-2:#1C2730;
+    --surface-3:#25323C;
+    --ink:#E8EEF0;
+    --ink-2:#B7C4CA;
+    --ink-3:#87979E;
+    --border:#2C3A43;
+    --border-strong:#3C4D57;
+    --accent:#3FB6D2;
+    --accent-strong:#6BCBE2;
+    --accent-soft:#132A31;
+    --on-accent:#06232A;
+    --cat-1:#1D93AD;
+    --cat-2:#BE8028;
+    --cat-3:#9E6BBE;
+    --good:#49AC79;
+    --good-soft:#12291E;
+    --warn:#CC8A4A;
+    --warn-soft:#2E2013;
+    --crit:#D5735A;
+    --crit-soft:#301A14;
+    --info:#6FA0D0;
+    --info-soft:#16232E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E151B;
+  --surface:#151E26;
+  --surface-2:#1C2730;
+  --surface-3:#25323C;
+  --ink:#E8EEF0;
+  --ink-2:#B7C4CA;
+  --ink-3:#87979E;
+  --border:#2C3A43;
+  --border-strong:#3C4D57;
+  --accent:#3FB6D2;
+  --accent-strong:#6BCBE2;
+  --accent-soft:#132A31;
+  --on-accent:#06232A;
+  --cat-1:#1D93AD;
+  --cat-2:#BE8028;
+  --cat-3:#9E6BBE;
+  --good:#49AC79;
+  --good-soft:#12291E;
+  --warn:#CC8A4A;
+  --warn-soft:#2E2013;
+  --crit:#D5735A;
+  --crit-soft:#301A14;
+  --info:#6FA0D0;
+  --info-soft:#16232E;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Public Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:'Newsreader',Georgia,'Times New Roman',serif; font-weight:560; margin:0; text-wrap:balance;}
+.mono{font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;}
+.tnum{font-variant-numeric:tabular-nums;}
+
+/* ---------- deck chrome ---------- */
+#viewport{position:fixed; inset:0; overflow:hidden;}
+#track{display:flex; height:100%; width:100%; transition:transform .5s cubic-bezier(.2,.8,.2,1);}
+.slide{
+  flex:0 0 100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:5.2vh 4vw;
+  position:relative;
+}
+.slide-inner{
+  width:min(1180px,94vw);
+  max-height:89vh;
+  overflow-y:auto;
+  padding-right:2px;
+}
+.slide-inner::-webkit-scrollbar{width:6px;}
+.slide-inner::-webkit-scrollbar-thumb{background:var(--border-strong); border-radius:3px;}
+
+#progress{position:fixed; top:0; left:0; height:3px; background:var(--accent); width:0%; z-index:50; transition:width .5s cubic-bezier(.2,.8,.2,1);}
+#progress-track{position:fixed; top:0; left:0; right:0; height:3px; background:var(--border); z-index:40;}
+
+#counter{position:fixed; right:22px; bottom:18px; font-size:12px; color:var(--ink-3); z-index:50; letter-spacing:.02em;}
+#counter b{color:var(--ink-2);}
+
+.navbtn{
+  position:fixed; top:50%; transform:translateY(-50%);
+  width:42px; height:42px; border-radius:50%;
+  border:1px solid var(--border-strong); background:var(--surface);
+  color:var(--ink-2); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; z-index:50; opacity:.55; transition:opacity .15s, background .15s;
+}
+.navbtn:hover, .navbtn:focus-visible{opacity:1; background:var(--surface-2); outline:none;}
+.navbtn:focus-visible{box-shadow:0 0 0 3px var(--accent-soft);}
+#prev{left:18px;} #next{right:18px;}
+.navbtn svg{width:18px;height:18px;}
+
+#hint{
+  position:fixed; left:50%; bottom:20px; transform:translateX(-50%);
+  font-size:12px; color:var(--ink-3); z-index:50; letter-spacing:.03em;
+  display:flex; gap:6px; align-items:center; background:var(--surface);
+  border:1px solid var(--border); padding:6px 12px; border-radius:20px;
+  transition:opacity .4s;
+}
+#hint kbd{font-family:'IBM Plex Mono',monospace; background:var(--surface-2); border:1px solid var(--border-strong); border-radius:4px; padding:1px 5px; font-size:11px;}
+#hint.hide{opacity:0; pointer-events:none;}
+
+@media (prefers-reduced-motion: reduce){
+  #track, #progress{transition:none;}
+}
+
+/* ---------- typography helpers ---------- */
+.kicker{
+  font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.11em;
+  font-size:12px; color:var(--accent-strong); font-weight:500; display:flex; align-items:center; gap:8px;
+  margin-bottom:14px;
+}
+.kicker::before{content:""; width:16px; height:1px; background:var(--accent-strong); display:inline-block;}
+.step-no{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-3);}
+
+h1.display{font-size:clamp(34px,4.6vw,54px); line-height:1.08; letter-spacing:-.01em;}
+h2.display{font-size:clamp(26px,3.2vw,38px); line-height:1.14; letter-spacing:-.005em;}
+h3.display{font-size:clamp(19px,2.1vw,24px); line-height:1.25; font-weight:560;}
+
+.lede{font-size:clamp(16px,1.5vw,19px); line-height:1.6; color:var(--ink-2); max-width:70ch;}
+p.body-text{font-size:16px; line-height:1.65; color:var(--ink-2); max-width:66ch;}
+.small{font-size:13px; color:var(--ink-3); line-height:1.55;}
+
+/* ---------- components ---------- */
+.pill{
+  display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;
+  font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; font-weight:500;
+  padding:4px 10px 4px 8px; border-radius:20px; border:1px solid transparent;
+}
+.pill .dot{width:6px;height:6px;border-radius:50%;}
+.pill.crit{color:var(--crit); background:var(--crit-soft); border-color:color-mix(in srgb, var(--crit) 30%, transparent);}
+.pill.crit .dot{background:var(--crit);}
+.pill.good{color:var(--good); background:var(--good-soft); border-color:color-mix(in srgb, var(--good) 30%, transparent);}
+.pill.good .dot{background:var(--good);}
+.pill.info{color:var(--info); background:var(--info-soft); border-color:color-mix(in srgb, var(--info) 30%, transparent);}
+.pill.info .dot{background:var(--info);}
+.pill.warn{color:var(--warn); background:var(--warn-soft); border-color:color-mix(in srgb, var(--warn) 30%, transparent);}
+.pill.warn .dot{background:var(--warn);}
+
+.card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px 22px;}
+.card.tint{background:var(--surface-2);}
+.card h4{font-family:'Public Sans',sans-serif; font-size:14px; font-weight:600; margin:0 0 8px; color:var(--ink);}
+
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+.stack{display:flex; flex-direction:column; gap:14px;}
+.row{display:flex; gap:16px; align-items:flex-start;}
+
+table.data{width:100%; border-collapse:collapse; font-size:14px;}
+table.data th{
+  font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+  color:var(--ink-3); text-align:left; font-weight:500; padding:8px 12px; border-bottom:1px solid var(--border-strong);
+}
+table.data td{padding:9px 12px; border-bottom:1px solid var(--border); color:var(--ink-2);}
+table.data td.num, table.data th.num{font-family:'IBM Plex Mono',monospace; text-align:right; font-variant-numeric:tabular-nums;}
+table.data tr:last-child td{border-bottom:none;}
+table.data td.rowhead{color:var(--ink); font-weight:600;}
+
+.insert{
+  border:1.5px dashed var(--border-strong); border-radius:10px; background:var(--surface-2);
+  padding:16px 18px; display:flex; gap:12px; align-items:flex-start; font-size:13px; color:var(--ink-3);
+}
+.insert svg{flex:0 0 auto; margin-top:1px; color:var(--ink-3);}
+.insert b{color:var(--ink-2); font-weight:600;}
+
+.code{
+  font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.7; background:var(--surface-3);
+  color:var(--ink-2); border-radius:8px; padding:14px 16px; overflow-x:auto; white-space:pre;
+}
+.code .kw{color:var(--accent-strong);}
+.code .cm{color:var(--ink-3); font-style:italic;}
+
+.footnote{margin-top:16px; font-size:12.5px; color:var(--ink-3); border-top:1px solid var(--border); padding-top:10px;}
+
+/* flow diagram */
+.flow{display:flex; align-items:stretch; gap:0; flex-wrap:wrap;}
+.flow-step{
+  background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:11px 13px;
+  min-width:118px; text-align:center; flex:1 1 118px;
+}
+.flow-step .t{font-size:12.5px; font-weight:600; color:var(--ink);}
+.flow-step .s{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-3); margin-top:3px;}
+.flow-arrow{display:flex; align-items:center; justify-content:center; padding:0 4px; color:var(--border-strong); flex:0 0 auto;}
+
+/* bar charts (scaled via inline style) */
+.chartblock{display:flex; flex-direction:column; gap:8px;}
+.chart-title{font-size:12px; font-family:'IBM Plex Mono',monospace; color:var(--ink-3); text-transform:uppercase; letter-spacing:.05em;}
+.bars{position:relative; display:flex; align-items:flex-end; gap:22px; height:180px; padding-top:8px;}
+.bar-col{display:flex; flex-direction:column; align-items:center; gap:8px; flex:1; height:100%; justify-content:flex-end; position:relative;}
+.bar-track{width:100%; max-width:46px; height:100%; display:flex; align-items:flex-end; background:linear-gradient(var(--border) 1px, transparent 1px) 0 0/100% 25%;}
+.bar-fill{width:100%; border-radius:4px 4px 2px 2px; position:relative; display:flex; align-items:flex-start; justify-content:center;}
+.bar-fill .val{position:absolute; top:-20px; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--ink); white-space:nowrap;}
+.bar-label{font-size:11.5px; color:var(--ink-2); text-align:center; line-height:1.3;}
+.ref-line{position:absolute; left:0; right:0; height:0; border-top:1.5px dashed var(--ink-3);}
+.ref-line .rl-label{position:absolute; right:0; top:-16px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-3); background:var(--surface); padding:0 4px;}
+
+.legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--ink-2);}
+.legend .li{display:flex; align-items:center; gap:6px;}
+.legend .sw{width:10px; height:10px; border-radius:3px;}
+
+/* proportion bars */
+.prop-row{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
+.prop-row:last-child{margin-bottom:0;}
+.prop-label{width:130px; font-size:13px; color:var(--ink); font-weight:600; flex:0 0 auto;}
+.prop-bar{flex:1; height:22px; background:var(--surface-3); border-radius:5px; position:relative; overflow:visible; display:flex;}
+.prop-fill{height:100%; border-radius:5px 0 0 5px;}
+.prop-tag{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-3); flex:0 0 auto; width:150px;}
+
+/* stacked class bars */
+.stackbar-group{display:flex; flex-direction:column; gap:6px; flex:1;}
+.stackbar-label{font-size:12.5px; font-weight:600; color:var(--ink);}
+.stackbar{display:flex; height:34px; border-radius:6px; overflow:hidden; border:1px solid var(--border);}
+.stackseg{display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--on-accent); white-space:nowrap; overflow:hidden;}
+.stackseg.tn{background:#5FA9BC;}
+.stackseg.na{background:#2E7C93;}
+.stackseg.sq{background:#0E5468;}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .stackseg.tn{background:#4C8DA0;}
+  :root:not([data-theme="light"]) .stackseg.na{background:#3A93AC;}
+  :root:not([data-theme="light"]) .stackseg.sq{background:#20748C;}
+}
+:root[data-theme="dark"] .stackseg.tn{background:#4C8DA0;}
+:root[data-theme="dark"] .stackseg.na{background:#3A93AC;}
+:root[data-theme="dark"] .stackseg.sq{background:#20748C;}
+
+/* timeline diagram */
+.timeline{display:flex; align-items:stretch; height:64px; border-radius:8px; overflow:hidden; border:1px solid var(--border);}
+.tl-seg{display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-3); position:relative;}
+.tl-seg.rest{background:var(--surface-2);}
+.tl-seg.task{background:var(--accent-soft); color:var(--accent-strong); font-weight:600;}
+.tl-seg.window{background:var(--accent); color:var(--on-accent); font-weight:600;}
+.tl-seg.trim{background:repeating-linear-gradient(135deg, var(--surface-3), var(--surface-3) 4px, var(--surface-2) 4px, var(--surface-2) 8px);}
+
+/* title slide voxel motif */
+.voxel-grid{display:grid; grid-template-columns:repeat(8,1fr); gap:4px; width:100%; height:100%;}
+.voxel-grid div{border-radius:2px; background:var(--accent);}
+
+.metric-tile{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 18px; flex:1;}
+.metric-tile .mv{font-family:'IBM Plex Mono',monospace; font-size:30px; font-weight:600; color:var(--ink); line-height:1;}
+.metric-tile .ml{font-size:12px; color:var(--ink-3); margin-top:6px;}
+.metric-tile.hi .mv{color:var(--good);}
+
+ul.clean{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:10px;}
+ul.clean li{padding-left:18px; position:relative; color:var(--ink-2); font-size:15px; line-height:1.5;}
+ul.clean li::before{content:"—"; position:absolute; left:0; color:var(--ink-3);}
+
+.numlist{display:flex; flex-direction:column; gap:0;}
+.numlist .ni{display:flex; gap:16px; padding:12px 0; border-bottom:1px solid var(--border); align-items:baseline;}
+.numlist .ni:last-child{border-bottom:none;}
+.numlist .n{font-family:'IBM Plex Mono',monospace; color:var(--accent-strong); font-size:14px; flex:0 0 26px;}
+.numlist .tx b{color:var(--ink); font-weight:600;}
+.numlist .tx{color:var(--ink-2); font-size:14.5px;}
+</style>
+
+<div id="progress-track"></div>
+<div id="progress"></div>
+
+<div id="viewport">
+  <div id="track">
+
+    <!-- 1 : TITLE -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div style="display:grid; grid-template-columns:1.4fr .8fr; gap:40px; align-items:center;">
+          <div>
+            <div class="kicker">Lab Meeting &middot; Fine-tuning Report</div>
+            <h1 class="display" style="font-size:clamp(38px,5.2vw,60px);">Teaching NeuroSTORM<br>to read mental imagery</h1>
+            <p class="lede" style="margin-top:18px;">Fine-tuning a 5-million-parameter fMRI foundation model on a 26-subject, block-design command-following task — and the diagnostic trail that got a stuck classifier to <span class="mono tnum" style="color:var(--good); font-weight:600;">0.88 AUROC</span>.</p>
+            <div class="row" style="margin-top:28px; gap:10px;">
+              <span class="pill info"><span class="dot"></span>NeuroSTORM &middot; SWM backbone</span>
+              <span class="pill info"><span class="dot"></span>task-imagery run-1</span>
+              <span class="pill info"><span class="dot"></span>tennis / navigation / squeeze</span>
+            </div>
+          </div>
+          <div style="aspect-ratio:1; padding:22px; background:var(--surface); border:1px solid var(--border); border-radius:14px;">
+            <div class="voxel-grid" id="titleVoxels"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 : ROADMAP -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">Roadmap</div>
+        <h2 class="display">How this talk is organized</h2>
+        <p class="lede" style="margin-bottom:22px;">Chronological — this is the order the debugging actually happened in.</p>
+        <div class="grid-2" style="gap:30px;">
+          <div class="numlist">
+            <div class="ni"><span class="n">01</span><div class="tx"><b>The task &amp; the mismatch</b> — what NeuroSTORM was built for vs. what we're asking of it</div></div>
+            <div class="ni"><span class="n">02</span><div class="tx"><b>Data &amp; preprocessing</b> — block design, dimensionality, splits</div></div>
+            <div class="ni"><span class="n">03</span><div class="tx"><b>First results</b> — everything collapses to chance</div></div>
+            <div class="ni"><span class="n">04</span><div class="tx"><b>Bug #1</b> — a metrics bug masking the true signal</div></div>
+          </div>
+          <div class="numlist">
+            <div class="ni"><span class="n">05</span><div class="tx"><b>Diagnosis</b> — a model-free linear probe finds the real culprit</div></div>
+            <div class="ni"><span class="n">06</span><div class="tx"><b>Bug #2 &amp; the fix</b> — a normalization flaw, found and corrected</div></div>
+            <div class="ni"><span class="n">07</span><div class="tx"><b>Results</b> — real learning, 0.88 AUROC</div></div>
+            <div class="ni"><span class="n">08</span><div class="tx"><b>Where we stand</b> — what's confirmed, what's next</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 : MOTIVATION -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">01 &middot; Why this task</div>
+        <h2 class="display">Mental imagery as a communication channel</h2>
+        <div class="grid-2" style="margin-top:20px; gap:26px; align-items:start;">
+          <div>
+            <p class="body-text">The task asks a person to imagine one of three things on cue: <b style="color:var(--ink);">playing tennis</b>, <b style="color:var(--ink);">navigating around their house</b>, or <b style="color:var(--ink);">squeezing a hand</b>. Each produces a distinct, decodable pattern of brain activity — which is precisely what makes this the classic paradigm for detecting <b style="color:var(--ink);">covert command-following</b>: evidence that someone is following instructions even when they can't otherwise respond.</p>
+            <p class="body-text" style="margin-top:14px;">Before a decoder like this can be trusted on someone who <i>can't</i> confirm whether it worked, it has to be validated on people who can perform the task reliably and overtly. That's what this 26-subject dataset is for — and what this whole analysis builds toward.</p>
+          </div>
+          <div class="card tint">
+            <h4>The task, per subject</h4>
+            <div class="stack" style="gap:10px; margin-top:10px;">
+              <div class="row" style="justify-content:space-between;"><span class="small">Single continuous scan</span><span class="mono tnum small" style="color:var(--ink);">1 run</span></div>
+              <div class="row" style="justify-content:space-between;"><span class="small">Imagery blocks per subject</span><span class="mono tnum small" style="color:var(--ink);">30</span></div>
+              <div class="row" style="justify-content:space-between;"><span class="small">Classes</span><span class="mono tnum small" style="color:var(--ink);">tennis / navigation / squeeze</span></div>
+              <div class="row" style="justify-content:space-between;"><span class="small">Blocks per class</span><span class="mono tnum small" style="color:var(--ink);">10</span></div>
+              <div class="row" style="justify-content:space-between;"><span class="small">Subjects</span><span class="mono tnum small" style="color:var(--ink);">26</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 : WHAT IS NEUROSTORM -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">01 &middot; The model</div>
+        <h2 class="display">What NeuroSTORM actually is</h2>
+        <p class="lede" style="margin-top:10px; margin-bottom:22px;">A general-purpose foundation model for fMRI (Wang et al., <i>Nature Biomedical Engineering</i>, 2026) — pretrained once, then adapted to many downstream tasks.</p>
+        <div class="grid-3">
+          <div class="card">
+            <h4>Backbone</h4>
+            <p class="small" style="font-size:13.5px; line-height:1.6;">Shifted-Window Mamba (SWM): a state-space model with window attention, built to process raw 4D fMRI volumes directly — no ROI/atlas reduction, linear-time cost instead of full self-attention.</p>
+          </div>
+          <div class="card">
+            <h4>Pretraining</h4>
+            <p class="small" style="font-size:13.5px; line-height:1.6;">Masked-autoencoding on <b class="mono">28.65M</b> fMRI frames from <b class="mono">50,000+</b> participants — reconstructing masked voxels from spatiotemporal context. No task labels used.</p>
+          </div>
+          <div class="card">
+            <h4>Adaptation</h4>
+            <p class="small" style="font-size:13.5px; line-height:1.6;">Task-specific Prompt Tuning (TPT): a small set of learnable prompt tokens can adapt the frozen backbone to a new task, updating &lt;5% of parameters.</p>
+          </div>
+        </div>
+        <div class="footnote">Wang, C. et al. "Towards a general-purpose foundation model for functional MRI analysis." <i>Nat. Biomed. Eng.</i> (2026).</div>
+      </div>
+    </section>
+
+    <!-- 5 : PRETRAINING DATA PROFILE -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">01 &middot; The pretraining world</div>
+        <h2 class="display">What NeuroSTORM was trained &amp; tested on</h2>
+        <div class="row" style="margin-top:20px; gap:24px; align-items:flex-start;">
+          <div style="flex:1.2;">
+            <table class="data">
+              <tr><th>Corpus</th><th class="num">Participants</th><th>Scan type</th></tr>
+              <tr><td class="rowhead">UK Biobank</td><td class="num mono">40,842</td><td>Resting-state</td></tr>
+              <tr><td class="rowhead">ABCD</td><td class="num mono">9,448</td><td>Resting-state</td></tr>
+              <tr><td class="rowhead">HCP-YA</td><td class="num mono">1,206</td><td>Resting + task</td></tr>
+              <tr><td class="rowhead">HCP-A</td><td class="num mono">725</td><td>Resting-state</td></tr>
+              <tr><td class="rowhead">HCP-D</td><td class="num mono">652</td><td>Resting-state</td></tr>
+            </table>
+          </div>
+          <div class="card tint" style="flex:1;">
+            <h4>Downstream benchmark tasks</h4>
+            <ul class="clean" style="margin-top:10px; gap:7px;">
+              <li style="font-size:13.5px;">Age &amp; gender prediction</li>
+              <li style="font-size:13.5px;">Phenotype prediction (PCC)</li>
+              <li style="font-size:13.5px;">Disease diagnosis (5 cohorts)</li>
+              <li style="font-size:13.5px;">fMRI re-identification</li>
+              <li style="font-size:13.5px;">fMRI state classification (7 HCP tasks)</li>
+            </ul>
+          </div>
+        </div>
+        <p class="small" style="margin-top:18px;">Every one of these tasks assigns <b style="color:var(--ink-2);">one label to one whole scan</b> — an age, a diagnosis, a gender. Standardized preprocessing target: MNI152 space, 2×2×2&nbsp;mm voxels, 96×96×96 volumes, TR&nbsp;=&nbsp;0.8&nbsp;s, per-scan z-normalization.</p>
+      </div>
+    </section>
+
+    <!-- 6 : OUR DATA PROFILE -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">01 &middot; Our world</div>
+        <h2 class="display">What we're asking it to do instead</h2>
+        <div class="grid-2" style="margin-top:20px; gap:24px;">
+          <div class="card tint">
+            <h4>task-imagery run-1, Michigan dataset</h4>
+            <div class="stack" style="gap:9px; margin-top:10px;">
+              <div class="row" style="justify-content:space-between;"><span class="small">Site</span><span class="small" style="color:var(--ink);">single lab, one scanner</span></div>
+              <div class="row" style="justify-content:space-between;"><span class="small">Subjects</span><span class="mono tnum small" style="color:var(--ink);">26</span></div>
+              <div class="row" style="justify-content:space-between;"><span class="small">Scan type</span><span class="small" style="color:var(--ink);">task fMRI, block design</span></div>
+              <div class="row" style="justify-content:space-between;"><span class="small">Labels per scan</span><span class="mono tnum small" style="color:var(--ink);">30 (one per block)</span></div>
+              <div class="row" style="justify-content:space-between;"><span class="small">Source format</span><span class="small" style="color:var(--ink);">fMRIPrep-preprocessed BOLD</span></div>
+            </div>
+          </div>
+          <div>
+            <p class="body-text">Deliberately reprocessed to <b style="color:var(--ink);">match NeuroSTORM's own preprocessing target</b> — same 2&nbsp;mm voxels, same 0.8&nbsp;s TR, same 96&sup3; volumes — so the pretrained model sees geometrically familiar input. The one thing that can't be matched: NeuroSTORM never saw a task like this during pretraining, and never saw <i>multiple</i> labels inside one continuous scan.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 : THE COMPARISON -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">01 &middot; The gap</div>
+        <h2 class="display">Where our data actually differs</h2>
+        <table class="data" style="margin-top:20px;">
+          <tr><th></th><th>NeuroSTORM's benchmarks</th><th>Our dataset</th></tr>
+          <tr><td class="rowhead">Subjects per task</td><td>~100s–8,000+</td><td class="mono">26</td></tr>
+          <tr><td class="rowhead">Scan content</td><td>mostly resting-state</td><td>task, block-structured</td></tr>
+          <tr><td class="rowhead">Label granularity</td><td><b style="color:var(--ink);">one label / whole scan</b></td><td><b style="color:var(--accent-strong);">one label / 32-frame block</b></td></tr>
+          <tr><td class="rowhead">Labels per scan</td><td class="mono">1</td><td class="mono">30</td></tr>
+          <tr><td class="rowhead">Exposure during pretraining</td><td>—</td><td>zero-shot transfer</td></tr>
+        </table>
+        <div class="insert" style="margin-top:22px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01M4.5 19h15a1 1 0 0 0 .87-1.5l-7.5-13a1 1 0 0 0-1.74 0l-7.5 13A1 1 0 0 0 4.5 19Z"/></svg>
+          <div>The label-granularity row is the one that matters most — hold onto it. NeuroSTORM's evaluation code was written assuming one label per scan. Ours needs 30.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 : BLOCK DESIGN -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">02 &middot; Understanding the data</div>
+        <h2 class="display">The block design</h2>
+        <p class="lede" style="margin-top:8px; margin-bottom:20px;">Each block = a task period plus the rest immediately after it, since imagery keeps running for a few seconds after the "rest" cue.</p>
+        <div class="timeline">
+          <div class="tl-seg rest" style="flex:0.6;">rest</div>
+          <div class="tl-seg trim" style="flex:0.35;" title="trimmed">trim</div>
+          <div class="tl-seg window" style="flex:2.2;">32-frame window</div>
+          <div class="tl-seg task" style="flex:0.9;">+ following rest</div>
+          <div class="tl-seg rest" style="flex:0.6;">rest</div>
+        </div>
+        <div class="grid-3" style="margin-top:22px;">
+          <div class="card"><h4>Trim</h4><p class="small" style="font-size:13.5px;">First 2 TRs of each block dropped (still reflects the previous condition).</p></div>
+          <div class="card"><h4>Block length</h4><p class="small" style="font-size:13.5px;">37–38 TR (29.6–30.4&nbsp;s @ TR=0.8&nbsp;s) — a fixed 32-frame window fits every block with margin to spare.</p></div>
+          <div class="card"><h4>Merged class</h4><p class="small" style="font-size:13.5px;"><span class="mono">squeeze_imagery</span> + <span class="mono">squeeze_action</span> → one <b>squeeze</b> class (one continuous behavioral block).</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 : PREPROCESSING PIPELINE -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">02 &middot; Understanding the data</div>
+        <h2 class="display">Preprocessing pipeline</h2>
+        <p class="lede" style="margin-top:8px; margin-bottom:20px;">From an fMRIPrep-preprocessed BOLD file to the quantized tensor NeuroSTORM actually reads.</p>
+        <div class="flow">
+          <div class="flow-step"><div class="t">fMRIPrep BOLD</div><div class="s">desc-preproc</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="t">Spatial resample</div><div class="s">2×2×2 mm</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="t">Temporal resample</div><div class="s">TR → 0.8 s</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="t">Crop / pad</div><div class="s">96×96×96</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="t">Background mask</div><div class="s">brain mask → 0</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="t">Z-normalize</div><div class="s">per subject</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="background:var(--accent-soft); border-color:var(--accent);"><div class="t" style="color:var(--accent-strong);">int8 quantize</div><div class="s" style="color:var(--accent-strong);">data.pt</div></div>
+        </div>
+        <p class="small" style="margin-top:18px;">The first four steps deliberately reproduce NeuroSTORM's own preprocessing target — same spatial resolution, TR and volume shape it was pretrained on. int8 quantization (values scaled to fit ±127) keeps 26 subjects' worth of 4D volumes small enough to work with on disk.</p>
+      </div>
+    </section>
+
+    <!-- 10 : DIMENSIONALITY MISMATCH -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">02 &middot; A real dimensionality issue</div>
+        <h2 class="display">20 frames in, 32 frames needed</h2>
+        <div class="grid-2" style="margin-top:20px; gap:26px; align-items:center;">
+          <div>
+            <p class="body-text">NeuroSTORM's pretrained temporal position embeddings were built for <b style="color:var(--ink);">20-frame</b> sequences. Our blocks need a <b style="color:var(--ink);">32-frame</b> window to fully cover one imagery period. At load time, the model stretches its own learned time embeddings to fit:</p>
+            <div class="code" style="margin-top:14px;">[ckpt] interpolated pos_embeds.0.time_embed: T=20 -> T=32
+[ckpt] interpolated pos_embeds.1.time_embed: T=20 -> T=32
+[ckpt] interpolated pos_embeds.2.time_embed: T=20 -> T=32
+[ckpt] interpolated pos_embeds.3.time_embed: T=20 -> T=32</div>
+          </div>
+          <div class="card tint">
+            <h4>What a position embedding does</h4>
+            <p class="small" style="font-size:13.5px; line-height:1.7;">It tells the model "this frame is 3rd of 20," etc. Interpolating it to T=32 stretches that learned pattern onto a longer timeline, rather than learning time-position from scratch.</p>
+            <p class="small" style="margin-top:10px; font-size:13.5px;"><span class="pill info" style="margin-bottom:6px;"><span class="dot"></span>not a bug</span><br>This is a standard, well-behaved adaptation — logged automatically, not an error to chase.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 : SPLITS -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">02 &middot; Cross-validation setup</div>
+        <h2 class="display">Subject-level 5-fold splits</h2>
+        <div class="grid-2" style="margin-top:20px; gap:26px;">
+          <div>
+            <p class="body-text">Splitting is done <b style="color:var(--ink);">by subject</b>, never by block — every block from one person stays entirely inside train, val, or test, so the model can't leak subject identity across the split.</p>
+            <div class="row" style="gap:18px; margin-top:18px;">
+              <div class="metric-tile"><div class="mv tnum">15</div><div class="ml">train subjects</div></div>
+              <div class="metric-tile"><div class="mv tnum">5</div><div class="ml">val subjects</div></div>
+              <div class="metric-tile"><div class="mv tnum">6</div><div class="ml">test subjects</div></div>
+            </div>
+            <p class="small" style="margin-top:14px;">→ 450 / 150 / 180 block-samples for fold 1.</p>
+          </div>
+          <div class="card">
+            <span class="pill crit"><span class="dot"></span>bug found</span>
+            <h4 style="margin-top:10px;">The default splitter always gave the same fold</h4>
+            <p class="small" style="font-size:13.5px; line-height:1.6;">The codebase's built-in random splitter hardcodes <span class="mono">np.random.seed(0)</span> — so asking for 5 different folds silently regenerated the <i>identical</i> split five times.</p>
+            <p class="small" style="font-size:13.5px; margin-top:8px;"><b style="color:var(--good);">Fix:</b> a small script writing real subject-level fold rotation directly — 5 disjoint test groups, each subject held out exactly once.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12 : TPT STRATEGIES -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">02 &middot; Three ways to adapt the model</div>
+        <h2 class="display">Task-specific prompt tuning strategies</h2>
+        <p class="lede" style="margin-top:8px; margin-bottom:22px;">All three start from the same pretrained checkpoint. They differ only in how much of the network is allowed to change.</p>
+        <div class="prop-row">
+          <div class="prop-label" style="color:var(--cat-2);">prompt</div>
+          <div class="prop-bar"><div class="prop-fill" style="width:1.59%; background:var(--cat-2);"></div></div>
+          <div class="prop-tag tnum">83,667 / 5,263,167 &middot; 1.59%</div>
+        </div>
+        <div class="prop-row">
+          <div class="prop-label" style="color:var(--cat-3);">prompt_ln</div>
+          <div class="prop-bar"><div class="prop-fill" style="width:1.79%; background:var(--cat-3);"></div></div>
+          <div class="prop-tag tnum">94,323 / 5,263,167 &middot; 1.79%</div>
+        </div>
+        <div class="prop-row">
+          <div class="prop-label" style="color:var(--cat-1);">none (full FT)</div>
+          <div class="prop-bar"><div class="prop-fill" style="width:100%; background:var(--cat-1);"></div></div>
+          <div class="prop-tag tnum">5,263,167 / 5,263,167 &middot; 100%</div>
+        </div>
+        <div class="grid-3" style="margin-top:24px;">
+          <div class="card"><h4 style="color:var(--cat-2);">prompt</h4><p class="small" style="font-size:13px;">Backbone fully frozen. Only learnable prompt tokens + head are trained.</p></div>
+          <div class="card"><h4 style="color:var(--cat-3);">prompt_ln</h4><p class="small" style="font-size:13px;">Prompt tokens + LayerNorm affine parameters trainable. Backbone otherwise frozen.</p></div>
+          <div class="card"><h4 style="color:var(--cat-1);">none</h4><p class="small" style="font-size:13px;">Every parameter, including patch embeddings, is fine-tuned.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 : FIRST RESULTS -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">03 &middot; First results, original data</div>
+        <h2 class="display">Everything opens at chance</h2>
+        <table class="data" style="margin-top:18px;">
+          <tr><th>Strategy</th><th class="num">test AUROC</th><th class="num">test acc</th><th>Outcome</th></tr>
+          <tr><td class="rowhead" style="color:var(--cat-2);">prompt</td><td class="num mono">0.499</td><td class="num mono">34.1%</td><td>completed 30 epochs — flat</td></tr>
+          <tr><td class="rowhead" style="color:var(--cat-3);">prompt_ln</td><td class="num mono">—</td><td class="num mono">—</td><td>stopped ~10 ep. — same pattern</td></tr>
+          <tr><td class="rowhead" style="color:var(--cat-1);">none (full FT)</td><td class="num mono">—</td><td class="num mono">—</td><td>stopped ~10 ep. — same pattern</td></tr>
+        </table>
+        <p class="small" style="margin-top:14px;">Chance = 0.50 AUROC / 33.3% accuracy for a balanced 3-way task. Predicted-class fractions were badly skewed (e.g. tennis 5.1% / navigation 34.1% / squeeze 60.8%) — the model wasn't guessing evenly, it was defaulting.</p>
+        <div class="insert" style="margin-top:16px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <div><b>Insert:</b> your TensorBoard train/val loss &amp; accuracy curves for this run — flat and noisy across all 30 epochs, the shape to contrast with slide 22.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 : BUG 1 -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="pill crit"><span class="dot"></span>bug #1</span>
+        <h2 class="display" style="margin-top:12px;">A metrics bug was masking the real signal</h2>
+        <p class="lede" style="margin-top:8px; margin-bottom:20px;">Before any of this: test/val AUROC was flatlining at a literal <span class="mono" style="color:var(--crit);">0.0</span> by epoch 11 — not chance, zero.</p>
+        <div class="grid-2" style="gap:22px;">
+          <div class="card" style="border-color:var(--crit); background:var(--crit-soft);">
+            <h4 style="color:var(--crit);">Root cause</h4>
+            <p class="small" style="font-size:13.5px; line-height:1.6; color:var(--ink-2);">The evaluation code averaged a subject's logits across <i>all</i> their blocks — spanning all 3 classes — then compared that average to only the <i>first</i> block's label. Correct for one-label-per-scan tasks; meaningless for our 30-label-per-scan design.</p>
+          </div>
+          <div class="card" style="border-color:var(--good); background:var(--good-soft);">
+            <h4 style="color:var(--good);">Fix</h4>
+            <p class="small" style="font-size:13.5px; line-height:1.6; color:var(--ink-2);">Added a dedicated per-block multiclass branch: accuracy, AUROC and a confusion matrix computed directly per block, plus per-class predicted-fraction logging — all streamed to TensorBoard.</p>
+          </div>
+        </div>
+        <div class="insert" style="margin-top:18px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <div><b>Insert:</b> a TensorBoard confusion-matrix screenshot from the new logging — one 3×3 grid per epoch, tennis/navigation/squeeze.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15 : RULING OUT CAPACITY -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">03 &middot; Is it a model-capacity problem?</div>
+        <h2 class="display">No — every strategy fails the same way</h2>
+        <p class="lede" style="margin-top:8px; margin-bottom:22px;">If a stronger optimizer or more trainable parameters would fix this, <span class="mono">prompt_ln</span> and full fine-tuning should have looked meaningfully different from <span class="mono">prompt</span>. They didn't.</p>
+        <div class="row" style="gap:18px;">
+          <div class="card" style="flex:1; text-align:center;">
+            <div style="font-size:13px; color:var(--cat-2); font-weight:600; margin-bottom:8px;">prompt</div>
+            <div class="pill crit"><span class="dot"></span>collapsed</div>
+          </div>
+          <div class="card" style="flex:1; text-align:center;">
+            <div style="font-size:13px; color:var(--cat-3); font-weight:600; margin-bottom:8px;">prompt_ln</div>
+            <div class="pill crit"><span class="dot"></span>collapsed</div>
+          </div>
+          <div class="card" style="flex:1; text-align:center;">
+            <div style="font-size:13px; color:var(--cat-1); font-weight:600; margin-bottom:8px;">none (full FT)</div>
+            <div class="pill crit"><span class="dot"></span>collapsed</div>
+          </div>
+        </div>
+        <p class="body-text" style="margin-top:22px;">Same oscillating loss, same biased class collapse, at every capacity level from 1.6% to 100% trainable. That rules out learning rate, schedule and capacity as the bottleneck — the problem has to be upstream, in the data itself.</p>
+      </div>
+    </section>
+
+    <!-- 16 : LINEAR PROBE METHODOLOGY -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">05 &middot; A model-free sanity check</div>
+        <h2 class="display">Does any decodable signal exist at all?</h2>
+        <p class="lede" style="margin-top:8px; margin-bottom:20px;">Bypass NeuroSTORM entirely. Fit a plain logistic regression on the exact same blocks and ask the simplest possible question.</p>
+        <div class="grid-2" style="gap:22px;">
+          <div class="card">
+            <h4>Feature sets</h4>
+            <ul class="clean" style="margin-top:8px;">
+              <li style="font-size:13.5px;"><b style="color:var(--ink);">Whole-brain mean</b> — 1 number per block</li>
+              <li style="font-size:13.5px;"><b style="color:var(--ink);">Coarse spatial pooling</b> — 6×6×6 = 216 features per block, no atlas needed</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Kept identical to the real pipeline</h4>
+            <ul class="clean" style="margin-top:8px;">
+              <li style="font-size:13.5px;">Same block/window definitions (imported directly, can't drift)</li>
+              <li style="font-size:13.5px;">Same subject-level train/val/test split</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17 : LINEAR PROBE V1 -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">05 &middot; Linear probe, first pass</div>
+        <h2 class="display">Chance again — but a telling pattern</h2>
+        <div class="grid-2" style="margin-top:18px; gap:24px; align-items:center;">
+          <div class="card tint" style="text-align:center; padding:30px 20px;">
+            <div class="mv mono tnum" style="font-size:38px; color:var(--ink);">33.3%</div>
+            <div class="ml">accuracy, both feature sets, both splits</div>
+          </div>
+          <div>
+            <p class="body-text">The confusion matrix showed something more specific than "no signal": the predicted-class distribution was <b style="color:var(--ink);">nearly identical no matter the true class</b>. Every held-out subject pulled the same predictions toward the same classes, regardless of what they were actually imagining.</p>
+            <p class="body-text" style="margin-top:12px;">That's the signature of a classifier keying off <b style="color:var(--ink);">who the subject is</b>, not what they're doing.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 18 : CENTERING RESULT -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="pill good"><span class="dot"></span>signal confirmed</span>
+        <h2 class="display" style="margin-top:12px;">Subtract each subject's own mean — signal appears</h2>
+        <p class="small" style="margin-top:6px; margin-bottom:18px;">Centering each subject's features on their own within-split average removes the between-subject baseline, isolating block-to-block task variation.</p>
+        <div class="row" style="gap:30px;">
+          <div class="chartblock" style="flex:1;">
+            <div class="chart-title">Accuracy &middot; chance = 33.3%</div>
+            <div class="bars">
+              <div class="ref-line" style="bottom:33.3%;"><span class="rl-label">chance</span></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:36.0%; background:var(--ink-3);"><span class="val">36.0%</span></div></div><div class="bar-label">whole-brain<br>mean · val</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:33.9%; background:var(--ink-3);"><span class="val">33.9%</span></div></div><div class="bar-label">whole-brain<br>mean · test</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:67.3%; background:var(--accent);"><span class="val">67.3%</span></div></div><div class="bar-label">pooled 216-d<br>· val</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:58.9%; background:var(--accent);"><span class="val">58.9%</span></div></div><div class="bar-label">pooled 216-d<br>· test</div></div>
+            </div>
+          </div>
+          <div class="chartblock" style="flex:1;">
+            <div class="chart-title">AUROC &middot; chance = 0.500</div>
+            <div class="bars">
+              <div class="ref-line" style="bottom:50%;"><span class="rl-label">chance</span></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:56.6%; background:var(--ink-3);"><span class="val">.566</span></div></div><div class="bar-label">whole-brain<br>mean · val</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:50.4%; background:var(--ink-3);"><span class="val">.504</span></div></div><div class="bar-label">whole-brain<br>mean · test</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:81.3%; background:var(--accent);"><span class="val">.813</span></div></div><div class="bar-label">pooled 216-d<br>· val</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:74.6%; background:var(--accent);"><span class="val">.746</span></div></div><div class="bar-label">pooled 216-d<br>· test</div></div>
+            </div>
+          </div>
+        </div>
+        <p class="small" style="margin-top:8px;">Makes neuroscience sense too: the three imagery types differ in <i>where</i> activity rises, not overall magnitude — so spatial pooling finds signal a whole-brain average can't.</p>
+      </div>
+    </section>
+
+    <!-- 19 : ROOT CAUSE -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="pill crit"><span class="dot"></span>bug #2 &middot; root cause</span>
+        <h2 class="display" style="margin-top:12px;">One number was hiding each subject's fingerprint</h2>
+        <div class="grid-2" style="margin-top:16px; gap:24px; align-items:center;">
+          <div class="code">global_mean = data[~background].mean()
+global_std  = data[~background].std()
+data = (data - global_mean) / global_std</div>
+          <div>
+            <p class="body-text">This is <b style="color:var(--ink);">one scalar mean and std for a subject's entire scan</b> — not per voxel. It removes one overall offset and scale, but any <i>spatially-varying</i> pattern — this subject's motor cortex reads relatively brighter than their visual cortex, for anatomical, registration, or coil-sensitivity reasons — survives identically on every single frame and every block.</p>
+            <p class="body-text" style="margin-top:12px;">That static per-subject "fingerprint" is exactly what a spatially-aware model would pick up on first — swamping the much subtler task-locked signal.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 20 : THE FIX -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="pill good"><span class="dot"></span>fix</span>
+        <h2 class="display" style="margin-top:12px;">Remove each subject's own per-voxel mean</h2>
+        <div class="grid-2" style="margin-top:16px; gap:24px;">
+          <div>
+            <p class="body-text">For each subject: dequantize their scan, compute their own per-voxel mean across the <i>whole</i> ~1,145-frame recording (one fixed baseline, can't leak any block's label), subtract it, then re-quantize. Written to a new dataset folder — the original is untouched.</p>
+            <p class="body-text" style="margin-top:10px;">Validated the math with a numerical simulation before running it on real data:</p>
+          </div>
+          <table class="data">
+            <tr><th>Check</th><th class="num">Value</th></tr>
+            <tr><td>Original scale</td><td class="num mono">0.0572</td></tr>
+            <tr><td>Original abs. max</td><td class="num mono">7.26</td></tr>
+            <tr><td>Post-demean abs. max</td><td class="num mono" style="color:var(--good);">0.189</td></tr>
+            <tr><td>New scale</td><td class="num mono">0.001486</td></tr>
+            <tr><td>Max int8 requant. error</td><td class="num mono" style="color:var(--good);">0.00072</td></tr>
+          </table>
+        </div>
+        <div class="insert" style="margin-top:18px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+          <div><b>Insert:</b> a single axial brain slice, same subject and frame, before vs. after per-voxel demeaning — the anatomical "fingerprint" disappearing is easy to see by eye.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 21 : DOMAIN SHIFT REASONING -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">A tradeoff to reason through, first</div>
+        <h2 class="display">Will the pretrained backbone tolerate this?</h2>
+        <p class="lede" style="margin-top:8px; margin-bottom:20px;">The pretrained model has only ever seen the <i>old</i> normalization. Removing each subject's anatomical structure is a real, non-trivial shift in input statistics relative to pretraining.</p>
+        <div class="grid-3">
+          <div class="card" style="border-color:var(--cat-2);">
+            <h4 style="color:var(--cat-2);">prompt — highest risk</h4>
+            <p class="small" style="font-size:13px;">98.4% frozen. Can't adapt patch embeddings to new input statistics at all.</p>
+          </div>
+          <div class="card" style="border-color:var(--cat-3);">
+            <h4 style="color:var(--cat-3);">prompt_ln — still exposed</h4>
+            <p class="small" style="font-size:13px;">98.2% frozen; only LayerNorm affine terms can adjust.</p>
+          </div>
+          <div class="card" style="border-color:var(--cat-1); background:var(--accent-soft);">
+            <h4 style="color:var(--accent-strong);">none — best positioned</h4>
+            <p class="small" style="font-size:13px; color:var(--ink-2);">Every parameter can re-adapt to the new distribution.</p>
+          </div>
+        </div>
+        <p class="body-text" style="margin-top:20px;"><b style="color:var(--ink);">Decision:</b> test full fine-tuning first. If it clears chance convincingly, the normalization fix is validated and the shift wasn't fatal.</p>
+      </div>
+    </section>
+
+    <!-- 22 : SUCCESS RESULT -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="pill good"><span class="dot"></span>result</span>
+        <h2 class="display" style="margin-top:12px;">Full fine-tune, corrected data: real learning</h2>
+        <div class="row" style="gap:16px; margin-top:16px;">
+          <div class="metric-tile hi"><div class="mv tnum">0.881</div><div class="ml">test AUROC (chance 0.500)</div></div>
+          <div class="metric-tile hi"><div class="mv tnum">70.5%</div><div class="ml">test accuracy (chance 33.3%)</div></div>
+          <div class="metric-tile"><div class="mv tnum" style="font-size:22px; margin-top:4px;">~epoch 20</div><div class="ml">where real learning begins</div></div>
+        </div>
+        <div class="row" style="gap:24px; margin-top:20px; align-items:center;">
+          <div style="flex:1;">
+            <div class="stackbar-group">
+              <div class="stackbar-label">Predicted-class balance — no collapse this time</div>
+              <div class="stackbar">
+                <div class="stackseg tn" style="width:27.8%;">tennis 28%</div>
+                <div class="stackseg na" style="width:34.7%;">navigation 35%</div>
+                <div class="stackseg sq" style="width:37.5%;">squeeze 38%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="insert" style="margin-top:18px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <div><b>Insert:</b> the train_loss / train_acc TensorBoard curve for this run — flat through ~epoch 19, then loss drops from ~1.1 to 0.4–0.6 and accuracy climbs to 0.63–0.88, a shape no earlier run in this project ever showed.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 23 : PROMPT / PROMPT_LN FAIL -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">Re-testing the frozen strategies</div>
+        <h2 class="display">prompt &amp; prompt_ln still fail — the shift was real</h2>
+        <div class="row" style="gap:30px; margin-top:16px;">
+          <div class="chartblock" style="flex:1;">
+            <div class="chart-title">test AUROC &middot; chance = 0.500</div>
+            <div class="bars">
+              <div class="ref-line" style="bottom:50%;"><span class="rl-label">chance</span></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:88.1%; background:var(--cat-1);"><span class="val">.881</span></div></div><div class="bar-label" style="color:var(--cat-1); font-weight:600;">none</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:49.4%; background:var(--cat-2);"><span class="val">.494</span></div></div><div class="bar-label" style="color:var(--cat-2); font-weight:600;">prompt</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:49.4%; background:var(--cat-3);"><span class="val">.494</span></div></div><div class="bar-label" style="color:var(--cat-3); font-weight:600;">prompt_ln</div></div>
+            </div>
+          </div>
+          <div class="chartblock" style="flex:1;">
+            <div class="chart-title">Predicted-class fraction (frozen runs collapse)</div>
+            <div class="stack" style="margin-top:10px; gap:14px;">
+              <div class="stackbar-group">
+                <div class="stackbar-label" style="color:var(--cat-2);">prompt</div>
+                <div class="stackbar"><div class="stackseg tn" style="width:1.1%;"></div><div class="stackseg na" style="width:0.6%;"></div><div class="stackseg sq" style="width:98.3%;">squeeze 98%</div></div>
+              </div>
+              <div class="stackbar-group">
+                <div class="stackbar-label" style="color:var(--cat-3);">prompt_ln</div>
+                <div class="stackbar"><div class="stackseg tn" style="width:8.5%;">9%</div><div class="stackseg na" style="width:0%;"></div><div class="stackseg sq" style="width:91.5%;">squeeze 91%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="body-text" style="margin-top:20px;">A frozen backbone can't re-adapt its patch embeddings to the shifted input statistics, so it produces features the small trainable head can't use — and collapses to a near-constant default. <b style="color:var(--ink);">Full fine-tuning is currently the only viable configuration on the corrected dataset.</b></p>
+      </div>
+    </section>
+
+    <!-- 24 : FULL SUMMARY -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">The whole story, one table</div>
+        <h2 class="display">All six runs, side by side</h2>
+        <table class="data" style="margin-top:16px;">
+          <tr><th>Dataset</th><th>Strategy</th><th class="num">AUROC</th><th class="num">Accuracy</th><th>Outcome</th></tr>
+          <tr><td rowspan="3" class="rowhead">Original<br><span class="small">(global z-norm)</span></td><td style="color:var(--cat-2);">prompt</td><td class="num mono">0.499</td><td class="num mono">34.1%</td><td>chance, skewed defaults</td></tr>
+          <tr><td style="color:var(--cat-3);">prompt_ln</td><td class="num mono">—</td><td class="num mono">—</td><td>same pattern, stopped early</td></tr>
+          <tr><td style="color:var(--cat-1);">none</td><td class="num mono">—</td><td class="num mono">—</td><td>same pattern, stopped early</td></tr>
+          <tr><td rowspan="3" class="rowhead">Corrected<br><span class="small">(per-voxel demeaned)</span></td><td style="color:var(--cat-2);">prompt</td><td class="num mono">0.494</td><td class="num mono">33.9%</td><td>collapsed to "squeeze"</td></tr>
+          <tr><td style="color:var(--cat-3);">prompt_ln</td><td class="num mono">0.494</td><td class="num mono">32.8%</td><td>collapsed to "squeeze"</td></tr>
+          <tr><td style="color:var(--cat-1); font-weight:700;">none</td><td class="num mono" style="color:var(--good); font-weight:700;">0.881</td><td class="num mono" style="color:var(--good); font-weight:700;">70.5%</td><td style="color:var(--good); font-weight:600;">real, balanced learning</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- 25 : STATUS & NEXT STEPS -->
+    <section class="slide">
+      <div class="slide-inner">
+        <div class="kicker">08 &middot; Where we stand</div>
+        <h2 class="display">Confirmed, and what's still open</h2>
+        <div class="grid-2" style="margin-top:18px; gap:22px;">
+          <div class="card" style="border-color:var(--good); background:var(--good-soft);">
+            <h4 style="color:var(--good);">Confirmed</h4>
+            <ul class="clean" style="margin-top:8px;">
+              <li style="font-size:13.5px;">Real task-locked imagery signal exists in these blocks</li>
+              <li style="font-size:13.5px;">Root cause of the collapse was global vs. per-voxel normalization</li>
+              <li style="font-size:13.5px;">Full fine-tuning on corrected data reaches 0.88 AUROC — fold 1</li>
+            </ul>
+          </div>
+          <div class="card" style="border-color:var(--warn); background:var(--warn-soft);">
+            <h4 style="color:var(--warn);">Open questions</h4>
+            <ul class="clean" style="margin-top:8px;">
+              <li style="font-size:13.5px;">This is one fold of five — needs cross-validated confirmation</li>
+              <li style="font-size:13.5px;">Full fine-tune on 15 subjects risks overfitting, with no cheaper fallback (prompt-tuning doesn't work here)</li>
+              <li style="font-size:13.5px;">Partial fine-tuning (unfreeze early layers only) is an untried middle ground</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card tint" style="margin-top:18px;">
+          <h4>Why not leave-one-out CV instead?</h4>
+          <p class="small" style="font-size:13.5px; margin-top:6px;">Considered and set aside: 26 full-backbone runs vs. 5 for uncertain benefit; our 5-fold split already tests every subject exactly once; a 1-subject test fold (~30 blocks) is noisier per-fold than a 5-6 subject one, not more robust.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 26 : THANK YOU -->
+    <section class="slide">
+      <div class="slide-inner" style="text-align:center;">
+        <div class="kicker" style="justify-content:center;">Thank you</div>
+        <h1 class="display">Questions, thoughts, pushback</h1>
+        <p class="lede" style="margin:16px auto 0; text-align:center;">All scripts, configs and the full run log live in the project notes — happy to dig into any step.</p>
+        <div class="row" style="justify-content:center; gap:10px; margin-top:24px;">
+          <span class="pill info"><span class="dot"></span>Margo Kersey</span>
+          <span class="pill info"><span class="dot"></span>NeuroSTORM fine-tuning</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button id="prev" class="navbtn" aria-label="Previous slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+<button id="next" class="navbtn" aria-label="Next slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+<div id="counter"></div>
+<div id="hint"><span><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to navigate</span></div>
+
+<script>
+(function(){
+  var track = document.getElementById('track');
+  var slides = document.querySelectorAll('.slide');
+  var total = slides.length;
+  var idx = 0;
+  var progress = document.getElementById('progress');
+  var counter = document.getElementById('counter');
+  var hint = document.getElementById('hint');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) track.style.transition = 'none';
+
+  function pad(n){ return n < 10 ? '0'+n : ''+n; }
+
+  function render(){
+    track.style.transform = 'translateX(-' + (idx*100) + '%)';
+    progress.style.width = ((idx+1)/total*100) + '%';
+    counter.innerHTML = '<b>' + pad(idx+1) + '</b> / ' + pad(total);
+  }
+
+  function go(n){
+    idx = Math.max(0, Math.min(total-1, n));
+    render();
+    if (hint && !hint.classList.contains('hide')) hint.classList.add('hide');
+  }
+
+  document.getElementById('prev').addEventListener('click', function(){ go(idx-1); });
+  document.getElementById('next').addEventListener('click', function(){ go(idx+1); });
+
+  window.addEventListener('keydown', function(e){
+    if (['ArrowRight','ArrowDown','PageDown',' '].indexOf(e.key) > -1){ e.preventDefault(); go(idx+1); }
+    else if (['ArrowLeft','ArrowUp','PageUp'].indexOf(e.key) > -1){ e.preventDefault(); go(idx-1); }
+    else if (e.key === 'Home'){ go(0); }
+    else if (e.key === 'End'){ go(total-1); }
+  });
+
+  var touchX = null;
+  window.addEventListener('touchstart', function(e){ touchX = e.touches[0].clientX; }, {passive:true});
+  window.addEventListener('touchend', function(e){
+    if (touchX === null) return;
+    var dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 46){ dx < 0 ? go(idx+1) : go(idx-1); }
+    touchX = null;
+  }, {passive:true});
+
+  render();
+
+  // title-slide voxel motif -- fixed, deliberate pattern (not random each load)
+  var pattern = [
+    0.15,0.2,0.35,0.55,0.3,0.15,0.1,0.12,
+    0.2,0.4,0.65,0.85,0.6,0.35,0.18,0.1,
+    0.3,0.6,0.9,1,0.8,0.5,0.28,0.15,
+    0.4,0.7,0.95,0.75,0.55,0.65,0.4,0.2,
+    0.2,0.35,0.5,0.4,0.3,0.7,0.9,0.6,
+    0.12,0.18,0.28,0.22,0.4,0.85,1,0.7,
+    0.08,0.1,0.15,0.18,0.25,0.55,0.75,0.45,
+    0.05,0.08,0.1,0.12,0.15,0.3,0.4,0.25
+  ];
+  var grid = document.getElementById('titleVoxels');
+  if (grid){
+    pattern.forEach(function(v){
+      var d = document.createElement('div');
+      d.style.opacity = v;
+      grid.appendChild(d);
+    });
+  }
+})();
+</script>

@@ -172,6 +172,5 @@ find nas/output/supervised -name "test_summary_fold_*.json" | head -5
 
 ## See Also
 
-- [LOOCV_PERMUTATION_TESTING_GUIDE.md](LOOCV_PERMUTATION_TESTING_GUIDE.md) — Full permutation testing workflow
 - [LOOCV_PREDICTIONS_GUIDE.md](LOOCV_PREDICTIONS_GUIDE.md) — Per-sample predictions details
 - [callbacks/imagery_predictions_callback.py](callbacks/imagery_predictions_callback.py) — Callback implementation

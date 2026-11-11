@@ -52,7 +52,7 @@ bash run_finetune_scripts/greatlakes/run_loocv_xcpd.sh --start_index 101 --n_fol
 ## After Completion: Aggregate Results
 ```bash
 # Summarize all 26 held-out subjects
-python compare_conditions_v2.py \
+python analysis/compare_conditions_v2.py \
   --condition "LOOCV (best model)|FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv_fold-*"
 ```
 
@@ -96,6 +96,6 @@ tail /scratch/huangzu_root/huangzu0/mkersey/logs/xcpd_loocv_<jobid>_101.log
 ## Key Files
 - **Submission script**: `run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh`
 - **Training script**: `run_finetune_scripts/greatlakes/run_loocv_xcpd.sh`
-- **Full docs**: `LOOCV_GREATLAKES_UPDATES.md`
+- **Change history**: see `CHANGES.md`
 - **Split files**: `nas/splits/MICHIGAN/split_fixed_101.txt` ... `split_fixed_126.txt`
 - **Data**: `/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1/img/`

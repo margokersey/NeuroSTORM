@@ -219,4 +219,4 @@ Output:
 
 - [LOOCV_KDE_VISUALIZATION_GUIDE.md](LOOCV_KDE_VISUALIZATION_GUIDE.md) - Interpreting the visualization output
 - [LOOCV_PREDICTIONS_GUIDE.md](LOOCV_PREDICTIONS_GUIDE.md) - Per-sample prediction storage and analysis
-- [LOOCV_PERMUTATION_TESTING_GUIDE.md](LOOCV_PERMUTATION_TESTING_GUIDE.md) - Original workflow (subject-shuffling; now superseded)
+- (older subject-shuffling workflow was removed; see git history)

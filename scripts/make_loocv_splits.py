@@ -22,8 +22,8 @@ subjects are train. Using a val subject distinct from the test subject avoids
 leaking the held-out subject into checkpoint selection.
 
 Usage:
-    python "Claude outputs/make_loocv_splits.py" \
-      --dataset_name MICHIGAN_FULL_BLOCK \
+    python scripts/make_loocv_splits.py \
+      --dataset_name MICHIGAN \
       --source_fold 1 \
       --start_index 101
 
@@ -59,7 +59,7 @@ def main():
     ap.add_argument("--split_root", default="./nas/splits")
     ap.add_argument("--dataset_name", required=True,
                      help="Must match an existing nas/splits/<name>/split_fixed_<source_fold>.txt directory "
-                          "(e.g. MICHIGAN, MICHIGAN_FULL_BLOCK) -- LOOCV splits are written into the SAME directory.")
+                          "(use MICHIGAN; MICHIGAN_FULL_BLOCK reads the same dir) -- LOOCV splits are written into the SAME directory.")
     ap.add_argument("--source_fold", type=int, default=1,
                      help="Which existing split_fixed_<N>.txt to read the full 26-subject roster from "
                           "(its train+val+test union). Any of the 5 existing folds works -- they all cover "

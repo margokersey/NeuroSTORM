@@ -16,6 +16,36 @@ from utils.parser import str2bool
 # Multi-dataset sampling strategies for pretraining
 # =============================================================================
 
+# Split files are just subject lists, independent of how clips are cut, so
+# MichiganFullBlock shares the MICHIGAN splits (nas/splits/MICHIGAN/).
+SPLIT_DIR_ALIASES = {"MICHIGAN_FULL_BLOCK": "MICHIGAN"}
+# Never fall back to a random split for these (see _build_single_dataset): every
+# Michigan split is generated ahead of time by scripts/make_*_splits.py.
+REQUIRE_PREMADE_SPLITS = {"MICHIGAN", "MICHIGAN_FULL_BLOCK", "MICHIGAN_GENDER",
+                          "MICHIGAN_WITHIN", "MICHIGAN_POOLED"}
+
+
+def validate_premade_split(train_names, val_names, test_names, split_file_path):
+    """Reject split files that cannot be a real train/val/test partition.
+
+    determine_split_randomly() writes test_subjects == val_subjects; a premade
+    LOOCV/5-fold file never has that, so it (or any empty/overlapping set) means
+    the file is wrong and training would report a contaminated "test" score.
+    """
+    tr, va, te = set(train_names), set(val_names), set(test_names)
+    problems = []
+    if not tr or not va or not te:
+        problems.append(f"empty set (train={len(tr)}, val={len(va)}, test={len(te)})")
+    if tr & te:
+        problems.append(f"train/test overlap: {sorted(tr & te)}")
+    if tr & va:
+        problems.append(f"train/val overlap: {sorted(tr & va)}")
+    if va & te:
+        problems.append(f"val/test overlap: {sorted(va & te)} (a randomly generated split has val == test)")
+    if problems:
+        raise ValueError(f"Invalid split file {split_file_path}: " + "; ".join(problems))
+
+
 class MultiDatasetSampler(Sampler):
     """Base class for multi-dataset sampling strategies.
 
@@ -349,13 +379,13 @@ class fMRIDataModule(pl.LightningDataModule):
         if self.hparams.pretraining:
             self.split_file_paths = []
             for name in self.dataset_names:
-                split_dir_path = os.path.join(split_root, name)
+                split_dir_path = os.path.join(split_root, SPLIT_DIR_ALIASES.get(name, name))
                 self.split_file_paths.append(
                     os.path.join(split_dir_path, f"split_fixed_{self.hparams.dataset_split_num}.txt")
                 )
             self.split_file_path = self.split_file_paths[0]
         else:
-            split_dir_path = os.path.join(split_root, self.dataset_names[0])
+            split_dir_path = os.path.join(split_root, SPLIT_DIR_ALIASES.get(self.dataset_names[0], self.dataset_names[0]))
             self.split_file_path = os.path.join(split_dir_path, f"split_fixed_{self.hparams.dataset_split_num}.txt")
             self.split_file_paths = [self.split_file_path]
 
@@ -1170,6 +1200,17 @@ class fMRIDataModule(pl.LightningDataModule):
 
         if os.path.exists(split_file_path):
             train_names, val_names, test_names = self.load_split(split_file_path)
+            if dataset_name in REQUIRE_PREMADE_SPLITS:
+                validate_premade_split(train_names, val_names, test_names, split_file_path)
+        elif dataset_name in REQUIRE_PREMADE_SPLITS:
+            # These datasets' 5-fold / LOOCV splits are always generated ahead of time
+            # (scripts/make_loocv_splits.py). Falling through to determine_split_randomly
+            # would silently train on a random split whose "test" set equals its val set.
+            raise FileNotFoundError(
+                f"Split file not found: {split_file_path}\n"
+                f"Refusing to auto-generate a random split for {dataset_name}. Create it first "
+                f"(e.g. python scripts/make_loocv_splits.py --dataset_name MICHIGAN --source_fold 1 --start_index 101)."
+            )
         else:
             train_names, val_names, test_names = self.determine_split_randomly(subject_dict, split_file_path)
 

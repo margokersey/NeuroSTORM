@@ -16,7 +16,7 @@ ls -la /nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM/FIXED_
 ## Run All 26 LOOCV Folds in Parallel
 ```bash
 # Submit array job (all 26 folds on 26 A40s)
-sbatch run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh
+sbatch run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh
 
 # Monitor
 squeue -u mkersey
@@ -28,25 +28,25 @@ tail -f /scratch/huangzu_root/huangzu0/mkersey/logs/xcpd_loocv_<jobid>_101.log
 ## Re-run Specific Folds
 ```bash
 # Just fold 101
-sbatch --array=101 run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh
+sbatch --array=101 run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh
 
 # Folds 101-110
-sbatch --array=101-110 run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh
+sbatch --array=101-110 run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh
 
 # All 26 but max 4 running at once (limit GPU usage)
-sbatch --array=101-126%4 run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh
+sbatch --array=101-126%4 run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh
 ```
 
 ## Run Locally (Single Fold for Testing)
 ```bash
 # Test fold 101 with default settings (requires 1 GPU)
-bash run_finetune_scripts/greatlakes/run_loocv_xcpd.sh --start_index 101 --n_folds 1
+bash run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh --start_index 101 --n_folds 1
 
 # Dry run (see what would run, no actual training)
-bash run_finetune_scripts/greatlakes/run_loocv_xcpd.sh --dry_run
+bash run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh --dry_run
 
 # With custom epochs
-bash run_finetune_scripts/greatlakes/run_loocv_xcpd.sh --start_index 101 --n_folds 1 --max_epochs 20
+bash run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh --start_index 101 --n_folds 1 --max_epochs 20
 ```
 
 ## After Completion: Aggregate Results
@@ -82,7 +82,7 @@ tail /scratch/huangzu_root/huangzu0/mkersey/logs/xcpd_loocv_<jobid>_101.log
 
 **Q: Job fails with "No GPU visible"**
 - The sbatch script may not have correct line endings
-- Run: `dos2unix run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh`
+- Run: `dos2unix run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh`
 - Then resubmit
 
 **Q: Data path errors**
@@ -94,8 +94,8 @@ tail /scratch/huangzu_root/huangzu0/mkersey/logs/xcpd_loocv_<jobid>_101.log
 - Resubmit with `%4` suffix to limit concurrent jobs: `sbatch --array=101-126%4 ...`
 
 ## Key Files
-- **Submission script**: `run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh`
-- **Training script**: `run_finetune_scripts/greatlakes/run_loocv_xcpd.sh`
+- **Submission script**: `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh`
+- **Training script**: `run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh`
 - **Change history**: see `CHANGES.md`
 - **Split files**: `nas/splits/MICHIGAN/split_fixed_101.txt` ... `split_fixed_126.txt`
 - **Data**: `/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1/img/`

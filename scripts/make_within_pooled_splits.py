@@ -148,7 +148,7 @@ def main():
     print("    --load_model_path output/neurostorm/pt_neurostorm_mae_5ds.ckpt")
     print()
     print("  # Within, all subjects:")
-    print("  bash run_within_all_subjects.sh --tpt_strategy none \\")
+    print("  bash run_finetune_scripts/local/within/run_within_all_subjects.sh --tpt_strategy none \\")
     print("    --load_model_path output/neurostorm/pt_neurostorm_mae_5ds.ckpt")
 
 

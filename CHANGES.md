@@ -1,3 +1,16 @@
+# Changes
+
+## Reorganize and clean up `run_finetune_scripts/`
+
+- Grouped the workstation launchers by experiment: `local/5fold/`, `local/loocv/`, `local/reid/`, `local/within/` (moved with `git mv`; run them from the repo root, e.g. `bash run_finetune_scripts/local/5fold/run_finetune_xcpd_cv.sh`). `greatlakes/` is unchanged in layout.
+- Added `lib/common.sh` with the preflight helpers that were copy-pasted in every script; the launchers now source it. Launched commands (args, project names, folds) are unchanged, verified by diffing old vs. new calls against a stub `run_experiment.sh`.
+- Replaced the duplicated 25-line headers and large commented-out loops with short per-script headers (old variants are in git history).
+- Fixes: `sbatch_finetune_xcpd_cv.sh` pointed at a non-existent runner path; `greatlakes/loocv/run_loocv_xcpd.sh --dry_run` crashed on an unset `$GPUS`; the permutation sbatch had a dead `$?` check.
+- Untracked `greatlakes/.ipynb_checkpoints/` and added it to `.gitignore`.
+- Preflight "MISSING" log lines now share one format.
+
+---
+
 # Changes Made to LOOCV Script for Great Lakes
 
 ## Summary

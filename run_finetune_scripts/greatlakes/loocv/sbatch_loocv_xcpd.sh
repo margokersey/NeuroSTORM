@@ -24,7 +24,7 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=02:00:00                # per fold; tune after the first one finishes
+#SBATCH --time=03:00:00                # per fold; tune after the first one finishes
 #SBATCH --output=logs/xcpd_loocv_%A_%a.log   # %A = job id, %a = fold
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=mkersey@umich.edu

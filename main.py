@@ -392,15 +392,7 @@ def cli_main():
             print(f'[diag] FIT_START resume_from={args.resume_ckpt_path} max_epochs={args.max_epochs}', flush=True)
             trainer.fit(model, datamodule=data_module, ckpt_path=args.resume_ckpt_path)
 
-        # Test on the BEST checkpoint (not the last epoch)
-        # trainer.best_model_path will be the best checkpoint saved during training
-        best_ckpt = trainer.checkpoint_callback.best_model_path if trainer.checkpoint_callback else None
-        if best_ckpt:
-            print(f'[diag] Testing with best checkpoint: {best_ckpt}', flush=True)
-            trainer.test(model, dataloaders=data_module, ckpt_path=best_ckpt)
-        else:
-            print(f'[diag] No best checkpoint found, testing with current model', flush=True)
-            trainer.test(model, dataloaders=data_module)
+        trainer.test(model, dataloaders=data_module)
 
 
 if __name__ == "__main__":

@@ -80,6 +80,11 @@ GPU_IDS=$(seq -s, 0 $((NUM_GPUS - 1)))   # "0" for 1 GPU, "0,1" for 2, ...
 DRY_RUN=0
 # Comma-separated list of fold numbers to skip (e.g. "120" or "120,123")
 SKIP_FOLDS=""
+# Optional suffix for project name (e.g., "_perm1" for permutation testing)
+PROJECT_NAME_SUFFIX=""
+# Label permutation flags for permutation testing
+PERMUTE_LABELS=""
+PERMUTATION_SEED=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -88,6 +93,9 @@ while [[ $# -gt 0 ]]; do
         --max_epochs) MAX_EPOCHS="$2"; shift 2 ;;
         --batch_size) BATCH_SIZE="$2"; shift 2 ;;
         --skip_folds) SKIP_FOLDS="$2"; shift 2 ;;
+        --project_name_suffix) PROJECT_NAME_SUFFIX="$2"; shift 2 ;;
+        --permute_labels) PERMUTE_LABELS="--permute_labels"; shift ;;
+        --permutation_seed) PERMUTATION_SEED="--permutation_seed $2"; shift 2 ;;
         --dry_run) DRY_RUN=1; shift ;;
         *) echo "Unknown argument: $1"; exit 1 ;;
     esac
@@ -162,7 +170,8 @@ for i in $(seq "$START_INDEX" "$END_INDEX"); do
             --max_epochs "$MAX_EPOCHS" --batch_size "$BATCH_SIZE" --gpus "$GPU_IDS" \
             --load_model_path "$GENERAL_CKPT" \
             -- --dataset_split_num "$i" --tpt_strategy none \
-                 --project_name "${PROJECT_PREFIX}_fold-${i}"
+                 --project_name "${PROJECT_PREFIX}_fold-${i}${PROJECT_NAME_SUFFIX}" \
+                 $PERMUTE_LABELS $PERMUTATION_SEED
 done
 
 echo ""

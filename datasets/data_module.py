@@ -1189,7 +1189,13 @@ class fMRIDataModule(pl.LightningDataModule):
         val_dict = {key: subject_dict[key] for key in val_names if key in subject_dict}
         test_dict = {key: subject_dict[key] for key in test_names if key in subject_dict}
 
-        train_ds = Dataset(**params, subject_dict=train_dict, use_augmentations=False, train=True)
+        # Prepare label permutation kwargs if needed
+        perm_kwargs = {}
+        if getattr(self.hparams, 'permute_labels', False):
+            perm_kwargs['permute_labels'] = True
+            perm_kwargs['permutation_seed'] = getattr(self.hparams, 'permutation_seed', None) or self.hparams.seed
+
+        train_ds = Dataset(**params, subject_dict=train_dict, use_augmentations=False, train=True, **perm_kwargs)
         val_ds = Dataset(**params, subject_dict=val_dict, use_augmentations=False, train=False)
         test_ds = Dataset(**params, subject_dict=test_dict, use_augmentations=False, train=False)
 
@@ -1358,6 +1364,8 @@ class fMRIDataModule(pl.LightningDataModule):
         group.add_argument("--with_voxel_norm", type=str2bool, default=False)
         group.add_argument("--shuffle_time_sequence", action='store_true')
         group.add_argument("--limit_training_samples", type=float, default=None, help="use if you want to limit training samples")
+        group.add_argument("--permute_labels", action='store_true', help="Permute/randomize training labels (for permutation testing)")
+        group.add_argument("--permutation_seed", type=int, default=None, help="Seed for label permutation (if None, uses --seed)")
 
         # Multi-dataset reweighting strategy (pretraining only)
         group.add_argument("--reweighting_strategy", type=str, default=None,

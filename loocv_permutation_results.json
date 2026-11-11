@@ -1,0 +1,222 @@
+{
+  "101": {
+    "real_accuracy": 0.9,
+    "perm_mean": 0.31666666666666665,
+    "perm_std": 0.016666666666666663,
+    "perm_min": 0.3,
+    "perm_max": 0.3333333333333333,
+    "effect_size": 0.5833333333333334,
+    "effect_size_std": 34.99997900001261,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "102": {
+    "real_accuracy": 0.7,
+    "perm_mean": 0.375,
+    "perm_std": 0.05833333333333335,
+    "perm_min": 0.31666666666666665,
+    "perm_max": 0.43333333333333335,
+    "effect_size": 0.32499999999999996,
+    "effect_size_std": 5.571427616326692,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "103": {
+    "real_accuracy": 0.7666666666666667,
+    "perm_mean": 0.3666666666666667,
+    "perm_std": 0.033333333333333354,
+    "perm_min": 0.3333333333333333,
+    "perm_max": 0.4,
+    "effect_size": 0.4,
+    "effect_size_std": 11.999996400001073,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "104": {
+    "real_accuracy": 0.8666666666666667,
+    "perm_mean": 0.3333333333333333,
+    "perm_std": 0.16666666666666669,
+    "perm_min": 0.16666666666666666,
+    "perm_max": 0.5,
+    "effect_size": 0.5333333333333334,
+    "effect_size_std": 3.199999808000012,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "105": {
+    "real_accuracy": 0.9833333333333333,
+    "perm_mean": 0.4083333333333333,
+    "perm_std": 0.1416666666666667,
+    "perm_min": 0.26666666666666666,
+    "perm_max": 0.55,
+    "effect_size": 0.575,
+    "effect_size_std": 4.058823242906594,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "106": {
+    "real_accuracy": 0.9333333333333333,
+    "perm_mean": 0.3833333333333333,
+    "perm_std": 0.01666666666666669,
+    "perm_min": 0.36666666666666664,
+    "perm_max": 0.4,
+    "effect_size": 0.55,
+    "effect_size_std": 32.999980200011834,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "107": {
+    "real_accuracy": 0.8166666666666667,
+    "perm_mean": 0.3666666666666667,
+    "perm_std": 0.01666666666666669,
+    "perm_min": 0.35,
+    "perm_max": 0.38333333333333336,
+    "effect_size": 0.44999999999999996,
+    "effect_size_std": 26.999983800009677,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "108": {
+    "real_accuracy": 0.8333333333333334,
+    "perm_mean": 0.32499999999999996,
+    "perm_std": 0.04166666666666666,
+    "perm_min": 0.2833333333333333,
+    "perm_max": 0.36666666666666664,
+    "effect_size": 0.5083333333333334,
+    "effect_size_std": 12.199997072000707,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "109": {
+    "real_accuracy": 0.85,
+    "perm_mean": 0.32499999999999996,
+    "perm_std": 0.04166666666666666,
+    "perm_min": 0.2833333333333333,
+    "perm_max": 0.36666666666666664,
+    "effect_size": 0.525,
+    "effect_size_std": 12.599996976000728,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "110": {
+    "real_accuracy": 0.8833333333333333,
+    "perm_mean": 0.2833333333333333,
+    "perm_std": 0.04999999999999999,
+    "perm_min": 0.23333333333333334,
+    "perm_max": 0.3333333333333333,
+    "effect_size": 0.6,
+    "effect_size_std": 11.999997600000482,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "111": {
+    "real_accuracy": 0.9,
+    "perm_mean": 0.45,
+    "perm_std": 0.0,
+    "perm_min": 0.45,
+    "perm_max": 0.45,
+    "effect_size": 0.45,
+    "effect_size_std": 45000000.0,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "112": {
+    "real_accuracy": 0.9,
+    "perm_mean": 0.39166666666666666,
+    "perm_std": 0.025000000000000022,
+    "perm_min": 0.36666666666666664,
+    "perm_max": 0.4166666666666667,
+    "effect_size": 0.5083333333333333,
+    "effect_size_std": 20.333325200003234,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "113": {
+    "real_accuracy": 0.95,
+    "perm_mean": 0.35,
+    "perm_std": 0.016666666666666663,
+    "perm_min": 0.3333333333333333,
+    "perm_max": 0.36666666666666664,
+    "effect_size": 0.6,
+    "effect_size_std": 35.999978400012964,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "114": {
+    "real_accuracy": 0.7666666666666667,
+    "perm_mean": 0.2583333333333333,
+    "perm_std": 0.09166666666666666,
+    "perm_min": 0.16666666666666666,
+    "perm_max": 0.35,
+    "effect_size": 0.5083333333333334,
+    "effect_size_std": 5.5454539404959355,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "115": {
+    "real_accuracy": 0.9833333333333333,
+    "perm_mean": 0.33333333333333337,
+    "perm_std": 0.05000000000000002,
+    "perm_min": 0.2833333333333333,
+    "perm_max": 0.38333333333333336,
+    "effect_size": 0.6499999999999999,
+    "effect_size_std": 12.999997400000513,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "116": {
+    "real_accuracy": 0.8,
+    "perm_mean": 0.3833333333333333,
+    "perm_std": 0.033333333333333354,
+    "perm_min": 0.35,
+    "perm_max": 0.4166666666666667,
+    "effect_size": 0.41666666666666674,
+    "effect_size_std": 12.49999625000112,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "117": {
+    "real_accuracy": 0.8666666666666667,
+    "perm_mean": 0.30833333333333335,
+    "perm_std": 0.024999999999999994,
+    "perm_min": 0.2833333333333333,
+    "perm_max": 0.3333333333333333,
+    "effect_size": 0.5583333333333333,
+    "effect_size_std": 22.333324400003576,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "118": {
+    "real_accuracy": 0.8666666666666667,
+    "perm_mean": 0.25,
+    "perm_std": 0.08333333333333333,
+    "perm_min": 0.16666666666666666,
+    "perm_max": 0.3333333333333333,
+    "effect_size": 0.6166666666666667,
+    "effect_size_std": 7.399999112000108,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "119": {
+    "real_accuracy": 0.9166666666666666,
+    "perm_mean": 0.375,
+    "perm_std": 0.00833333333333336,
+    "perm_min": 0.36666666666666664,
+    "perm_max": 0.38333333333333336,
+    "effect_size": 0.5416666666666666,
+    "effect_size_std": 64.99992200009339,
+    "p_value": 0.0,
+    "significant_p05": true
+  },
+  "120": {
+    "real_accuracy": 0.8666666666666667,
+    "perm_mean": 0.3333333333333333,
+    "perm_std": 0.0,
+    "perm_min": 0.3333333333333333,
+    "perm_max": 0.3333333333333333,
+    "effect_size": 0.5333333333333334,
+    "effect_size_std": 53333333.33333334,
+    "p_value": 0.0,
+    "significant_p05": true
+  }
+}

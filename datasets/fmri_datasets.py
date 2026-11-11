@@ -644,7 +644,9 @@ class Michigan(BaseDataset):
     LABEL_MAP = {'tennis': 0, 'navigation': 1, 'squeeze': 2}
     TRIM_START = 2  # drop ~1.6s at block onset (still reflects the previous condition)
 
-    def __init__(self, **kwargs):
+    def __init__(self, permute_labels=False, permutation_seed=None, **kwargs):
+        self.permute_labels = permute_labels
+        self.permutation_seed = permutation_seed
         super().__init__(**kwargs)
 
     def _blocks_from_tsv(self, tsv_path, trim_start=None):
@@ -707,6 +709,22 @@ class Michigan(BaseDataset):
                 label = subject_dict[subject][1] if is_reid else self.LABEL_MAP[task_name]
                 data_tuple = (i, subject, subject_path, start, self.stride, num_frames, label, 0)
                 data.append(data_tuple)
+
+        # Permute labels if requested (for permutation testing)
+        if self.permute_labels and self.train and not is_reid:
+            seed = self.permutation_seed if self.permutation_seed is not None else 1234
+            rng = np.random.RandomState(seed)
+            
+            # Extract labels (index 6 in data tuple)
+            labels = np.array([t[6] for t in data])
+            
+            # Shuffle labels
+            shuffled_labels = labels.copy()
+            rng.shuffle(shuffled_labels)
+            
+            # Replace labels in data tuples
+            data = [data[idx][:6] + (int(shuffled_labels[idx]),) + data[idx][7:]
+                    for idx in range(len(data))]
 
         if self.train:
             self.target_values = np.array([t[6] for t in data]).reshape(-1, 1)

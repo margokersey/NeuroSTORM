@@ -6,10 +6,10 @@
 #
 # One-time setup:   mkdir -p /scratch/huangzu_root/huangzu0/mkersey/logs
 # Submit (from anywhere):
-#   sbatch run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh                # all 26 folds
-#   sbatch --array=101 run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh    # rerun just fold 101
-#   sbatch --array=101-105 run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh   # folds 101-105
-#   sbatch --array=101-126%4 run_finetune_scripts/greatlakes/sbatch_loocv_xcpd.sh # folds 101-126, max 4 at once
+#   sbatch run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh                # all 26 folds
+#   sbatch --array=101 run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh    # rerun just fold 101
+#   sbatch --array=101-105 run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh   # folds 101-105
+#   sbatch --array=101-126%4 run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh # folds 101-126, max 4 at once
 # Watch:   squeue -u mkersey      tail -f logs/xcpd_loocv_<jobid>_<fold>.log
 # Cancel:  scancel <jobid>   (all folds)   scancel <jobid>_101   (one fold)
 # =============================================================================
@@ -24,7 +24,7 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=12:00:00                # per fold; tune after the first one finishes
+#SBATCH --time=02:00:00                # per fold; tune after the first one finishes
 #SBATCH --output=logs/xcpd_loocv_%A_%a.log   # %A = job id, %a = fold
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=mkersey@umich.edu
@@ -33,7 +33,7 @@ set -euo pipefail
 
 # ── User settings (edit these) ───────────────────────────────────────────────
 REPO_DIR="$HOME/code/NeuroSTORM"      # your customized fork of the repo
-FINETUNE_SCRIPT="run_finetune_scripts/greatlakes/run_loocv_xcpd.sh"    # relative to REPO_DIR
+FINETUNE_SCRIPT="run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh"    # relative to REPO_DIR
 export DATA_ROOT="/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM"
 
 # ── Modules ──────────────────────────────────────────────────────────────────

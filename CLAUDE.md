@@ -11,9 +11,11 @@ Fork of CUHK-AIM-Group/NeuroSTORM (fMRI foundation model, PyTorch Lightning), us
 - [utils/](utils/) — argument parser (`parser.py`), losses, metrics, LR schedulers, Neptune logging
 - [scripts/](scripts/) — split generation (`make_*_splits.py`), result aggregation/plotting (`extract_loocv_metrics.py`, `plot_loocv_results.py`, `analyze_loocv_permutation_results.py`), baselines, dataset download/preprocessing
 - [run_finetune_scripts/](run_finetune_scripts/) — launch scripts; `greatlakes/5fold/` and `greatlakes/loocv/` hold Slurm (`sbatch_*`) and runner (`run_*`) scripts for Great Lakes
+- [analysis/](analysis/) — our custom analysis/backfill scripts (not upstream): `compare_conditions*.py`, `backfill_*best_ckpt_test.sh`
+- [notes/](notes/) — our LOOCV / permutation / label workflow docs (not upstream)
 - [tests/](tests/) — pytest suite (`make test`, `make test-fast`; see [Makefile](Makefile))
 - [docs/](docs/) — upstream project website (HTML)
-- Top-level `*.md` (LOOCV_*, LABEL*, PERMUTATION_*, CHANGES.md) — experiment notes and quickstarts for the LOOCV / permutation-testing workflow. `CHANGES.md` is the running change log.
+- `CHANGES.md` is the running change log. Put new experiment docs in `notes/`, new custom analysis scripts in `analysis/`, never at the repo root.
 - [pretrained_models/](pretrained_models/), `output/`, `data/` — weights/outputs/data; not for committing.
 
 ## Environment
@@ -24,6 +26,23 @@ Fork of CUHK-AIM-Group/NeuroSTORM (fMRI foundation model, PyTorch Lightning), us
 ## Shared-filesystem rules
 
 Follow the site policy in `/etc/claude-code/CLAUDE.md`: never search recursively outside this project or `$HOME`; use `-maxdepth`/`-xdev`; ask for exact paths elsewhere; don't poll `squeue`/`sacct` in loops (at most once a minute, or use `sbatch --wait`); stop any background process you start.
+
+## Where things go (keep the repo organized)
+
+| What | Where | Tracked? |
+|---|---|---|
+| Throwaway / exploratory scripts, one-off tests | `scratch/` | No (gitignored) |
+| Results, figures, CSV/JSON outputs, logs | `output/` or `figure_outputs/` | No |
+| Our reusable analysis / backfill scripts | `analysis/` | Yes |
+| Reusable pipeline scripts (splits, preprocessing, aggregation) | `scripts/` | Yes |
+| Our workflow docs / quickstarts | `notes/` (one doc per topic; update, don't add a new "quickstart/guide/implementation" variant) | Yes |
+| Change log | `CHANGES.md` | Yes |
+
+Rules for Claude:
+- Never create files in the repo root. Root is for upstream entry points and config only.
+- Put experiments and debugging scripts in `scratch/` first; promote to `analysis/` or `scripts/` only if the user wants to keep them.
+- Before creating a new doc, check `notes/` for one to extend. Do not create docs the user didn't ask for.
+- A pre-commit hook (`.githooks/pre-commit`, enable with `make hooks`) blocks files >5 MB, checkpoints/logs/pickles/npy, and result-type files at the root. Don't bypass with `--no-verify` without asking.
 
 ## Git management
 

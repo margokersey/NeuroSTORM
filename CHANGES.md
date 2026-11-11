@@ -150,6 +150,14 @@ srun bash "$FINETUNE_SCRIPT" --start_index "$SLURM_ARRAY_TASK_ID" --n_folds 1
 
 ## Documentation
 
-- `LOOCV_GREATLAKES_UPDATES.md` - Comprehensive technical guide
-- `LOOCV_QUICKSTART.md` - Quick reference for common commands
+- (removed; see git history) - Comprehensive technical guide
+- `notes/LOOCV_QUICKSTART.md` - Quick reference for common commands
 - `CHANGES.md` - This file, showing exact changes made
+
+---
+
+## Repo cleanup
+- Untracked pretrained `.ckpt` files (kept locally); added `*.ckpt`, `*.pt`, `*.pth` to `.gitignore`.
+- Removed root-level result PNGs; root `loocv_permutation_*.png` now ignored.
+- Moved custom scripts (`compare_conditions*.py`, `backfill_*best_ckpt_test.sh`) to `analysis/`.
+- Moved kept workflow docs to `notes/`; removed empty/duplicate/superseded guides (recoverable from git history).

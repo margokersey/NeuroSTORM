@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Blocks commits that add large files, checkpoints/logs, or stray root-level outputs.
+# Enable once per clone:  git config core.hooksPath .githooks   (or: make hooks)
+# Bypass deliberately with: git commit --no-verify
+MAX_KB=5120   # 5 MB
+bad=0
+while IFS= read -r -d '' f; do
+  [ -f "$f" ] || continue
+  size_kb=$(( ( $(wc -c < "$f") + 1023 ) / 1024 ))
+  if [ "$size_kb" -gt "$MAX_KB" ]; then
+    echo "pre-commit: '$f' is ${size_kb} KB (> ${MAX_KB} KB limit)"; bad=1
+  fi
+  case "$f" in
+    *.ckpt|*.pt|*.pth|*.pkl|*.npy|*.npz|*.log|slurm-*.out|*/slurm-*.out|output/*|figure_outputs/*|scratch/*)
+      echo "pre-commit: '$f' looks like data/checkpoint/log/output (should be gitignored)"; bad=1;;
+  esac
+  case "$f" in
+    */*) ;;
+    *.png|*.jpg|*.jpeg|*.pdf|*.json|*.csv)
+      echo "pre-commit: '$f' is a result-type file at the repo root (put in output/ or notes/)"; bad=1;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+if [ "$bad" -ne 0 ]; then
+  echo "Commit blocked. Fix the above, or use --no-verify if intentional."; exit 1
+fi

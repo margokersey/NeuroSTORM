@@ -1,4 +1,4 @@
-.PHONY: test test-unit test-integration test-cov test-fast lint format clean help
+.PHONY: hooks test test-unit test-integration test-cov test-fast lint format clean help
 
 help:  ## Show this help message
 	@echo "NeuroSTORM Test Commands"
@@ -56,3 +56,6 @@ ci:  ## Run CI checks locally
 	@echo "\nRunning tests..."
 	@make test
 	@echo "\nCI checks complete!"
+
+hooks:  ## Enable repo git hooks (blocks large files/checkpoints/stray outputs)
+	git config core.hooksPath .githooks

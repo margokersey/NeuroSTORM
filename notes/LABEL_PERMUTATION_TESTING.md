@@ -168,6 +168,12 @@ Output (default `output/loocv_permutation/`, override with `--output_file` / `--
   - **f** pooled one-vs-rest ROC and **g** calibration (reliability) diagram with ECE. These need `softmax_probs` from per-sample `test_predictions_fold_*.json`; they are skipped when only `test_summary_fold_*.json` exists.
 - Console summary with the metric table and per-fold breakdown
 
+Per-sample data is read from, in order: `test_predictions_fold_*.json`, then
+`lightning_logs/version_N/test_predictions.pt` (written at test time by
+`models/lightning_model.py`; needs `torch`; has the softmax probabilities), then the
+confusion matrix in `test_summary_fold_*.json`. The script prints how many runs have
+labels / probabilities.
+
 Runs with only `test_summary_fold_*.json` are still fully usable for accuracy, balanced accuracy, macro-F1, κ and the confusion matrix, because the script rebuilds labels from the saved confusion matrix. AUROC, log-loss, Brier and ECE need the per-sample predictions.
 
 The KDE (panel b) uses one accuracy per run, not per sample: per-sample correctness is binary (0/1), so a KDE of it carries no information beyond accuracy.

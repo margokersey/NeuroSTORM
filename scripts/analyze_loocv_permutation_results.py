@@ -175,19 +175,65 @@ def extract_fold_id(project_name):
         return None, None
 
 
+def load_pt_predictions(output_dir):
+    """Per-sample dump written at test time by models/lightning_model.py.
+
+    <run>/lightning_logs/version_N/test_predictions.pt holds probs, preds and
+    targets (and class_names). Uses the latest version_N that has the file.
+    """
+    cands = []
+    for p in (Path(output_dir) / "lightning_logs").glob("version_*/test_predictions.pt"):
+        try:
+            cands.append((int(p.parent.name.split("_")[-1]), p))
+        except ValueError:
+            pass
+    if not cands:
+        flat = Path(output_dir) / "test_predictions.pt"
+        if not flat.exists():
+            return None
+        path = flat
+    else:
+        path = max(cands)[1]
+    try:
+        import torch
+    except ImportError:
+        print("  Warning: found test_predictions.pt but torch is not installed to read it")
+        return None
+    try:
+        try:
+            d = torch.load(path, map_location='cpu', weights_only=False)
+        except TypeError:
+            d = torch.load(path, map_location='cpu')
+    except Exception as e:
+        print(f"  Warning: could not read {path} ({e})")
+        return None
+    if d.get('preds') is None or d.get('targets') is None:
+        return None
+    probs = d.get('probs')
+    names = d.get('class_names')
+    return {
+        'y': np.asarray(d['targets']).astype(int).ravel(),
+        'yhat': np.asarray(d['preds']).astype(int).ravel(),
+        'probs': np.asarray(probs, dtype=float) if probs is not None else None,
+        'names': {i: str(n) for i, n in enumerate(names)} if names else {},
+    }
+
+
 def _load_run(run_dir, label):
+    """Best available per-sample data: JSON predictions, then test_predictions.pt,
+    then the saved summary confusion matrix. Returns (accuracy, preds)."""
     summary = load_fold_summary(run_dir)
-    if summary is None:
-        print(f"  Warning: No summary found for {label}")
+    preds = (parse_predictions(load_per_sample_predictions(run_dir))
+             or load_pt_predictions(run_dir)
+             or (preds_from_summary(summary) if summary else None))
+    if preds is not None:
+        acc = float((preds['y'] == preds['yhat']).mean())
+    elif summary is not None and summary.get('overall_accuracy') is not None:
+        acc = float(summary['overall_accuracy'])
+    else:
+        print(f"  Warning: no predictions or summary found for {label}")
         return None, None
-    acc = summary.get('overall_accuracy')
-    if acc is None:
-        print(f"  Warning: No accuracy in summary for {label}")
-        return None, None
-    preds = parse_predictions(load_per_sample_predictions(run_dir))
-    if preds is None:
-        preds = preds_from_summary(summary)
-    return float(acc), preds
+    return acc, preds
 
 
 def aggregate_results(real_pattern, perm_pattern, n_permutations):
@@ -904,6 +950,14 @@ def main():
         print("No results found. Check glob patterns and directory structure.")
         return 1
 
+    runs = [r for d in results.values() for r in [d['real_preds']] + list(d['perm_preds'].values())]
+    print(f"\nData available for {len(runs)} runs: "
+          f"{sum(r is not None for r in runs)} with predicted labels, "
+          f"{sum(r is not None and r['probs'] is not None for r in runs)} with softmax probabilities "
+          f"(ROC / calibration / AUROC need the latter).")
+    if not HAS_SKLEARN:
+        print("WARNING: scikit-learn is not importable here, so only accuracy is computed and the "
+              "confusion matrix / summary panels are skipped. Run in the training env.")
     class_names = infer_class_names(results)
     n_classes = len(class_names)
     stats = compute_statistics(results, n_classes)

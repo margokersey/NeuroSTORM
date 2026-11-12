@@ -16,7 +16,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=16G
+#SBATCH --mem=128G
 #SBATCH --time=04:00:00
 #SBATCH --output=logs/squeeze_leak_%j.log
 #SBATCH --mail-type=END,FAIL

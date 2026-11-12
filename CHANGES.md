@@ -1,5 +1,9 @@
 # Changes
 
+## Add squeeze-neighbour leakage check for left hand-motor parcels
+
+- `analysis/plot_squeeze_hand_leakage.py`: averages Schaefer-400 parcels 50/51/53/57/59/76 (LH SomMot hand + DorsAttn_Post_8) from `data.pt`, and plots (blocks followed by squeeze) minus (blocks followed by other imagery) around block onset, shaded by block type. Prints a pre-squeeze dip statistic. Accepts several `--root` exports to compare high-pass vs. no-high-pass. Output: `output/squeeze_hand_leakage.png`.
+
 ## LOOCV permutation analysis: full metric suite and publication figure
 
 - `scripts/analyze_loocv_permutation_results.py`: in addition to accuracy, computes per-subject balanced accuracy (primary), macro-F1, Cohen's κ, macro OvR AUROC, log-loss, Brier and ECE. Each metric gets a subject-level bootstrap 95% CI, an aggregate permutation p-value (direction-aware), and a Wilcoxon signed-rank test across subjects. JSON adds `metrics` and `class_names`; a `_per_fold.csv` is written next to it.

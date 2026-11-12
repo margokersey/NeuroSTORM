@@ -711,6 +711,9 @@ def plot_kde(ax, stats, n_classes):
         if color == REAL:
             ax.scatter(vals, y0 - 0.2 + rng.uniform(-0.06, 0.06, len(vals)), s=8, color=REAL,
                        edgecolor='white', linewidth=0.3, zorder=3)
+        else:   # many points: small, translucent, no outline
+            ax.scatter(vals, y0 - 0.2 + rng.uniform(-0.08, 0.08, len(vals)), s=2, color=color,
+                       alpha=min(0.5, 60.0 / len(vals) + 0.08), linewidth=0, rasterized=True, zorder=3)
         m = vals.mean()
         ax.plot([m, m], [y0 - 0.32, y0 + 0.55], color=dark, lw=1.0, ls=(0, (4, 2)), zorder=3)
         ax.text(m, y0 + 0.58, f'mean = {m:.3f}', color=dark, fontsize=6.5, ha='center', va='bottom')

@@ -17,7 +17,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=32G
-#SBATCH --time=06:00:00
+#SBATCH --time=02:00:00
 #SBATCH --output=logs/squeeze_leak_%j.log
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=mkersey@umich.edu

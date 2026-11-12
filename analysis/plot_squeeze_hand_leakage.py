@@ -26,6 +26,10 @@ What this does
      the upper half of the B region shows the squeeze-successor condition, the lower
      half the comparison condition.
 
+Input: either a data.pt dataset root (has img/<sub>/data.pt and metadata/), or a
+directory of raw XCP-D denoised NIfTIs (pass --timing pointing at
+timing_onehot_task1.tsv; the atlas is resampled onto each BOLD grid).
+
 Run it once per export (e.g. the 0.008 Hz high-pass export and the no-high-pass
 export) to compare:
     python analysis/plot_squeeze_hand_leakage.py \
@@ -133,6 +137,66 @@ def load_subjects(root, parcels, cache):
 
 
 # ----------------------------------------------------------------------------- timing
+import re as _re
+NII_RE = _re.compile(r"^(sub-[^_]+)_task-imagery_run-0?1_.*desc-denoised_bold\.nii(\.gz)?$")
+
+
+def load_subjects_nii(root, parcels, cache):
+    """XCP-D denoised BOLD NIfTIs (no data.pt needed).
+
+    Finds sub-*_task-imagery_run-1_*_desc-denoised_bold.nii.gz under `root`,
+    resamples the Schaefer atlas (nearest) onto each BOLD file's own grid via the
+    affines, and averages each parcel. Unsmoothed (desc-denoised, not denoisedSmoothed).
+    """
+    import nibabel as nib
+    from nibabel.processing import resample_from_to
+    if cache and os.path.exists(cache):
+        z = np.load(cache, allow_pickle=True)
+        if list(z["parcels"]) == list(parcels):
+            print(f"[cache] {cache}")
+            return list(z["subjects"]), z["traces"]
+    atlas_img = nib.load(ATLAS_PATH)
+    files = {}
+    for d, _, fs in os.walk(root):
+        for f in fs:
+            m = NII_RE.match(f)
+            if m:
+                files[m.group(1)] = os.path.join(d, f)
+    if not files:
+        sys.exit(f"no *task-imagery_run-1*desc-denoised_bold.nii(.gz) found under {root}")
+    subs, traces, T0, grid = [], [], None, None
+    for s in sorted(files):
+        img = nib.load(files[s])
+        tr_hdr = float(img.header.get_zooms()[3])
+        if abs(tr_hdr - 0.8) > 0.01:
+            sys.exit(f"{s}: TR={tr_hdr}, timing file assumes 0.8 s")
+        key = (img.shape[:3], tuple(np.round(img.affine.ravel(), 3)))
+        if key != grid:
+            lab = np.asarray(resample_from_to(
+                atlas_img, (img.shape[:3], img.affine), order=0).dataobj).astype(np.int32)
+            masks = np.stack([lab == p for p in parcels])
+            grid = key
+            print("voxels per parcel on BOLD grid:", dict(zip(parcels, masks.reshape(len(parcels), -1).sum(1))))
+        data = np.asarray(img.dataobj, dtype=np.float32)  # [X,Y,Z,T]
+        tr = np.stack([data[m].mean(axis=0) for m in masks])  # [P,T]
+        if T0 is None:
+            T0 = tr.shape[1]
+        if tr.shape[1] != T0:
+            print(f"skip {s}: {tr.shape[1]} frames != {T0}")
+            continue
+        if not subs:
+            print("fraction non-zero ROI frames (sanity, first subject):",
+                  np.round([(np.abs(tr[k]) > 0).mean() for k in range(len(parcels))], 2))
+        subs.append(s)
+        traces.append(tr)
+        print(f"  {s}: {tr.shape[1]} frames")
+    traces = np.stack(traces)
+    if cache:
+        os.makedirs(os.path.dirname(cache), exist_ok=True)
+        np.savez(cache, subjects=np.array(subs), traces=traces, parcels=np.array(parcels))
+    return subs, traces
+
+
 def read_blocks(tsv):
     """Blocks in run order: dict(type, start, end(task run), rest_end, phases)."""
     df = pd.read_csv(tsv, sep="\t")
@@ -158,6 +222,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", action="append", metavar="[LABEL=]PATH",
                     help="FIXED_xcp_* dataset root (has img/ and metadata/). Repeatable to compare exports.")
+    ap.add_argument("--timing", default=None,
+                    help="timing_onehot_task1.tsv. Needed for NIfTI roots (no img/ dir); "
+                         "default <root>/metadata/timing_onehot_task1.tsv")
     ap.add_argument("--parcels", type=int, nargs="+", default=DEFAULT_PARCELS,
                     help="Schaefer-400 atlas label values to average (default: 50 51 53 57 59 76)")
     ap.add_argument("--tr", type=float, default=0.8)
@@ -180,9 +247,10 @@ def main():
     results = {}
     for lab, root in roots:
         cache = None if args.no_cache else os.path.join(REPO, "output", "cache", f"hand_roi_{lab}.npz")
-        subs, traces = load_subjects(root, args.parcels, cache)
+        is_blob = os.path.isdir(os.path.join(root, "img"))
+        subs, traces = (load_subjects if is_blob else load_subjects_nii)(root, args.parcels, cache)
         roi = traces.mean(axis=1)  # [S, T] mean over the chosen parcels
-        df, blocks = read_blocks(os.path.join(root, "metadata", "timing_onehot_task1.tsv"))
+        df, blocks = read_blocks(args.timing or os.path.join(root, "metadata", "timing_onehot_task1.tsv"))
         T = roi.shape[1]
         print(f"[{lab}] {len(subs)} subjects, T={T}, timing rows={len(df)}, blocks={len(blocks)}")
         print("  order:", " ".join(b["type"][0].upper() for b in blocks))
@@ -273,7 +341,7 @@ def main():
                          fontsize=8, loc="left")
             print(f"[{lab}] A={a_type or 'any'}: pre-squeeze window diff mean={win.mean():+.4f} "
                   f"t={tt.statistic:.2f} p={tt.pvalue:.3g} (n_sub={len(win)}, epochs {len(sq_ep)} vs {len(ot_ep)})")
-            ax.set_ylabel("Δ signal (z-norm units)")
+            ax.set_ylabel("Δ signal (a.u.)")
             if ri == len(panels) - 1:
                 ax.set_xlabel("time from block-A onset (s)   (dotted = start of next block B)")
             for sp in ("top", "right"):

@@ -2,7 +2,7 @@
 
 ## Add squeeze-neighbour leakage check for left hand-motor parcels
 
-- `analysis/plot_squeeze_hand_leakage.py`: averages Schaefer-400 parcels 50/51/53/57/59/76 (LH SomMot hand + DorsAttn_Post_8) from `data.pt`, and plots (blocks followed by squeeze) minus (blocks followed by other imagery) around block onset, shaded by block type. Prints a pre-squeeze dip statistic. Accepts several `--root` exports to compare high-pass vs. no-high-pass. Output: `output/squeeze_hand_leakage.png`.
+- `analysis/plot_squeeze_hand_leakage.py`: averages Schaefer-400 parcels 50/51/53/57/59/76 (LH SomMot hand + DorsAttn_Post_8) from `data.pt`, and plots (blocks followed by squeeze) minus (blocks followed by other imagery) around block onset, shaded by block type. Prints a pre-squeeze dip statistic. Accepts several `--root` exports to compare high-pass vs. no-high-pass. Output: `output/squeeze_hand_leakage.png`. Also accepts a directory of raw XCP-D `desc-denoised_bold` NIfTIs plus `--timing` (atlas resampled onto each BOLD grid), so `data.pt` is not required.
 
 ## LOOCV permutation analysis: full metric suite and publication figure
 

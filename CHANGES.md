@@ -3,7 +3,8 @@
 ## LOOCV permutation analysis: full metric suite and publication figure
 
 - `scripts/analyze_loocv_permutation_results.py`: in addition to accuracy, computes per-subject balanced accuracy (primary), macro-F1, Cohen's κ, macro OvR AUROC, log-loss, Brier and ECE. Each metric gets a subject-level bootstrap 95% CI, an aggregate permutation p-value (direction-aware), and a Wilcoxon signed-rank test across subjects. JSON adds `metrics` and `class_names`; a `_per_fold.csv` is written next to it.
-- Replaces the bar + per-sample KDE plot with a 6-panel figure (per-subject, null distribution, metric summary, confusion matrix, ROC, calibration), saved as PNG (600 dpi), PDF and SVG with editable text.
+- Replaces the bar + per-sample KDE plot with a figure (per-subject, KDE of per-subject accuracy real vs. permuted, null distribution, metric summary, confusion matrix, ROC, calibration), saved as PNG (600 dpi), PDF and SVG with editable text. Only panels with data are drawn; seaborn-"deep" colors without a seaborn dependency.
+- Runs that only have `test_summary_fold_*.json` (no per-sample predictions) are analysed from the saved confusion matrix (accuracy, balanced accuracy, F1, κ, confusion matrix); ROC/calibration/AUROC/log-loss/Brier/ECE need per-sample softmax outputs.
 - Default outputs moved to `output/loocv_permutation/` (were written to the repo root).
 - Predictions are read from the latest `lightning_logs/version_N` (was hard-coded to `version_0`, which ignored best-checkpoint backfill re-tests).
 - `notes/LABEL_PERMUTATION_TESTING.md` documents the new outputs; `notes/LOOCV_KDE_VISUALIZATION_GUIDE.md` is marked superseded.

@@ -25,8 +25,8 @@ Test labels are always the true labels; only training labels are permuted.
 
 Usage:
     python scripts/analyze_loocv_permutation_results.py \
-        --real_dir "nas/output/supervised/xcpd_nosmooth_general_fold-*" \
-        --perm_dir "nas/output/supervised/xcpd_nosmooth_general_fold-*_perm*" \
+        --real_dir "nas/output/neurostorm/xcpd_nosmooth_general_fold-*" \
+        --perm_dir "nas/output/neurostorm/xcpd_nosmooth_general_fold-*_perm*" \
         --n_permutations 100
 
 Output (defaults under output/loocv_permutation/):
@@ -65,7 +65,7 @@ except ImportError:
     print("Warning: scikit-learn not installed. Only accuracy will be computed.")
 
 try:
-    from scipy.stats import wilcoxon
+    from scipy.stats import wilcoxon, gaussian_kde
     HAS_SCIPY = True
 except ImportError:
     HAS_SCIPY = False
@@ -137,6 +137,28 @@ def parse_predictions(preds):
     return {'y': y, 'yhat': yhat, 'probs': probs, 'names': names}
 
 
+def preds_from_summary(summary):
+    """Rebuild label vectors from the saved confusion matrix.
+
+    Runs that only have test_summary_fold_*.json (no per-sample predictions) still
+    carry the [true, pred] confusion matrix, which fixes accuracy, balanced
+    accuracy, macro-F1, kappa and the pooled confusion matrix exactly. Softmax
+    probabilities are unavailable, so AUROC / log-loss / Brier / ECE, ROC and
+    calibration are skipped for these runs.
+    """
+    cm = summary.get('confusion_matrix')
+    if cm is None:
+        return None
+    cm = np.asarray(cm, dtype=int)
+    if cm.ndim != 2 or cm.sum() == 0:
+        return None
+    y = np.repeat(np.repeat(np.arange(cm.shape[0]), cm.shape[1]), cm.ravel())
+    yhat = np.tile(np.arange(cm.shape[1]), cm.shape[0]).repeat(cm.ravel())
+    labels = summary.get('confusion_matrix_labels') or []
+    names = {i: n for i, n in enumerate(labels)}
+    return {'y': y, 'yhat': yhat, 'probs': None, 'names': names}
+
+
 def extract_fold_id(project_name):
     """Extract fold ID from project name.
     Examples:
@@ -162,7 +184,10 @@ def _load_run(run_dir, label):
     if acc is None:
         print(f"  Warning: No accuracy in summary for {label}")
         return None, None
-    return float(acc), parse_predictions(load_per_sample_predictions(run_dir))
+    preds = parse_predictions(load_per_sample_predictions(run_dir))
+    if preds is None:
+        preds = preds_from_summary(summary)
+    return float(acc), preds
 
 
 def aggregate_results(real_pattern, perm_pattern, n_permutations):
@@ -499,43 +524,44 @@ def save_per_fold_csv(stats, output_file):
 # Figure
 # ----------------------------------------------------------------------------
 
-# Colors: real model = ink, permutation null = neutral gray (a reference, not a
-# series), classes = first three slots of a CVD-validated categorical palette
-# (blue / orange / aqua), confusion matrix = single-hue sequential blue.
-INK = '#1d1d1b'
-INK_2 = '#52514e'
-NULL = '#b4b3ad'
-NULL_DARK = '#7d7c77'
-CHANCE = '#8a8984'
-CLASS_COLORS = ['#2a78d6', '#eb6834', '#1baf7a']
-SEQ_BLUE = ['#f7f9fc', '#d3e3f7', '#9cc2ee', '#5c9be2', '#2a78d6', '#1b569f', '#0f3567']
+# Colors (seaborn "deep" palette): real = blue, permuted null = orange (a
+# CVD-safe pair), classes = purple / green / brown, confusion matrix = single-hue
+# sequential blue. Text and axes stay in neutral ink.
+INK = '#262626'
+INK_2 = '#595959'
+REAL = '#4C72B0'
+PERM = '#DD8452'
+PERM_DARK = '#B35F2D'
+CHANCE = '#8c8c8c'
+CLASS_COLORS = ['#8172B3', '#55A868', '#937860']
+SEQ_BLUE = ['#f6f9fc', '#d6e2f1', '#a9c1e0', '#7b9ccc', '#4C72B0', '#34568c', '#1f3a66']
+TITLE_PAD = 17   # points; leaves room for a one-row legend between title and axes
 
 
 def _style():
     plt.rcParams.update({
         'font.family': 'sans-serif',
         'font.sans-serif': ['Arial', 'Helvetica', 'Liberation Sans', 'DejaVu Sans'],
-        'font.size': 7,
-        'axes.titlesize': 7.5,
+        'font.size': 8,
+        'axes.titlesize': 8.5,
         'axes.titleweight': 'bold',
-        'axes.titlepad': 6,
-        'axes.labelsize': 7,
+        'axes.labelsize': 8,
         'axes.labelcolor': INK,
         'axes.edgecolor': INK_2,
-        'axes.linewidth': 0.6,
+        'axes.linewidth': 0.7,
         'axes.spines.top': False,
         'axes.spines.right': False,
-        'xtick.labelsize': 6.5,
-        'ytick.labelsize': 6.5,
+        'xtick.labelsize': 7.5,
+        'ytick.labelsize': 7.5,
         'xtick.color': INK_2,
         'ytick.color': INK_2,
-        'xtick.major.width': 0.6,
-        'ytick.major.width': 0.6,
-        'xtick.major.size': 2.5,
-        'ytick.major.size': 2.5,
-        'legend.fontsize': 6.5,
+        'xtick.major.width': 0.7,
+        'ytick.major.width': 0.7,
+        'xtick.major.size': 3,
+        'ytick.major.size': 3,
+        'legend.fontsize': 7,
         'legend.frameon': False,
-        'legend.handlelength': 1.4,
+        'legend.handlelength': 1.5,
         'text.color': INK,
         'pdf.fonttype': 42,     # editable text in Illustrator
         'ps.fonttype': 42,
@@ -545,20 +571,17 @@ def _style():
     })
 
 
-TITLE_PAD = 17   # points; leaves room for a one-row legend between title and axes
-
-
 def _panel_letter(ax, letter):
     # Same baseline as the panel title, offset left of the y-axis.
-    ax.annotate(letter, xy=(0, 1), xycoords='axes fraction', xytext=(-30, TITLE_PAD),
-                textcoords='offset points', fontsize=9, fontweight='bold',
+    ax.annotate(letter, xy=(0, 1), xycoords='axes fraction', xytext=(-34, TITLE_PAD),
+                textcoords='offset points', fontsize=10, fontweight='bold',
                 va='baseline', ha='left', color=INK)
 
 
-def _top_legend(ax, handles):
+def _top_legend(ax, handles, fontsize=6.5):
     ax.legend(handles=handles, loc='lower left', bbox_to_anchor=(0, 1.0), ncol=len(handles),
               borderaxespad=0.25, borderpad=0, columnspacing=1.0, handletextpad=0.4,
-              fontsize=6)
+              fontsize=fontsize)
 
 
 def _fmt_p(p, n_perm):
@@ -584,12 +607,6 @@ def _pooled(results, which='real'):
     return y, yhat, probs
 
 
-def _unavailable(ax, msg):
-    ax.text(0.5, 0.5, msg, transform=ax.transAxes, ha='center', va='center',
-            fontsize=6.5, color=INK_2)
-    ax.set_xticks([]); ax.set_yticks([])
-
-
 def plot_per_subject(ax, stats, metric, chance):
     fold_ids = sorted(stats)
     real = np.array([stats[f]['real_metrics'][metric] for f in fold_ids])
@@ -598,25 +615,59 @@ def plot_per_subject(ax, stats, metric, chance):
     x = np.arange(len(fold_ids))
     for xi, i in zip(x, order):
         lo, hi = np.nanmin(perm[i]), np.nanmax(perm[i])
-        ax.plot([xi, xi], [lo, hi], color=NULL, lw=2.4, solid_capstyle='round', zorder=1)
-        ax.plot([xi - 0.32, xi + 0.32], [np.nanmean(perm[i])] * 2, color=NULL_DARK, lw=0.9, zorder=2)
-    ax.scatter(x, real[order], s=16, color=INK, edgecolor='white', linewidth=0.6, zorder=3)
-    ax.axhline(chance, color=CHANCE, lw=0.7, ls=(0, (3, 2)), zorder=0)
+        ax.plot([xi, xi], [lo, hi], color=PERM, alpha=0.55, lw=2.6, solid_capstyle='round', zorder=1)
+        ax.plot([xi - 0.34, xi + 0.34], [np.nanmean(perm[i])] * 2, color=PERM_DARK, lw=1.0, zorder=2)
+    ax.scatter(x, real[order], s=20, color=REAL, edgecolor='white', linewidth=0.6, zorder=3)
+    ax.axhline(chance, color=CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0)
     ax.set_xlim(-0.8, len(x) - 0.2)
     ax.set_ylim(0, 1.02)
-    if len(fold_ids) <= 30:
+    if len(fold_ids) <= 24:
         ax.set_xticks(x)
-        ax.set_xticklabels([str(fold_ids[i]) for i in order], rotation=90, fontsize=5.5)
+        ax.set_xticklabels([str(fold_ids[i]) for i in order], rotation=90, fontsize=6)
         ax.tick_params(axis='x', length=0, pad=2)
+        ax.set_xlabel('Held-out subject (sorted)')
     else:
         ax.set_xticks([])
-    ax.set_xlabel('Held-out subject (sorted)')
+        ax.set_xlabel(f'Held-out subjects (n = {len(fold_ids)}, sorted)')
     ax.set_ylabel(METRICS[metric][0])
     ax.set_title('Per-subject performance', loc='left', pad=TITLE_PAD)
     _top_legend(ax, [
-        Line2D([], [], marker='o', ls='', color=INK, markersize=4, label='Real labels'),
-        Line2D([], [], color=NULL, lw=2.4, label='Permuted (range, mean)'),
-        Line2D([], [], color=CHANCE, lw=0.7, ls=(0, (3, 2)), label='Chance'),
+        Line2D([], [], marker='o', ls='', color=REAL, markersize=4.5, label='Real'),
+        Line2D([], [], color=PERM, alpha=0.7, lw=2.6, label='Permuted (range)'),
+        Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (3, 2)), label='Chance'),
+    ])
+
+
+def plot_kde(ax, stats, n_classes):
+    """Distribution of per-subject test accuracy: real vs. all permuted runs."""
+    folds = sorted(stats)
+    real = np.array([stats[f]['real_accuracy'] for f in folds])
+    perm = np.array([v['accuracy'] for f in folds for v in stats[f]['perm_metrics'].values()])
+    grid = np.linspace(0, 1, 400)
+    for vals, color in ((perm, PERM), (real, REAL)):
+        if HAS_SCIPY and len(vals) > 2 and np.std(vals) > 0:
+            kde = gaussian_kde(vals)
+            dens = kde(grid) + kde(-grid) + kde(2 - grid)   # reflect at the 0/1 bounds
+            ax.fill_between(grid, dens, color=color, alpha=0.35, linewidth=0, zorder=1)
+            ax.plot(grid, dens, color=color, lw=1.8, zorder=2)
+        else:
+            ax.hist(vals, bins=np.linspace(0, 1, 21), density=True, color=color, alpha=0.5, zorder=1)
+    top = ax.get_ylim()[1]
+    # rug: one tick per held-out subject (real accuracy)
+    ax.plot(real, np.full_like(real, 0.025 * top), '|', color=REAL, markersize=5,
+            markeredgewidth=0.9, zorder=3)
+    for vals, color in ((perm, PERM_DARK), (real, '#34568c')):
+        ax.axvline(vals.mean(), color=color, lw=1.0, ls=(0, (4, 2)), zorder=3)
+    ax.axvline(1.0 / n_classes, color=CHANCE, lw=0.8, ls=(0, (1, 2)), zorder=0)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, top)
+    ax.set_xlabel('Test accuracy per held-out subject')
+    ax.set_ylabel('Density')
+    ax.set_title('Accuracy distributions', loc='left', pad=TITLE_PAD)
+    _top_legend(ax, [
+        Line2D([], [], color=REAL, lw=1.8, label=f'Real (n = {len(real)})'),
+        Line2D([], [], color=PERM, lw=1.8, label=f'Permuted (n = {len(perm)})'),
+        Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (1, 2)), label='Chance'),
     ])
 
 
@@ -628,24 +679,24 @@ def plot_null(ax, test, n_perm, chance):
     pad = 0.08 * (hi - lo + 1e-6)
     if len(null) >= 10:
         bins = np.linspace(lo - pad, hi + pad, 30)
-        ax.hist(null, bins=bins, color=NULL, edgecolor='white', linewidth=0.5, zorder=1)
+        ax.hist(null, bins=bins, color=PERM, alpha=0.8, edgecolor='white', linewidth=0.5, zorder=1)
         ax.set_ylabel('Permutations')
     else:
         jitter = np.random.default_rng(0).uniform(-0.25, 0.25, len(null))
-        ax.scatter(null, jitter, s=18, color=NULL, edgecolor='white', linewidth=0.5, zorder=2)
+        ax.scatter(null, jitter, s=22, color=PERM, edgecolor='white', linewidth=0.5, zorder=2)
         ax.set_ylim(-1, 1.6)
         ax.set_yticks([])
         ax.spines['left'].set_visible(False)
     ytop = ax.get_ylim()[1]
-    ax.axvline(chance, color=CHANCE, lw=0.7, ls=(0, (3, 2)), zorder=0)
-    ax.axvline(real, color=INK, lw=1.4, zorder=3)
+    ax.axvline(chance, color=CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0)
+    ax.axvline(real, color=REAL, lw=1.8, zorder=3)
     right_side = real < hi - 0.3 * (hi - lo)
     ax.annotate(f"Real = {real:.3f}\n{_fmt_p(test['perm_p_value'], n_perm)}",
                 xy=(real, ytop), xycoords='data', xytext=(4 if right_side else -4, -2),
                 textcoords='offset points', ha='left' if right_side else 'right', va='top',
-                fontsize=6.5, color=INK, linespacing=1.3)
+                fontsize=7, color=INK, linespacing=1.3)
     ax.set_xlim(lo - pad, hi + pad)
-    ax.set_xlabel(f"Mean {METRICS[PRIMARY_METRIC][0].lower()} across subjects")
+    ax.set_xlabel(f"Mean {METRICS[PRIMARY_METRIC][0].lower()}")
     ax.set_title(f'Permutation null (n = {n_perm})', loc='left', pad=TITLE_PAD)
 
 
@@ -657,15 +708,15 @@ def plot_metric_forest(ax, tests, n_perm):
         if t['null_means']:
             nlo, nhi = (t['null_ci95'] if n_perm >= 20 else
                         (min(t['null_means']), max(t['null_means'])))
-            ax.plot([nlo, nhi], [yi, yi], color=NULL, lw=5, solid_capstyle='butt', zorder=1)
-            ax.plot([t['null_mean']] * 2, [yi - 0.17, yi + 0.17], color=NULL_DARK, lw=0.9, zorder=2)
+            ax.plot([nlo, nhi], [yi, yi], color=PERM, alpha=0.7, lw=5, solid_capstyle='butt', zorder=1)
+            ax.plot([t['null_mean']] * 2, [yi - 0.17, yi + 0.17], color=PERM_DARK, lw=1.0, zorder=2)
         if t['chance'] is not None:
-            ax.plot([t['chance']] * 2, [yi - 0.3, yi + 0.3], color=CHANCE, lw=0.7,
+            ax.plot([t['chance']] * 2, [yi - 0.3, yi + 0.3], color=CHANCE, lw=0.8,
                     ls=(0, (2, 1.5)), zorder=0)
-        ax.plot(t['real_ci95'], [yi, yi], color=INK, lw=1.0, zorder=3)
-        ax.scatter([t['real_mean']], [yi], s=18, color=INK, edgecolor='white', linewidth=0.6, zorder=4)
-        ax.text(1.03, yi, _fmt_p(t['perm_p_value'], n_perm), transform=ax.get_yaxis_transform(),
-                va='center', ha='left', fontsize=6, color=INK_2)
+        ax.plot(t['real_ci95'], [yi, yi], color=REAL, lw=1.2, zorder=3)
+        ax.scatter([t['real_mean']], [yi], s=22, color=REAL, edgecolor='white', linewidth=0.6, zorder=4)
+        ax.text(0.99, yi + 0.33, _fmt_p(t['perm_p_value'], n_perm), transform=ax.get_yaxis_transform(),
+                va='center', ha='right', fontsize=6.5, color=INK_2)
     ax.set_yticks(y)
     ax.set_yticklabels([tests[k]['label'] for k in keys])
     ax.tick_params(axis='y', length=0)
@@ -673,12 +724,12 @@ def plot_metric_forest(ax, tests, n_perm):
     ax.set_xlim(xmin, 1.0)
     ax.set_ylim(-0.6, len(keys) - 0.4)
     ax.set_xlabel('Score (mean over subjects)')
-    null_lbl = 'Permuted (95%)' if n_perm >= 20 else 'Permuted (range)'
+    null_lbl = 'Permuted'
     _top_legend(ax, [
-        Line2D([], [], marker='o', color=INK, lw=1.0, markersize=4, label='Real (95% CI)'),
-        Line2D([], [], color=NULL, lw=5, label=null_lbl),
-        Line2D([], [], color=CHANCE, lw=0.7, ls=(0, (2, 1.5)), label='Chance'),
-    ])
+        Line2D([], [], marker='o', color=REAL, lw=1.2, markersize=4.5, label='Real (±95% CI)'),
+        Line2D([], [], color=PERM, alpha=0.7, lw=5, label=null_lbl),
+        Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (2, 1.5)), label='Chance'),
+    ], fontsize=6)
     ax.set_title('Summary metrics', loc='left', pad=TITLE_PAD)
 
 
@@ -691,13 +742,13 @@ def plot_confusion(ax, fig, y, yhat, class_names):
     for i in range(k):
         for j in range(k):
             v = cmn[i, j]
-            ax.text(j + 0.5, i + 0.5, f"{100 * v:.0f}%", ha='center', va='center', fontsize=6.5,
+            ax.text(j + 0.5, i + 0.5, f"{100 * v:.0f}%", ha='center', va='center', fontsize=7.5,
                     color='white' if v > 0.55 else INK, fontweight='bold' if i == j else 'normal')
     ax.set_xlim(0, k); ax.set_ylim(k, 0)
     ax.set_aspect('equal')
     labels = [c.capitalize() for c in class_names]
-    ax.set_xticks(np.arange(k) + 0.5); ax.set_xticklabels(labels)
-    ax.set_yticks(np.arange(k) + 0.5); ax.set_yticklabels(labels, rotation=90, va='center')
+    ax.set_xticks(np.arange(k) + 0.5); ax.set_xticklabels(labels, rotation=30, ha='right', rotation_mode='anchor')
+    ax.set_yticks(np.arange(k) + 0.5); ax.set_yticklabels(labels, va='center')
     ax.tick_params(length=0)
     for s in ax.spines.values():
         s.set_visible(False)
@@ -707,20 +758,20 @@ def plot_confusion(ax, fig, y, yhat, class_names):
     ax.set_anchor('N')
     cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, ticks=[0, 0.5, 1])
     cb.ax.set_yticklabels(['0%', '50%', '100%'])
-    cb.ax.tick_params(labelsize=6, length=2, width=0.5)
+    cb.ax.tick_params(labelsize=7, length=2, width=0.5)
     cb.outline.set_linewidth(0.5)
-    cb.set_label('Row-normalized recall', fontsize=6.5)
+    cb.set_label('Row-normalized recall', fontsize=7)
 
 
 def plot_roc(ax, y, probs, class_names):
-    ax.plot([0, 1], [0, 1], color=CHANCE, lw=0.7, ls=(0, (3, 2)), zorder=0)
+    ax.plot([0, 1], [0, 1], color=CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0)
     for c, name in enumerate(class_names):
         yt = (y == c).astype(int)
         if yt.min() == yt.max():
             continue
         fpr, tpr, _ = roc_curve(yt, probs[:, c])
         auc = roc_auc_score(yt, probs[:, c])
-        ax.plot(fpr, tpr, color=CLASS_COLORS[c % len(CLASS_COLORS)], lw=1.4,
+        ax.plot(fpr, tpr, color=CLASS_COLORS[c % len(CLASS_COLORS)], lw=1.5,
                 label=f"{name.capitalize()}  {auc:.2f}")
     ax.set_xlim(-0.01, 1.01); ax.set_ylim(-0.01, 1.01)
     ax.set_aspect('equal')
@@ -729,7 +780,7 @@ def plot_roc(ax, y, probs, class_names):
     ax.set_ylabel('True positive rate')
     ax.set_title('ROC, one-vs-rest (pooled)', loc='left', pad=TITLE_PAD)
     ax.set_anchor('N')
-    ax.legend(loc='lower right', title='AUROC', title_fontsize=6.5, borderaxespad=0.2)
+    ax.legend(loc='lower right', title='AUROC', title_fontsize=7, borderaxespad=0.2)
 
 
 def _reliability(y, probs, n_bins=10, min_count=5):
@@ -746,13 +797,13 @@ def _reliability(y, probs, n_bins=10, min_count=5):
 
 def plot_calibration(ax, real, null, n_classes):
     lo = 1.0 / n_classes
-    ax.plot([lo, 1], [lo, 1], color=CHANCE, lw=0.7, ls=(0, (3, 2)), zorder=0, label='Perfect')
-    for (y, probs), color, lbl, z in ((null, NULL, 'Permuted', 1), (real, INK, 'Real', 2)):
+    ax.plot([lo, 1], [lo, 1], color=CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0, label='Perfect')
+    for (y, probs), color, lbl, z in ((null, PERM, 'Permuted', 1), (real, REAL, 'Real', 2)):
         if y is None or probs is None:
             continue
         xs, ys = _reliability(y, probs)
         ece = expected_calibration_error(y, probs)
-        ax.plot(xs, ys, color=color, lw=1.4, marker='o', markersize=3.2,
+        ax.plot(xs, ys, color=color, lw=1.6, marker='o', markersize=3.5,
                 markeredgecolor='white', markeredgewidth=0.5, zorder=z,
                 label=f"{lbl} (ECE {ece:.3f})")
     ax.set_xlim(lo - 0.02, 1.01)
@@ -763,42 +814,55 @@ def plot_calibration(ax, real, null, n_classes):
     ax.legend(loc='lower right', borderaxespad=0.2)
 
 
+def _grid_shape(n):
+    if n <= 3:
+        return 1, n
+    if n == 4:
+        return 2, 2
+    return int(np.ceil(n / 3)), 3
+
+
 def plot_results(stats, results, tests, class_names, n_perm, output_file):
-    """Six-panel publication figure (183 mm double-column width)."""
+    """Publication figure (183 mm wide). Only panels whose data exist are drawn:
+    per-sample probabilities enable ROC/calibration; the confusion matrix and
+    label-based metrics only need predicted labels (or the saved summary)."""
     if not HAS_MATPLOTLIB:
         print("Skipping plot generation (matplotlib not installed)")
         return
     _style()
     n_classes = len(class_names)
     metric = PRIMARY_METRIC if PRIMARY_METRIC in tests else 'accuracy'
-
-    fig = plt.figure(figsize=(7.2, 5.0))
-    gs = fig.add_gridspec(2, 3, width_ratios=[1.35, 1, 1], hspace=0.75, wspace=0.6,
-                          left=0.07, right=0.95, top=0.92, bottom=0.1)
-    axes = [fig.add_subplot(gs[r, c]) for r in range(2) for c in range(3)]
-
-    plot_per_subject(axes[0], stats, metric, chance_level(metric, n_classes))
-    plot_null(axes[1], tests[metric], n_perm, chance_level(metric, n_classes))
-    if len(tests) > 1:
-        plot_metric_forest(axes[2], tests, n_perm)
-    else:
-        _unavailable(axes[2], 'Per-sample predictions\nnot available')
+    chance = chance_level(metric, n_classes)
 
     y, yhat, probs = _pooled(results, 'real')
     y0, _, probs0 = _pooled(results, 'perm')
-    if y is not None and HAS_SKLEARN:
-        plot_confusion(axes[3], fig, y, yhat, class_names)
-    else:
-        _unavailable(axes[3], 'Per-sample predictions\nnot available')
-    if probs is not None and HAS_SKLEARN:
-        plot_roc(axes[4], y, probs, class_names)
-        plot_calibration(axes[5], (y, probs), (y0, probs0), n_classes)
-    else:
-        _unavailable(axes[4], 'Softmax probabilities\nnot available')
-        _unavailable(axes[5], 'Softmax probabilities\nnot available')
 
-    for ax, letter in zip(axes, 'abcdef'):
-        _panel_letter(ax, letter)
+    # (title, draw(ax, fig)); order = reading order, unavailable panels skipped
+    panels = [
+        ('per-subject', lambda ax, fig: plot_per_subject(ax, stats, metric, chance)),
+        ('kde', lambda ax, fig: plot_kde(ax, stats, n_classes)),
+        ('null', lambda ax, fig: plot_null(ax, tests[metric], n_perm, chance)),
+    ]
+    if len(tests) > 1:
+        panels.append(('forest', lambda ax, fig: plot_metric_forest(ax, tests, n_perm)))
+    if y is not None and HAS_SKLEARN:
+        panels.append(('confusion', lambda ax, fig: plot_confusion(ax, fig, y, yhat, class_names)))
+    if probs is not None and HAS_SKLEARN:
+        panels.append(('roc', lambda ax, fig: plot_roc(ax, y, probs, class_names)))
+        panels.append(('calibration', lambda ax, fig: plot_calibration(
+            ax, (y, probs), (y0, probs0), n_classes)))
+    skipped = [n for n in ('confusion', 'roc', 'calibration') if n not in [p[0] for p in panels]]
+    if skipped:
+        print(f"Note: omitted panels with no data: {', '.join(skipped)}")
+
+    nrows, ncols = _grid_shape(len(panels))
+    fig = plt.figure(figsize=(7.2, 2.55 * nrows + 0.3))
+    gs = fig.add_gridspec(nrows, ncols, hspace=0.7, wspace=0.7,
+                          left=0.08, right=0.97, top=0.93, bottom=0.08)
+    for i, (name, draw) in enumerate(panels):
+        ax = fig.add_subplot(gs[i // ncols, i % ncols])
+        draw(ax, fig)
+        _panel_letter(ax, 'abcdefgh'[i])
 
     out = Path(output_file)
     out.parent.mkdir(parents=True, exist_ok=True)

@@ -33,7 +33,7 @@ TIMING="${TIMING:-/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroS
 module load mamba
 set +u
 eval "$('/sw/pkgs/arc/mamba/py3.12/bin/conda' 'shell.bash' 'hook')"
-conda activate neurostorm
+conda activate general
 set -u
 
 cd "$REPO_DIR"

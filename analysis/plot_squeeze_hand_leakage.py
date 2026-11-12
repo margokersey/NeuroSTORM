@@ -260,33 +260,43 @@ def main():
         print("  order:", " ".join(b["type"][0].upper() for b in blocks))
         results[lab] = (subs, roi, df, blocks)
 
+    # All exports share one timing file, so block structure/shading come from the first.
+    _, _, df, blocks = results[roots[0][0]]
+    LINE_STYLES = [("#D81B60", "-"), ("#111111", "-"), ("#7B2CBF", "--"), ("#E6AB02", "-"), ("#666666", ":")]
+    style = {lab: LINE_STYLES[i % len(LINE_STYLES)] for i, (lab, _) in enumerate(roots)}
+
     # panel definitions: (A type or None, comparison type or None)
     panels = [("tennis", "navigation"), ("navigation", "tennis"), (None, None)]
-    fig, axes = plt.subplots(len(panels), len(roots), figsize=(8.5 * len(roots), 3.3 * len(panels)),
-                             squeeze=False, sharey="row")
+    fig, axes = plt.subplots(len(panels), 1, figsize=(10, 3.6 * len(panels)), squeeze=False)
     dt = args.tr
-    for ci, (lab, _) in enumerate(roots):
-        subs, roi, df, blocks = results[lab]
-        T = roi.shape[1]
-        for ri, (a_type, other) in enumerate(panels):
-            ax = axes[ri][ci]
-            sq_ep, ot_ep = [], []  # (block index) lists
-            for i in range(len(blocks) - 1):
-                a, b = blocks[i], blocks[i + 1]
-                if a["type"] == "squeeze":
-                    continue
-                if a_type is not None and a["type"] != a_type:
-                    continue
-                if b["type"] == "squeeze":
-                    sq_ep.append(i)
-                elif other is None or b["type"] == other:
-                    ot_ep.append(i)
-            if not sq_ep or not ot_ep:
-                ax.set_title(f"{lab} A={a_type or 'any'}: no epochs ({len(sq_ep)} vs {len(ot_ep)})")
+    for ri, (a_type, other) in enumerate(panels):
+        ax = axes[ri][0]
+        sq_ep, ot_ep = [], []  # block indices of A
+        for i in range(len(blocks) - 1):
+            a, b = blocks[i], blocks[i + 1]
+            if a["type"] == "squeeze":
                 continue
-            # common epoch length: A onset -> end of B (incl. trailing rest)
-            L = min(blocks[i + 1]["rest_end"] - blocks[i]["start"] for i in sq_ep + ot_ep)
-            t = (np.arange(-args.pre, L)) * dt
+            if a_type is not None and a["type"] != a_type:
+                continue
+            if b["type"] == "squeeze":
+                sq_ep.append(i)
+            elif other is None or b["type"] == other:
+                ot_ep.append(i)
+        if not sq_ep or not ot_ep:
+            ax.set_title(f"A={a_type or 'any'}: no epochs ({len(sq_ep)} vs {len(ot_ep)})", fontsize=9, loc="left")
+            continue
+        # common epoch length: A onset -> end of B (incl. trailing rest)
+        L = min(blocks[i + 1]["rest_end"] - blocks[i]["start"] for i in sq_ep + ot_ep)
+        t = (np.arange(-args.pre, L)) * dt
+        tr_sq = blocks[sq_ep[0] + 1]
+        b_off = (tr_sq["start"] - blocks[sq_ep[0]]["start"]) * dt
+        n = int(round(args.dip_window / dt))
+        k_b = int(round(b_off / dt)) + args.pre
+
+        curves = {}
+        for lab, _ in roots:
+            _, roi, _, _ = results[lab]
+            T = roi.shape[1]
 
             def epochs(idx):
                 out = []
@@ -296,68 +306,58 @@ def main():
                     if lo < 0 or hi > T:
                         continue
                     out.append(roi[:, lo:hi])  # [S, len]
-                return np.stack(out).mean(axis=0)  # per-subject mean over epochs -> [S, len]
+                return np.stack(out).mean(axis=0)  # per-subject mean over epochs
 
-            m_sq, m_ot = epochs(sq_ep), epochs(ot_ep)
-            diff = m_sq - m_ot
+            diff = epochs(sq_ep) - epochs(ot_ep)  # [S, len]
             mean, sem = diff.mean(0), diff.std(0, ddof=1) / np.sqrt(diff.shape[0])
-
-            # shading: block A (from its own type) and B (split: top=squeeze cond, bottom=comparison)
-            ref = (sq_ep + ot_ep)[0]
-            def shade_a():
-                a = blocks[ref]
-                x0, x1 = 0, (a["end"] - a["start"]) * dt
-                ax.axvspan(x0, x1, color=COLORS[a["type"]] if a_type else "#999999", alpha=0.18, lw=0)
-            shade_a()
-            tr_sq = blocks[sq_ep[0] + 1]
-            b_off = (tr_sq["start"] - blocks[sq_ep[0]]["start"]) * dt
-            ymin, ymax = None, None
-            ax.set_xlim(t[0], t[-1])
-            ax.axvline(b_off, color="k", lw=0.8, ls=":")
-            ax.axhline(0, color="#888", lw=0.6)
-            ax.fill_between(t, mean - sem, mean + sem, color="k", alpha=0.18, lw=0)
-            ax.plot(t, mean, color="k", lw=2)
-            ax.margins(y=0.15)
-            lo, hi = ax.get_ylim()
-            mid = (lo + hi) / 2
-            # B shading: squeeze (imagery lighter, action darker) in the upper half
-            sq_i = df["squeeze_imagery"].values; sq_a = df["squeeze_action"].values
-            s0 = tr_sq["start"]
-            for (c0, c1, col) in _phase_spans(sq_i, sq_a, s0, tr_sq["end"]):
-                ax.fill_between([b_off + c0 * dt, b_off + c1 * dt], mid, hi, color=COLORS[col], alpha=0.25, lw=0)
-            oth = blocks[ot_ep[0] + 1]
-            if a_type is not None:
-                ob = (oth["end"] - oth["start"]) * dt
-                ax.fill_between([b_off, b_off + ob], lo, mid, color=COLORS[oth["type"]], alpha=0.25, lw=0)
-            else:
-                ax.fill_between([b_off, b_off + (oth["end"] - oth["start"]) * dt], lo, mid,
-                                color="#999999", alpha=0.25, lw=0)
-            ax.set_ylim(lo, hi)
-
-            # dip statistic: last `dip-window` seconds of A (just before B onset)
-            n = int(round(args.dip_window / dt))
-            k_b = int(round(b_off / dt)) + args.pre
             win = diff[:, k_b - n:k_b].mean(axis=1)
             tt = stats.ttest_1samp(win, 0.0)
-            ax.set_title(f"{lab}: A={a_type or 'tennis/navigation'}  "
-                         f"[B=squeeze, n={len(sq_ep)}] - [B={other or 'non-squeeze'}, n={len(ot_ep)}]\n"
-                         f"pre-B {args.dip_window:.0f}s mean={win.mean():+.3f}, t({len(win)-1})={tt.statistic:.2f}, p={tt.pvalue:.3g}",
-                         fontsize=8, loc="left")
+            curves[lab] = (mean, sem, win, tt)
             print(f"[{lab}] A={a_type or 'any'}: pre-squeeze window diff mean={win.mean():+.4f} "
                   f"t={tt.statistic:.2f} p={tt.pvalue:.3g} (n_sub={len(win)}, epochs {len(sq_ep)} vs {len(ot_ep)})")
-            ax.set_ylabel("Δ signal (a.u.)")
-            if ri == len(panels) - 1:
-                ax.set_xlabel("time from block-A onset (s)   (dotted = start of next block B)")
-            for sp in ("top", "right"):
-                ax.spines[sp].set_visible(False)
 
-    handles = [plt.Rectangle((0, 0), 1, 1, color=COLORS[k], alpha=0.35) for k in COLORS]
-    fig.legend(handles, ["tennis", "navigation", "squeeze (imagery)", "squeeze (action)"],
-               loc="lower center", ncol=4, frameon=False, fontsize=9)
+        # y-limits from the data, then shading (A on the left, B split top/bottom)
+        allv = np.concatenate([np.r_[m - s, m + s] for m, s, _, _ in curves.values()])
+        pad = 0.08 * (allv.max() - allv.min())
+        lo, hi = allv.min() - pad, allv.max() + pad
+        mid = (lo + hi) / 2
+        a = blocks[sq_ep[0]]
+        ax.axvspan(0, (a["end"] - a["start"]) * dt, color=COLORS[a["type"]] if a_type else "#999999", alpha=0.18, lw=0)
+        for (c0, c1, col) in _phase_spans(df["squeeze_imagery"].values, df["squeeze_action"].values,
+                                         tr_sq["start"], tr_sq["end"]):
+            ax.fill_between([b_off + c0 * dt, b_off + c1 * dt], mid, hi, color=COLORS[col], alpha=0.25, lw=0)
+        oth = blocks[ot_ep[0] + 1]
+        ax.fill_between([b_off, b_off + (oth["end"] - oth["start"]) * dt], lo, mid,
+                        color=COLORS[oth["type"]] if a_type else "#999999", alpha=0.25, lw=0)
+        ax.axvline(b_off, color="k", lw=0.8, ls=":")
+        ax.axhline(0, color="#888", lw=0.6)
+        for lab, (mean, sem, _, _) in curves.items():
+            col, ls = style[lab]
+            ax.fill_between(t, mean - sem, mean + sem, color=col, alpha=0.12, lw=0)
+            ax.plot(t, mean, color=col, ls=ls, lw=2, label=lab)
+        ax.set_xlim(t[0], t[-1])
+        ax.set_ylim(lo, hi)
+        ax.set_title(f"A={a_type or 'tennis/navigation'}  [B=squeeze, n={len(sq_ep)}] - "
+                     f"[B={other or 'non-squeeze'}, n={len(ot_ep)}]", fontsize=9, loc="left")
+        # per-export pre-B statistic, coloured to match its line
+        for k, (lab, (_, _, win, tt)) in enumerate(curves.items()):
+            ax.text(0.01, 0.97 - 0.07 * k,
+                    f"{lab}: pre-B {args.dip_window:.0f}s mean={win.mean():+.2f}, p={tt.pvalue:.3g}",
+                    transform=ax.transAxes, fontsize=7.5, color=style[lab][0], va="top", fontweight="bold")
+        ax.set_ylabel("Δ signal (a.u.)")
+        if ri == len(panels) - 1:
+            ax.set_xlabel("time from block-A onset (s)   (dotted = start of next block B)")
+        for sp in ("top", "right"):
+            ax.spines[sp].set_visible(False)
+
+    line_h = [plt.Line2D([0], [0], color=style[l][0], ls=style[l][1], lw=2) for l, _ in roots]
+    box_h = [plt.Rectangle((0, 0), 1, 1, color=COLORS[k], alpha=0.35) for k in COLORS]
+    fig.legend(line_h + box_h, [l for l, _ in roots] + ["tennis", "navigation", "squeeze (imagery)", "squeeze (action)"],
+               loc="lower center", ncol=4, frameon=False, fontsize=8.5)
     fig.suptitle("Left hand-motor + DorsAttn parcels " + "/".join(map(str, args.parcels)) +
                  "\nblocks followed by squeeze − blocks followed by other imagery (mean ± SEM across subjects; white = rest)",
                  fontsize=10)
-    fig.tight_layout(rect=(0, 0.04, 1, 0.95))
+    fig.tight_layout(rect=(0, 0.07, 1, 0.95))
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     fig.savefig(args.out, dpi=200)
     print("saved", args.out)

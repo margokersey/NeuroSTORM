@@ -231,6 +231,11 @@ def main():
     ap.add_argument("--dip-window", type=float, default=8.0, help="seconds before B onset for the dip stat")
     ap.add_argument("--out", default=os.path.join(REPO, "output", "squeeze_hand_leakage.png"))
     ap.add_argument("--no-cache", action="store_true")
+    ap.add_argument("--ref", default=None, metavar="LABEL",
+                    help="Export to subtract in the export-difference figure/paired test "
+                         "(default: first --root). Each other export is shown as (other - ref).")
+    ap.add_argument("--out-diff", default=None,
+                    help="Output for the export-difference figure (default: <out>_export_diff.png)")
     args = ap.parse_args()
 
     roots = []
@@ -265,12 +270,39 @@ def main():
     LINE_STYLES = [("#D81B60", "-"), ("#111111", "-"), ("#7B2CBF", "--"), ("#E6AB02", "-"), ("#666666", ":")]
     style = {lab: LINE_STYLES[i % len(LINE_STYLES)] for i, (lab, _) in enumerate(roots)}
 
+    # Export-difference setup: (other - ref) on the SAME subjects, so block-specific
+    # confounds (same blocks, same order) cancel and only export differences remain.
+    labels = [l for l, _ in roots]
+    ref = args.ref or labels[0]
+    if ref not in labels:
+        sys.exit(f"--ref {ref!r} not among roots {labels}")
+    others = [l for l in labels if l != ref]
+    common = sorted(set.intersection(*[set(map(str, results[l][0])) for l in labels]))
+    print(f"subjects common to all exports: {len(common)} "
+          f"({', '.join(f'{l}: {len(results[l][0])}' for l in labels)})")
+    sel = {l: [list(map(str, results[l][0])).index(s_) for s_ in common] for l in labels}
+
     # panel definitions: (A type or None, comparison type or None)
     panels = [("tennis", "navigation"), ("navigation", "tennis"), (None, None)]
     fig, axes = plt.subplots(len(panels), 1, figsize=(10, 3.6 * len(panels)), squeeze=False)
+    fig2, axes2 = plt.subplots(len(panels), 1, figsize=(10, 3.6 * len(panels)), squeeze=False)
     dt = args.tr
+
+    def shade(ax, a_type, sq_ep, ot_ep, tr_sq, b_off, lo, hi):
+        mid = (lo + hi) / 2
+        a = blocks[sq_ep[0]]
+        ax.axvspan(0, (a["end"] - a["start"]) * dt, color=COLORS[a["type"]] if a_type else "#999999", alpha=0.18, lw=0)
+        for (c0, c1, col) in _phase_spans(df["squeeze_imagery"].values, df["squeeze_action"].values,
+                                         tr_sq["start"], tr_sq["end"]):
+            ax.fill_between([b_off + c0 * dt, b_off + c1 * dt], mid, hi, color=COLORS[col], alpha=0.25, lw=0)
+        oth = blocks[ot_ep[0] + 1]
+        ax.fill_between([b_off, b_off + (oth["end"] - oth["start"]) * dt], lo, mid,
+                        color=COLORS[oth["type"]] if a_type else "#999999", alpha=0.25, lw=0)
+        ax.axvline(b_off, color="k", lw=0.8, ls=":")
+        ax.axhline(0, color="#888", lw=0.6)
+
     for ri, (a_type, other) in enumerate(panels):
-        ax = axes[ri][0]
+        ax, ax2 = axes[ri][0], axes2[ri][0]
         sq_ep, ot_ep = [], []  # block indices of A
         for i in range(len(blocks) - 1):
             a, b = blocks[i], blocks[i + 1]
@@ -283,7 +315,8 @@ def main():
             elif other is None or b["type"] == other:
                 ot_ep.append(i)
         if not sq_ep or not ot_ep:
-            ax.set_title(f"A={a_type or 'any'}: no epochs ({len(sq_ep)} vs {len(ot_ep)})", fontsize=9, loc="left")
+            for x in (ax, ax2):
+                x.set_title(f"A={a_type or 'any'}: no epochs ({len(sq_ep)} vs {len(ot_ep)})", fontsize=9, loc="left")
             continue
         # common epoch length: A onset -> end of B (incl. trailing rest)
         L = min(blocks[i + 1]["rest_end"] - blocks[i]["start"] for i in sq_ep + ot_ep)
@@ -292,23 +325,26 @@ def main():
         b_off = (tr_sq["start"] - blocks[sq_ep[0]]["start"]) * dt
         n = int(round(args.dip_window / dt))
         k_b = int(round(b_off / dt)) + args.pre
+        title = (f"A={a_type or 'tennis/navigation'}  [B=squeeze, n={len(sq_ep)}] - "
+                 f"[B={other or 'non-squeeze'}, n={len(ot_ep)}]")
 
-        curves = {}
+        curves, diffs = {}, {}
         for lab, _ in roots:
             _, roi, _, _ = results[lab]
             T = roi.shape[1]
 
-            def epochs(idx):
+            def epochs(idx, roi=roi, T=T):
                 out = []
                 for i in idx:
                     s = blocks[i]["start"]
-                    lo, hi = s - args.pre, s + L
-                    if lo < 0 or hi > T:
+                    lo_, hi_ = s - args.pre, s + L
+                    if lo_ < 0 or hi_ > T:
                         continue
-                    out.append(roi[:, lo:hi])  # [S, len]
+                    out.append(roi[:, lo_:hi_])  # [S, len]
                 return np.stack(out).mean(axis=0)  # per-subject mean over epochs
 
             diff = epochs(sq_ep) - epochs(ot_ep)  # [S, len]
+            diffs[lab] = diff
             mean, sem = diff.mean(0), diff.std(0, ddof=1) / np.sqrt(diff.shape[0])
             win = diff[:, k_b - n:k_b].mean(axis=1)
             tt = stats.ttest_1samp(win, 0.0)
@@ -316,44 +352,59 @@ def main():
             print(f"[{lab}] A={a_type or 'any'}: pre-squeeze window diff mean={win.mean():+.4f} "
                   f"t={tt.statistic:.2f} p={tt.pvalue:.3g} (n_sub={len(win)}, epochs {len(sq_ep)} vs {len(ot_ep)})")
 
-        # y-limits from the data, then shading (A on the left, B split top/bottom)
+        # ---- figure 1: all exports overlaid
         allv = np.concatenate([np.r_[m - s, m + s] for m, s, _, _ in curves.values()])
         pad = 0.08 * (allv.max() - allv.min())
         lo, hi = allv.min() - pad, allv.max() + pad
-        mid = (lo + hi) / 2
-        a = blocks[sq_ep[0]]
-        ax.axvspan(0, (a["end"] - a["start"]) * dt, color=COLORS[a["type"]] if a_type else "#999999", alpha=0.18, lw=0)
-        for (c0, c1, col) in _phase_spans(df["squeeze_imagery"].values, df["squeeze_action"].values,
-                                         tr_sq["start"], tr_sq["end"]):
-            ax.fill_between([b_off + c0 * dt, b_off + c1 * dt], mid, hi, color=COLORS[col], alpha=0.25, lw=0)
-        oth = blocks[ot_ep[0] + 1]
-        ax.fill_between([b_off, b_off + (oth["end"] - oth["start"]) * dt], lo, mid,
-                        color=COLORS[oth["type"]] if a_type else "#999999", alpha=0.25, lw=0)
-        ax.axvline(b_off, color="k", lw=0.8, ls=":")
-        ax.axhline(0, color="#888", lw=0.6)
+        shade(ax, a_type, sq_ep, ot_ep, tr_sq, b_off, lo, hi)
         for lab, (mean, sem, _, _) in curves.items():
             col, ls = style[lab]
             ax.fill_between(t, mean - sem, mean + sem, color=col, alpha=0.12, lw=0)
             ax.plot(t, mean, color=col, ls=ls, lw=2, label=lab)
         ax.set_xlim(t[0], t[-1])
         ax.set_ylim(lo, hi)
-        ax.set_title(f"A={a_type or 'tennis/navigation'}  [B=squeeze, n={len(sq_ep)}] - "
-                     f"[B={other or 'non-squeeze'}, n={len(ot_ep)}]", fontsize=9, loc="left")
-        # per-export pre-B statistic, coloured to match its line
+        ax.set_title(title, fontsize=9, loc="left")
         for k, (lab, (_, _, win, tt)) in enumerate(curves.items()):
             ax.text(0.01, 0.97 - 0.07 * k,
                     f"{lab}: pre-B {args.dip_window:.0f}s mean={win.mean():+.2f}, p={tt.pvalue:.3g}",
                     transform=ax.transAxes, fontsize=7.5, color=style[lab][0], va="top", fontweight="bold")
         ax.set_ylabel("Δ signal (a.u.)")
-        if ri == len(panels) - 1:
-            ax.set_xlabel("time from block-A onset (s)   (dotted = start of next block B)")
-        for sp in ("top", "right"):
-            ax.spines[sp].set_visible(False)
 
-    line_h = [plt.Line2D([0], [0], color=style[l][0], ls=style[l][1], lw=2) for l, _ in roots]
+        # ---- figure 2: (other - ref) per subject, paired
+        ed = {o: diffs[o][sel[o]] - diffs[ref][sel[ref]] for o in others}  # [S_common, len]
+        em = {o: (d.mean(0), d.std(0, ddof=1) / np.sqrt(d.shape[0])) for o, d in ed.items()}
+        allv2 = np.concatenate([np.r_[m - s, m + s] for m, s in em.values()])
+        pad2 = 0.15 * (allv2.max() - allv2.min())
+        lo2, hi2 = min(allv2.min() - pad2, -0.05), max(allv2.max() + pad2, 0.05)
+        shade(ax2, a_type, sq_ep, ot_ep, tr_sq, b_off, lo2, hi2)
+        for k, o in enumerate(others):
+            col, ls = style[o]
+            m, s_ = em[o]
+            ax2.fill_between(t, m - s_, m + s_, color=col, alpha=0.18, lw=0)
+            ax2.plot(t, m, color=col, ls=ls, lw=2, label=f"{o} − {ref}")
+            w = ed[o][:, k_b - n:k_b].mean(axis=1)
+            pt = stats.ttest_1samp(w, 0.0)  # == paired t-test of (other) vs (ref) window values
+            ax2.text(0.01, 0.97 - 0.07 * k,
+                     f"{o} − {ref}: pre-B {args.dip_window:.0f}s mean={w.mean():+.2f}, "
+                     f"t({len(w)-1})={pt.statistic:.2f}, p={pt.pvalue:.3g}",
+                     transform=ax2.transAxes, fontsize=7.5, color=col, va="top", fontweight="bold")
+            print(f"[PAIRED {o} - {ref}] A={a_type or 'any'}: pre-B window mean diff={w.mean():+.4f} "
+                  f"t({len(w)-1})={pt.statistic:.2f} p={pt.pvalue:.3g} (n_sub={len(w)})")
+        ax2.set_xlim(t[0], t[-1])
+        ax2.set_ylim(lo2, hi2)
+        ax2.set_title(title, fontsize=9, loc="left")
+        ax2.set_ylabel("export difference (a.u.)")
+        if ri == len(panels) - 1:
+            for x in (ax, ax2):
+                x.set_xlabel("time from block-A onset (s)   (dotted = start of next block B)")
+        for x in (ax, ax2):
+            for sp in ("top", "right"):
+                x.spines[sp].set_visible(False)
+
     box_h = [plt.Rectangle((0, 0), 1, 1, color=COLORS[k], alpha=0.35) for k in COLORS]
-    fig.legend(line_h + box_h, [l for l, _ in roots] + ["tennis", "navigation", "squeeze (imagery)", "squeeze (action)"],
-               loc="lower center", ncol=4, frameon=False, fontsize=8.5)
+    box_l = ["tennis", "navigation", "squeeze (imagery)", "squeeze (action)"]
+    line_h = [plt.Line2D([0], [0], color=style[l][0], ls=style[l][1], lw=2) for l in labels]
+    fig.legend(line_h + box_h, labels + box_l, loc="lower center", ncol=4, frameon=False, fontsize=8.5)
     fig.suptitle("Left hand-motor + DorsAttn parcels " + "/".join(map(str, args.parcels)) +
                  "\nblocks followed by squeeze − blocks followed by other imagery (mean ± SEM across subjects; white = rest)",
                  fontsize=10)
@@ -361,6 +412,18 @@ def main():
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     fig.savefig(args.out, dpi=200)
     print("saved", args.out)
+
+    line_h2 = [plt.Line2D([0], [0], color=style[o][0], ls=style[o][1], lw=2) for o in others]
+    fig2.legend(line_h2 + box_h, [f"{o} − {ref}" for o in others] + box_l,
+                loc="lower center", ncol=4, frameon=False, fontsize=8.5)
+    fig2.suptitle(f"Export difference of the squeeze-neighbour contrast (… − {ref}), paired across {len(common)} subjects "
+                  "(mean ± SEM of paired difference)\n"
+                  "stat = paired t-test of per-subject pre-B window values vs 0; y-axis zoomed",
+                  fontsize=10)
+    fig2.tight_layout(rect=(0, 0.07, 1, 0.94))
+    out2 = args.out_diff or os.path.splitext(args.out)[0] + "_export_diff.png"
+    fig2.savefig(out2, dpi=200)
+    print("saved", out2)
 
 
 def _phase_spans(imag, act, s0, e0):

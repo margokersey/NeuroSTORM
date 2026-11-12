@@ -141,7 +141,7 @@ import re as _re
 NII_RE = _re.compile(r"^(sub-[^_]+)_task-imagery_run-0?1_.*desc-denoised_bold\.nii(\.gz)?$")
 
 
-def load_subjects_nii(root, parcels, cache):
+def load_subjects_nii(root, parcels, cache, expected_frames=None):
     """XCP-D denoised BOLD NIfTIs (no data.pt needed).
 
     Finds sub-*_task-imagery_run-1_*_desc-denoised_bold.nii.gz under `root`,
@@ -179,10 +179,9 @@ def load_subjects_nii(root, parcels, cache):
             print("voxels per parcel on BOLD grid:", dict(zip(parcels, masks.reshape(len(parcels), -1).sum(1))))
         data = np.asarray(img.dataobj, dtype=np.float32)  # [X,Y,Z,T]
         tr = np.stack([data[m].mean(axis=0) for m in masks])  # [P,T]
-        if T0 is None:
-            T0 = tr.shape[1]
-        if tr.shape[1] != T0:
-            print(f"skip {s}: {tr.shape[1]} frames != {T0}")
+        if expected_frames is not None and tr.shape[1] != expected_frames:
+            print(f"SKIP {s}: {tr.shape[1]} frames != {expected_frames} timing rows "
+                  f"(censored volumes?)")
             continue
         if not subs:
             print("fraction non-zero ROI frames (sanity, first subject):",
@@ -248,7 +247,12 @@ def main():
     for lab, root in roots:
         cache = None if args.no_cache else os.path.join(REPO, "output", "cache", f"hand_roi_{lab}.npz")
         is_blob = os.path.isdir(os.path.join(root, "img"))
-        subs, traces = (load_subjects if is_blob else load_subjects_nii)(root, args.parcels, cache)
+        if is_blob:
+            subs, traces = load_subjects(root, args.parcels, cache)
+        else:
+            n_rows = len(pd.read_csv(args.timing or os.path.join(root, "metadata", "timing_onehot_task1.tsv"), sep="\t"))
+            subs, traces = load_subjects_nii(root, args.parcels, cache, n_rows)
+            print(f"[{lab}] kept {len(subs)} subjects")
         roi = traces.mean(axis=1)  # [S, T] mean over the chosen parcels
         df, blocks = read_blocks(args.timing or os.path.join(root, "metadata", "timing_onehot_task1.tsv"))
         T = roi.shape[1]

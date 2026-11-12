@@ -685,36 +685,44 @@ def plot_per_subject(ax, stats, metric, chance):
 
 
 def plot_kde(ax, stats, n_classes):
-    """Distribution of per-subject test accuracy: real vs. all permuted runs."""
+    """Raincloud of per-subject test accuracy: real vs. all permuted runs.
+    Half-violin + box + (real only) one dot per held-out subject; the dashed
+    line and label mark each group's mean accuracy."""
     folds = sorted(stats)
     real = np.array([stats[f]['real_accuracy'] for f in folds])
     perm = np.array([v['accuracy'] for f in folds for v in stats[f]['perm_metrics'].values()])
     grid = np.linspace(0, 1, 400)
-    for vals, color in ((perm, PERM), (real, REAL)):
+    rng = np.random.default_rng(0)
+    rows = ((1.0, perm, PERM, PERM_DARK, 'Permuted'), (0.0, real, REAL, '#34568c', 'Real'))
+    for y0, vals, color, dark, _ in rows:
         if HAS_SCIPY and len(vals) > 2 and np.std(vals) > 0:
             kde = gaussian_kde(vals)
             dens = kde(grid) + kde(-grid) + kde(2 - grid)   # reflect at the 0/1 bounds
-            ax.fill_between(grid, dens, color=color, alpha=0.35, linewidth=0, zorder=1)
-            ax.plot(grid, dens, color=color, lw=1.8, zorder=2)
-        else:
-            ax.hist(vals, bins=np.linspace(0, 1, 21), density=True, color=color, alpha=0.5, zorder=1)
-    top = ax.get_ylim()[1]
-    # rug: one tick per held-out subject (real accuracy)
-    ax.plot(real, np.full_like(real, 0.025 * top), '|', color=REAL, markersize=5,
-            markeredgewidth=0.9, zorder=3)
-    for vals, color in ((perm, PERM_DARK), (real, '#34568c')):
-        ax.axvline(vals.mean(), color=color, lw=1.0, ls=(0, (4, 2)), zorder=3)
+            dens = 0.42 * dens / dens.max()
+            ax.fill_between(grid, y0 + 0.08, y0 + 0.08 + dens, color=color, alpha=0.4, linewidth=0, zorder=1)
+            ax.plot(grid, y0 + 0.08 + dens, color=color, lw=1.2, zorder=2)
+        bp = ax.boxplot(vals, positions=[y0], vert=False, widths=0.12, showfliers=False,
+                        patch_artist=True, manage_ticks=False, zorder=2)
+        for part in ('boxes', 'whiskers', 'caps', 'medians'):
+            for item in bp[part]:
+                item.set_color(dark); item.set_linewidth(0.9)
+        for box in bp['boxes']:
+            box.set_facecolor('white')
+        if color == REAL:
+            ax.scatter(vals, y0 - 0.2 + rng.uniform(-0.06, 0.06, len(vals)), s=8, color=REAL,
+                       edgecolor='white', linewidth=0.3, zorder=3)
+        m = vals.mean()
+        ax.plot([m, m], [y0 - 0.32, y0 + 0.55], color=dark, lw=1.0, ls=(0, (4, 2)), zorder=3)
+        ax.text(m, y0 + 0.58, f'mean = {m:.3f}', color=dark, fontsize=6.5, ha='center', va='bottom')
     ax.axvline(1.0 / n_classes, color=CHANCE, lw=0.8, ls=(0, (1, 2)), zorder=0)
     ax.set_xlim(0, 1)
-    ax.set_ylim(0, top)
+    ax.set_ylim(-0.45, 1.85)
+    ax.set_yticks([1.0, 0.0])
+    ax.set_yticklabels([f'Permuted\n(n = {len(perm)})', f'Real\n(n = {len(real)})'])
+    ax.tick_params(axis='y', length=0)
     ax.set_xlabel('Test accuracy per held-out subject')
-    ax.set_ylabel('Density')
     ax.set_title('Accuracy distributions', loc='left', pad=TITLE_PAD)
-    _top_legend(ax, [
-        Line2D([], [], color=REAL, lw=1.8, label=f'Real (n = {len(real)})'),
-        Line2D([], [], color=PERM, lw=1.8, label=f'Permuted (n = {len(perm)})'),
-        Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (1, 2)), label='Chance'),
-    ])
+    _top_legend(ax, [Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (1, 2)), label='Chance')])
 
 
 def plot_null(ax, test, n_perm, chance):

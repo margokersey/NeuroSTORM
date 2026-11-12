@@ -33,7 +33,7 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G                    
-#SBATCH --time=08:00:00                # 3 permutations × 3 hours each, per fold
+#SBATCH --time=10:00:00                # 3 permutations × 2 hours each, per fold
 #SBATCH --output=logs/xcpd_loocv_perm_%A_%a.log
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=mkersey@umich.edu
@@ -45,7 +45,7 @@ REPO_DIR="$HOME/code/NeuroSTORM"
 FINETUNE_SCRIPT="${REPO_DIR}/run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh"
 export DATA_ROOT="/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM"
 
-N_PERMUTATIONS=3           # Number of permutations per fold (2-3 for quick test, 5+ for publication)
+N_PERMUTATIONS=5           # Permutations per fold. p < 0.05 needs >= 19; use 100+ to report (scale --time / array accordingly)
 MAX_EPOCHS=30              # Epochs for training on random labels (fewer than real may be needed)
 
 # ── Modules ──────────────────────────────────────────────────────────────────

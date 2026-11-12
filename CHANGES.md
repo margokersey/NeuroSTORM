@@ -1,5 +1,13 @@
 # Changes
 
+## LOOCV permutation analysis: full metric suite and publication figure
+
+- `scripts/analyze_loocv_permutation_results.py`: in addition to accuracy, computes per-subject balanced accuracy (primary), macro-F1, Cohen's κ, macro OvR AUROC, log-loss, Brier and ECE. Each metric gets a subject-level bootstrap 95% CI, an aggregate permutation p-value (direction-aware), and a Wilcoxon signed-rank test across subjects. JSON adds `metrics` and `class_names`; a `_per_fold.csv` is written next to it.
+- Replaces the bar + per-sample KDE plot with a 6-panel figure (per-subject, null distribution, metric summary, confusion matrix, ROC, calibration), saved as PNG (600 dpi), PDF and SVG with editable text.
+- Default outputs moved to `output/loocv_permutation/` (were written to the repo root).
+- Predictions are read from the latest `lightning_logs/version_N` (was hard-coded to `version_0`, which ignored best-checkpoint backfill re-tests).
+- `notes/LABEL_PERMUTATION_TESTING.md` documents the new outputs; `notes/LOOCV_KDE_VISUALIZATION_GUIDE.md` is marked superseded.
+
 ## Fix LOOCV permutation testing: within-subject shuffle and valid p-values
 
 - `datasets/fmri_datasets.py` (`Michigan._set_data`): `--permute_labels` now shuffles labels *within each subject* (preserving the 10/10/10 per-subject balance) instead of pooling all training blocks. **Existing `_perm*` runs used the pooled shuffle and should be re-run.**

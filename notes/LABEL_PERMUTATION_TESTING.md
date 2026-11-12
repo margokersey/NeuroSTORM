@@ -148,10 +148,28 @@ the null for permutation k is the mean over folds of permutation-k accuracy;
 attainable p is 1/(1+n), so you need **>= 19 permutations for p < 0.05** and ~100+ to report
 a precise p. Per-fold p-values (one held-out subject) are descriptive only.
 
-Output:
-- `loocv_permutation_results.json` - `aggregate` (primary) and `per_fold` statistics
-- `loocv_permutation_comparison.png` - Visualization (bar chart + KDE distribution)
-- Console summary with p-values and effect sizes
+Each held-out subject is the unit of inference. For every fold the script computes
+accuracy, **balanced accuracy (primary)**, macro-F1, Cohen's κ, macro one-vs-rest AUROC,
+log-loss, Brier score and ECE (calibration). It averages each metric over subjects and
+reports a subject-level bootstrap 95% CI (`--n_bootstrap`, default 10000) and the
+aggregate permutation p-value above, applied to that metric (for log-loss, Brier and
+ECE, lower is better). As a supplementary check, it also runs a one-sided Wilcoxon
+signed-rank test on per-subject (real − mean permuted).
+
+Output (default `output/loocv_permutation/`, override with `--output_file` / `--plot_file`):
+- `loocv_permutation_results.json` - `aggregate` (accuracy test), `metrics` (all metrics: mean, CI, null, p), `per_fold`
+- `loocv_permutation_results_per_fold.csv` - per-subject metric table (real and mean permuted)
+- `loocv_permutation_figure.{png,pdf,svg}` - 6-panel figure, 183 mm wide (double column), Arial 6.5–9 pt, editable text in PDF/SVG:
+  - **a** per-subject balanced accuracy (real vs. that subject's permutation range), sorted
+  - **b** permutation null of mean balanced accuracy, with the real value and p
+  - **c** summary metrics: real mean ± 95% CI vs. null, with chance markers and p per metric
+  - **d** pooled row-normalized confusion matrix
+  - **e** pooled one-vs-rest ROC per class, with AUROC
+  - **f** reliability diagram (calibration) with ECE, real vs. permuted
+- Console summary with the metric table and per-fold breakdown
+
+Panels d–f concatenate predictions across folds (different models), so they are
+descriptive; the numbers to report are the subject-mean metrics in panel c / `metrics`.
 
 ## Expected Results
 

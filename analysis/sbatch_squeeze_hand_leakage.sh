@@ -17,7 +17,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=32G
-#SBATCH --time=04:00:00
+#SBATCH --time=06:00:00
 #SBATCH --output=logs/squeeze_leak_%j.log
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=mkersey@umich.edu
@@ -26,8 +26,9 @@ set -euo pipefail
 
 REPO_DIR="$HOME/code/NeuroSTORM"
 BASE="/nfs/turbo/umms-huanglab/pipeline/postproc/fmriprep-25.2.5_xcp_d-26.1.1/Michigan_Dataset_1"
-HP_DIR="${HP_DIR:-$BASE/noGSR_highpass_fd-0.8}"
-NOHP_DIR="${NOHP_DIR:-$BASE/noGSR_bp_0-999_fd-999}"
+HP_DIR="${HP_DIR:-$BASE/noGSR_highpass_fd-0.8_nosmooth}"
+NOHP_DIR="${NOHP_DIR:-$BASE/noGSR_bp_0-999_fd-999_nosmooth}"
+NOHP_FD1_DIR="${NOHP_FD1_DIR:-$BASE/noGSR_bp_0-999_fd-1_nosmooth}"
 TIMING="${TIMING:-/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1/metadata/timing_onehot_task1.tsv}"
 
 module load mamba
@@ -38,6 +39,7 @@ set -u
 
 cd "$REPO_DIR"
 python -u analysis/plot_squeeze_hand_leakage.py \
-    --root "highpass=$HP_DIR" \
-    --root "nohp=$NOHP_DIR" \
+    --root "highpass_fd0.8=$HP_DIR" \
+    --root "nohp_fd999=$NOHP_DIR" \
+    --root "nohp_fd1=$NOHP_FD1_DIR" \
     --timing "$TIMING"

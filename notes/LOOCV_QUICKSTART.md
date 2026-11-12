@@ -93,6 +93,21 @@ tail /scratch/huangzu_root/huangzu0/mkersey/logs/xcpd_loocv_<jobid>_101.log
 - Check if too many jobs are running: `squeue -u mkersey`
 - Resubmit with `%4` suffix to limit concurrent jobs: `sbatch --array=101-126%4 ...`
 
+## Two-stage decoding (Task vs. No Task, then tennis/navigation/squeeze)
+
+Stage A (new, binary) + Stage B (the existing 3-way LOOCV above, **not retrained**), on the same folds 101-126.
+
+- **Stage A data:** Task = the 30 imagery-run-1 blocks (label 1). No Task = 15 mock blocks from rest-1 + 15 from rest-2 (label 0), cut at the onsets of the first 15 imagery blocks (rest runs are only ~770 TRs, so onsets of later imagery blocks don't fit). `MichiganTaskVsRest` in `datasets/fmri_datasets.py`; config `scripts/configs/datasets/michigan_xcpd_nosmooth_taskvsrest.yaml` (task `task7`). Rest roots are derived from the imagery `image_path`.
+- **Known data quirks (handled):** sub-29 has no rest-2 (contributes 15 mock blocks, and is excluded as a test subject in the evaluation); sub-22's rest-1 has 1145 TRs because the scan duration was mis-set, but only the first 770 are valid and only TRs < 770 are ever read.
+- **Run Stage A** (needs `scripts/preprocess_michigan_xcpd_runs.sh` outputs for rest 1 and 2):
+  ```bash
+  bash run_finetune_scripts/greatlakes/loocv/run_loocv_taskvsrest.sh --dry_run     # preflight
+  sbatch run_finetune_scripts/greatlakes/loocv/sbatch_loocv_taskvsrest.sh          # 26 folds (4 h each)
+  sbatch run_finetune_scripts/greatlakes/loocv/sbatch_loocv_taskvsrest_permutation.sh   # label-permutation null
+  ```
+  Runs are named `FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-<N>[_perm<k>]`.
+- **Compose the two stages:** `python analysis/two_stage_decoding.py --stage_a_glob ... --stage_b_glob ... --tsv .../timing_onehot_task1.tsv --exclude_subjects sub-29` (full example in the script's docstring). Reports Stage A accuracy/balanced accuracy/AUROC, Stage B accuracy on blocks Stage A called "Task", and an end-to-end 4-way confusion matrix. Alignment between stages is verified per fold against the TSV.
+
 ## Key Files
 - **Submission script**: `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh`
 - **Training script**: `run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh`

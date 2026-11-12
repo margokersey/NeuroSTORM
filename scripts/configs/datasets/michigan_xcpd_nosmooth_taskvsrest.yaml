@@ -1,0 +1,25 @@
+dataset_name: MICHIGAN_TASK_VS_REST
+# Stage A of the two-stage decoding test: Task vs. No Task.
+#   Task    = the 30 task-imagery_run-1 blocks (same 37-TR windows as
+#             michigan_xcpd_nosmooth_fullblock)
+#   No Task = 15 mock blocks from task-rest_run-1 + 15 from task-rest_run-2,
+#             cut at the onsets of the first 15 imagery blocks (rest runs are
+#             only ~770 TRs). See MichiganTaskVsRest in datasets/fmri_datasets.py.
+# image_path is the IMAGERY run-1 root; the rest roots are derived from it
+# (sibling dirs ..._task-rest_run-1 / ..._task-rest_run-2). Splits are shared
+# with the 3-way task (nas/splits/MICHIGAN/, LOOCV folds 101..126).
+image_path: /nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1
+
+tasks:
+  task7:
+    downstream_task_id: 7
+    task_name: taskvsrest_classification
+    downstream_task_type: classification
+    num_classes: 2
+
+defaults:
+  split_root: ./nas/splits
+  dataset_split_num: 1
+  limit_training_samples: 1.0
+  sequence_length_override: 37
+  img_size_override: [96, 96, 96, 37]

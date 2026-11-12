@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader, Subset, ConcatDataset, Sampler
 from torch.utils.data.distributed import DistributedSampler
 from torch_geometric.data import DataLoader as GeometricDataLoader
-from .fmri_datasets import HCP1200, ABCD, UKB, Cobre, ADHD200, UCLA, HCPEP, HCPTASK, GOD, MOVIE, TransDiag, ABIDE, Michigan, MichiganFullBlock, MichiganGender, MichiganSampleSplit
+from .fmri_datasets import HCP1200, ABCD, UKB, Cobre, ADHD200, UCLA, HCPEP, HCPTASK, GOD, MOVIE, TransDiag, ABIDE, Michigan, MichiganFullBlock, MichiganGender, MichiganSampleSplit, MichiganTaskVsRest
 from .roi_datasets import ROIDataset, FCDataset, FCGraphDataset
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from utils.parser import str2bool
@@ -18,11 +18,11 @@ from utils.parser import str2bool
 
 # Split files are just subject lists, independent of how clips are cut, so
 # MichiganFullBlock shares the MICHIGAN splits (nas/splits/MICHIGAN/).
-SPLIT_DIR_ALIASES = {"MICHIGAN_FULL_BLOCK": "MICHIGAN"}
+SPLIT_DIR_ALIASES = {"MICHIGAN_FULL_BLOCK": "MICHIGAN", "MICHIGAN_TASK_VS_REST": "MICHIGAN"}
 # Never fall back to a random split for these (see _build_single_dataset): every
 # Michigan split is generated ahead of time by scripts/make_*_splits.py.
 REQUIRE_PREMADE_SPLITS = {"MICHIGAN", "MICHIGAN_FULL_BLOCK", "MICHIGAN_GENDER",
-                          "MICHIGAN_WITHIN", "MICHIGAN_POOLED"}
+                          "MICHIGAN_WITHIN", "MICHIGAN_POOLED", "MICHIGAN_TASK_VS_REST"}
 
 
 def validate_premade_split(train_names, val_names, test_names, split_file_path):
@@ -458,6 +458,8 @@ class fMRIDataModule(pl.LightningDataModule):
             return Michigan
         elif name == 'MICHIGAN_FULL_BLOCK':
             return MichiganFullBlock
+        elif name == 'MICHIGAN_TASK_VS_REST':
+            return MichiganTaskVsRest
         elif name == 'MICHIGAN_GENDER':
             return MichiganGender
         elif name == 'MICHIGAN_WITHIN':
@@ -938,7 +940,7 @@ class fMRIDataModule(pl.LightningDataModule):
 
             print('Load dataset MOVIE, {} subjects'.format(len(final_dict)))
 
-        elif self.hparams.dataset_name in ("MICHIGAN", "MICHIGAN_FULL_BLOCK"):
+        elif self.hparams.dataset_name in ("MICHIGAN", "MICHIGAN_FULL_BLOCK", "MICHIGAN_TASK_VS_REST"):
             # Labels live at the block level (tennis/navigation/squeeze), assigned
             # per-clip inside Michigan._set_data (MichiganFullBlock inherits it
             # unchanged) from timing_onehot_task1.tsv, not per-subject -- this

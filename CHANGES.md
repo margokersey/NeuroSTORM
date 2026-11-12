@@ -1,5 +1,12 @@
 # Changes
 
+## Add Stage A (Task vs. No Task) for two-stage decoding
+
+- `datasets/fmri_datasets.py`: new `MichiganTaskVsRest` (`MICHIGAN_TASK_VS_REST`): 30 imagery-run-1 blocks (Task) vs. 15 + 15 onset-matched mock blocks from rest-1/rest-2 (No Task). Missing rest runs are skipped per subject (sub-29); rest reads are capped at 770 TRs (sub-22 rest-1). Within-subject `--permute_labels` supported. Registered in `datasets/data_module.py` (shares `nas/splits/MICHIGAN/`).
+- `models/lightning_model.py`, `callbacks/imagery_predictions_callback.py`, `main.py`: new binary task `taskvsrest_classification` (block-level accuracy / balanced accuracy / recall / AUROC; per-sample prediction JSON with `notask`/`task` classes). The 3-way path is unchanged.
+- `run_finetune_scripts/greatlakes/loocv/`: `run_loocv_taskvsrest.sh` + `sbatch_loocv_taskvsrest*.sh`; `run_loocv_xcpd.sh` now accepts `LOOCV_DATASET/TASK/PROJECT_PREFIX/EXTRA_DIRS` env overrides (defaults unchanged).
+- `analysis/two_stage_decoding.py`: composes Stage A with the existing 3-way LOOCV predictions (Stage B accuracy given "Task", end-to-end 4-way confusion, Stage A permutation test). `tests/test_taskvsrest.py`, `notes/LOOCV_QUICKSTART.md` updated.
+
 ## Add squeeze-neighbour leakage check for left hand-motor parcels
 
 - `analysis/plot_squeeze_hand_leakage.py`: averages Schaefer-400 parcels 50/51/53/57/59/76 (LH SomMot hand + DorsAttn_Post_8) from `data.pt`, and plots (blocks followed by squeeze) minus (blocks followed by other imagery) around block onset, shaded by block type. Prints a pre-squeeze dip statistic. Accepts several `--root` exports to compare high-pass vs. no-high-pass. Output: `output/squeeze_hand_leakage.png`. Also accepts a directory of raw XCP-D `desc-denoised_bold` NIfTIs plus `--timing` (atlas resampled onto each BOLD grid), so `data.pt` is not required. `analysis/sbatch_squeeze_hand_leakage.sh` runs it on Great Lakes (high-pass fd-0.8 vs no-high-pass fd-999 and fd-1, all `_nosmooth`; cache labels include the fd value so older caches are not reused). The figure now overlays all exports as colour-coded lines on one set of axes (3 panels) instead of one column per export; replotting from `output/cache/` needs no NIfTI reads. A second figure (`*_export_diff.png`) plots (export − `--ref` export) per subject with a paired t-test on the pre-B window, which isolates export (e.g. filter) effects because blocks and order are identical.

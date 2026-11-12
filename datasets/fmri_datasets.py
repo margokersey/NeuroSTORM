@@ -754,6 +754,98 @@ class MichiganFullBlock(Michigan):
     TRIM_START = 0
 
 
+class MichiganTaskVsRest(Michigan):
+    """Stage A of the two-stage decoding test: Task vs. No Task.
+
+    Task (label 1):    every task-imagery_run-1 block (tennis / navigation /
+                       squeeze, task + trailing rest, no onset trim -- the same
+                       clips as MichiganFullBlock, so Stage B and Stage A look at
+                       identical windows).
+    No Task (label 0): mock blocks cut from task-rest_run-1 and task-rest_run-2.
+                       Rest runs are only ~770 TRs (imagery-1 is 1145), so the
+                       mock blocks reuse the onsets of the FIRST MOCK_BLOCKS_PER_RUN
+                       imagery blocks (all of which fit inside 770 TRs) in each
+                       rest run: 15 + 15 = 30 mock blocks, matching the 30 task
+                       blocks. Only TRs < 770 are ever touched, so sub-22's
+                       mis-set 1145-TR rest-1 scan needs no special handling.
+
+    A subject missing a rest run (sub-29 has no rest-2) simply contributes
+    fewer mock blocks. The rest roots are the sibling directories of `root`
+    with 'task-imagery_run-1' replaced by 'task-rest_run-N'.
+
+    Permutation testing shuffles Task/No-Task labels WITHIN each subject,
+    preserving each subject's class balance (same logic as Michigan).
+    """
+
+    TRIM_START = 0
+    REST_RUNS = (1, 2)
+    MOCK_BLOCKS_PER_RUN = 15
+    IMAGERY_TAG = 'task-imagery_run-1'
+    LABEL_NO_TASK, LABEL_TASK = 0, 1
+
+    @classmethod
+    def rest_root(cls, root, run):
+        head, tail = os.path.split(os.path.normpath(root))
+        if cls.IMAGERY_TAG not in tail:
+            raise ValueError(
+                f"MichiganTaskVsRest expects an image_path ending in '{cls.IMAGERY_TAG}', got {root!r}")
+        return os.path.join(head, tail.replace(cls.IMAGERY_TAG, f'task-rest_run-{run}'))
+
+    def _set_data(self, root, subject_dict):
+        data = []
+        tsv_path = os.path.join(root, 'metadata', 'timing_onehot_task1.tsv')
+        blocks = self._blocks_from_tsv(tsv_path)
+        mock_onsets = [s for (s, _e, _lab) in blocks[:self.MOCK_BLOCKS_PER_RUN]]
+        rest_img_roots = {
+            run: os.path.join(self.rest_root(root, run), 'img') for run in self.REST_RUNS}
+        for run, p in rest_img_roots.items():
+            if not os.path.isdir(p):
+                raise FileNotFoundError(f"rest run-{run} image dir not found: {p}")
+
+        def fits(start, end, num_frames):
+            return start + self.sample_duration <= end and start + self.sample_duration <= num_frames
+
+        for i, subject in enumerate(subject_dict):
+            # Task blocks (imagery run 1)
+            subject_path = os.path.join(root, 'img', subject)
+            num_frames = self._count_frames(subject_path)
+            for (start, end, _lab) in blocks:
+                if fits(start, end, num_frames):
+                    data.append((i, subject, subject_path, start, self.stride, num_frames,
+                                 self.LABEL_TASK, 0))
+            # No-Task mock blocks (rest runs); a missing run is skipped
+            for run, rest_img in rest_img_roots.items():
+                rest_path = os.path.join(rest_img, subject)
+                if not os.path.isfile(os.path.join(rest_path, 'data.pt')):
+                    continue
+                # Cap at 770 TRs: sub-22's rest-1 has 1145 (mis-set duration) -- the
+                # extra TRs are invalid, and mock onsets are all < 770 anyway.
+                rest_frames = min(self._count_frames(rest_path), 770)
+                for start in mock_onsets:
+                    if start + self.sample_duration <= rest_frames:
+                        data.append((i, subject, rest_path, start, self.stride, rest_frames,
+                                     self.LABEL_NO_TASK, 0))
+
+        # Within-subject label shuffle for permutation testing (train split only).
+        if self.permute_labels and self.train:
+            seed = self.permutation_seed if self.permutation_seed is not None else 1234
+            rng = np.random.RandomState(seed)
+            by_subject = {}
+            for idx, t in enumerate(data):
+                by_subject.setdefault(t[1], []).append(idx)
+            new_labels = [t[6] for t in data]
+            for subj in sorted(by_subject):
+                idxs = by_subject[subj]
+                shuffled = rng.permutation([data[k][6] for k in idxs])
+                for k, lab in zip(idxs, shuffled):
+                    new_labels[k] = int(lab)
+            data = [t[:6] + (new_labels[idx],) + t[7:] for idx, t in enumerate(data)]
+
+        if self.train:
+            self.target_values = np.array([t[6] for t in data]).reshape(-1, 1)
+        return data
+
+
 class MichiganSampleSplit(Michigan):
     """Same task-imagery_run-1 block design as Michigan (10 tennis / 10
     navigation / 10 squeeze blocks per subject, from

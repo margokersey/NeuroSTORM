@@ -410,6 +410,28 @@ class LightningModel(pl.LightningModule):
             self.log(f"{mode}_acc", acc, sync_dist=True)
             return
 
+        if self.hparams.task_name == 'taskvsrest_classification':
+            # Stage A of the two-stage decoding test (Task vs. No Task). Binary
+            # head -> one logit per block; labels are per-block (every subject
+            # contributes BOTH classes), so evaluate block-level like the imagery
+            # branch below, not via the subject-averaging path.
+            scores = torch.sigmoid(total_out_logits.reshape(-1).float())
+            targets = total_out_target.reshape(-1).long()
+            preds = (scores >= 0.5).long()
+            acc = (preds == targets).float().mean() if targets.numel() > 0 else torch.tensor(0.0, device=scores.device)
+            pos = targets == 1
+            neg = targets == 0
+            recall_task = (preds[pos] == 1).float().mean() if pos.any() else torch.tensor(0.0, device=scores.device)
+            recall_notask = (preds[neg] == 0).float().mean() if neg.any() else torch.tensor(0.0, device=scores.device)
+            self.log(f"{mode}_acc", acc, sync_dist=True)
+            self.log(f"{mode}_balacc", (recall_task + recall_notask) / 2, sync_dist=True)
+            self.log(f"{mode}_recall_task", recall_task, sync_dist=True)
+            self.log(f"{mode}_recall_notask", recall_notask, sync_dist=True)
+            if pos.any() and neg.any():
+                auroc = BinaryAUROC().to(scores.device)(scores, targets)
+                self.log(f"{mode}_AUROC", auroc, sync_dist=True)
+            return
+
         if self.hparams.task_name == 'imagery_task_classification':
             # Michigan blocks are per-block labeled (tennis/navigation/squeeze), so a
             # single subject contributes many blocks spanning ALL classes -- unlike

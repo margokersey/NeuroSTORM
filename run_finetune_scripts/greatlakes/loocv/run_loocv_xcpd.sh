@@ -63,12 +63,14 @@ GENERAL_CKPT="pretrained_models/pretraining/pt_neurostorm_mae_5ds.ckpt"
 DATA_ROOT="${DATA_ROOT:-/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM}"
 
 # dataset for the original (no-smoothing) XCP-D outputs
-DATASET="michigan_xcpd_nosmooth_fullblock"
+# (LOOCV_* env vars let other tasks reuse this runner unchanged, e.g. Stage A
+# Task-vs-NoTask in run_loocv_taskvsrest.sh; defaults = the 3-way task.)
+DATASET="${LOOCV_DATASET:-michigan_xcpd_nosmooth_fullblock}"
 IMG_ROOT="$DATA_ROOT/FIXED_xcp_nosmooth_task-imagery_run-1/img"
 
-TASK="task6"
+TASK="${LOOCV_TASK:-task6}"
 SPLIT_DIR="nas/splits/MICHIGAN"
-PROJECT_PREFIX="FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv"
+PROJECT_PREFIX="${LOOCV_PROJECT_PREFIX:-FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv}"
 
 START_INDEX=101
 N_FOLDS=26
@@ -110,6 +112,9 @@ END_INDEX=$((START_INDEX + N_FOLDS - 1))
 # out fold 19 of 26 is broken after 18 folds have finished.
 echo "Preflight: checking LOOCV split files $SPLIT_DIR/split_fixed_${START_INDEX}.txt .. split_fixed_${END_INDEX}.txt ..."
 preflight_require_dir "$IMG_ROOT" "has the data been copied/preprocessed?"
+for extra_dir in ${LOOCV_EXTRA_DIRS:-}; do   # space-separated; unquoted on purpose
+    preflight_require_dir "$extra_dir" "extra data dir required by $DATASET"
+done
 preflight_require_file "$GENERAL_CKPT" "run from the repo root?"
 preflight_require_splits "$SPLIT_DIR" "split_fixed_*.txt"
 for i in $(seq "$START_INDEX" "$END_INDEX"); do

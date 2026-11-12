@@ -15,6 +15,12 @@ from pathlib import Path
 import pytorch_lightning as pl
 
 
+CLASS_NAMES = {
+    'imagery_task_classification': {0: 'tennis', 1: 'navigation', 2: 'squeeze'},
+    'taskvsrest_classification': {0: 'notask', 1: 'task'},
+}
+
+
 class ImageryPredictionsCallback(pl.Callback):
     """Save per-sample test predictions to disk after test phase."""
 
@@ -42,9 +48,11 @@ class ImageryPredictionsCallback(pl.Callback):
         if not self.test_subjects or self.test_logits is None:
             return
 
-        # Only save for imagery_task_classification task
-        if pl_module.hparams.task_name != 'imagery_task_classification':
+        # Only save for the Michigan block-classification tasks
+        task_name = pl_module.hparams.task_name
+        if task_name not in CLASS_NAMES:
             return
+        imagery_class_names = CLASS_NAMES[task_name]
 
         # Create output directory
         output_dir = Path(trainer.logger.log_dir) / "test_predictions"
@@ -57,20 +65,23 @@ class ImageryPredictionsCallback(pl.Callback):
         logits_np = self.test_logits.numpy() if isinstance(self.test_logits, torch.Tensor) else self.test_logits
         targets_np = self.test_targets.numpy() if isinstance(self.test_targets, torch.Tensor) else self.test_targets
 
-        # Class name mapping
-        imagery_class_names = {0: 'tennis', 1: 'navigation', 2: 'squeeze'}
-
         # Build per-sample predictions list
         predictions = []
         for i, (subj, logit_vec, true_label) in enumerate(zip(
             self.test_subjects, logits_np, targets_np
         )):
-            pred_label = int(np.argmax(logit_vec))
             true_label_int = int(true_label)
-
-            # Compute softmax probabilities
-            exp_logits = np.exp(logit_vec - np.max(logit_vec))  # numerical stability
-            softmax_probs = exp_logits / np.sum(exp_logits)
+            logit_vec = np.atleast_1d(logit_vec)
+            if task_name == 'taskvsrest_classification':
+                # binary head: a single logit; P(Task) = sigmoid(logit)
+                p_task = float(1.0 / (1.0 + np.exp(-logit_vec[0])))
+                softmax_probs = np.array([1.0 - p_task, p_task])
+                pred_label = int(p_task >= 0.5)
+            else:
+                pred_label = int(np.argmax(logit_vec))
+                # Compute softmax probabilities
+                exp_logits = np.exp(logit_vec - np.max(logit_vec))  # numerical stability
+                softmax_probs = exp_logits / np.sum(exp_logits)
 
             predictions.append({
                 'sample_idx': int(i),
@@ -133,7 +144,8 @@ class ImageryPredictionsCallback(pl.Callback):
             }
 
         # Confusion matrix (simple counts)
-        cm = np.zeros((3, 3), dtype=int)
+        n_cls = len(class_names)
+        cm = np.zeros((n_cls, n_cls), dtype=int)
         for p in predictions:
             true_idx = p['true_label']
             pred_idx = p['predicted_label']
@@ -146,7 +158,7 @@ class ImageryPredictionsCallback(pl.Callback):
             'per_class_accuracy': class_accs,
             'per_subject_accuracy': per_subject_acc,
             'confusion_matrix': cm.tolist(),  # [true_label, pred_label]
-            'confusion_matrix_labels': ['tennis', 'navigation', 'squeeze'],
+            'confusion_matrix_labels': list(class_names.values()),
         }
 
         return summary

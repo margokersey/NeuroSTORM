@@ -24,24 +24,15 @@ def __init__(self, permute_labels=False, permutation_seed=None, **kwargs):
     super().__init__(**kwargs)
 ```
 
-In `_set_data()`, after loading all training data, labels are shuffled:
-
-```python
-if self.permute_labels and self.train and not is_reid:
-    seed = self.permutation_seed if self.permutation_seed is not None else 1234
-    rng = np.random.RandomState(seed)
-    labels = np.array([t[6] for t in data])
-    shuffled_labels = labels.copy()
-    rng.shuffle(shuffled_labels)
-    # Replace labels in data tuples
-    data = [data[idx][:6] + (int(shuffled_labels[idx]),) + data[idx][7:]
-            for idx in range(len(data))]
-```
+In `_set_data()`, after loading all training data, each subject's block labels are
+shuffled **among that subject's own blocks** (`np.random.RandomState(seed)`, subjects
+processed in sorted order so the result is deterministic).
 
 Key properties:
 - **Only affects training** (checked via `self.train`)
 - **Does not affect validation/test** (they always use true labels)
 - **Deterministic** (seed-based shuffling)
+- **Within-subject**: every training subject keeps its 10/10/10 class balance; only the block-to-label assignment is permuted
 - **Per-fold and per-permutation** (different seed for each permutation)
 
 #### 2. `datasets/data_module.py` - DataModule
@@ -151,8 +142,14 @@ python scripts/analyze_loocv_permutation_results.py \
     --n_permutations 3
 ```
 
+Primary inference is the **aggregate test**: the statistic is mean accuracy over all folds;
+the null for permutation k is the mean over folds of permutation-k accuracy;
+`p = (1 + #{null >= real}) / (1 + n_permutations)`. With n permutations the smallest
+attainable p is 1/(1+n), so you need **>= 19 permutations for p < 0.05** and ~100+ to report
+a precise p. Per-fold p-values (one held-out subject) are descriptive only.
+
 Output:
-- `loocv_permutation_results.json` - Numerical statistics
+- `loocv_permutation_results.json` - `aggregate` (primary) and `per_fold` statistics
 - `loocv_permutation_comparison.png` - Visualization (bar chart + KDE distribution)
 - Console summary with p-values and effect sizes
 
@@ -160,12 +157,12 @@ Output:
 
 **For task-imagery_classification with real labels:**
 - Real-label model accuracy: ~0.82 (80-82% per fold)
-- Randomized-label model accuracy: ~0.33 (1/3 chance for 3 classes)
+- Randomized-label model accuracy: ~0.33-0.40 (chance is 1/3; slightly above because the best checkpoint is picked on the true-label validation set, exactly as for the real models)
 - P-value: < 0.05 (highly significant)
 - Interpretation: Model clearly learned task structure, not random patterns
 
 **For random labels:**
-- All models should cluster near 0.33
+- All models should cluster near chance, a bit above 0.33 due to best-val checkpoint selection
 - High variance (some permutations slightly better/worse by chance)
 - Per-sample KDE should show clear separation from real-label distribution
 
@@ -189,7 +186,7 @@ Output:
 
 - **Train-only permutation**: Labels are ONLY shuffled for training; validation and test always use true labels (necessary for model selection and fair evaluation)
 
-- **No subject stratification**: All class labels are pooled and shuffled uniformly (not stratified by class)
+- **Within-subject shuffle**: labels are permuted among each subject's own blocks (block = exchangeable unit), so per-subject class balance matches the real labels. (Earlier runs pooled-shuffled across subjects; those `_perm*` outputs are not comparable and should be re-run.)
 
 - **Compute cost**: Same as real LOOCV × N permutations
   - 26 folds × 3 permutations × ~12 hours = ~36 hours wall-clock (parallel)

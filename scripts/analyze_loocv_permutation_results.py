@@ -132,6 +132,7 @@ def aggregate_results(real_pattern, perm_pattern, n_permutations):
             'real_accuracy': float(real_acc),
             'real_per_sample': per_sample_correct,
             'perm_accuracies': [],
+            'perm_acc_by_id': {},
             'perm_per_sample': {},
         }
         print(f"  fold {fold_id}: real accuracy {real_acc:.3f} ({len(per_sample_correct)} samples)")
@@ -168,6 +169,7 @@ def aggregate_results(real_pattern, perm_pattern, n_permutations):
             per_sample_correct = [p['correct'] for p in per_sample_preds]
         
         results[fold_id]['perm_accuracies'].append(float(perm_acc))
+        results[fold_id]['perm_acc_by_id'][perm_id] = float(perm_acc)
         results[fold_id]['perm_per_sample'][perm_id] = per_sample_correct
         print(f"  fold {fold_id}, perm{perm_id}: {perm_acc:.3f} ({len(per_sample_correct)} samples)")
     
@@ -194,9 +196,10 @@ def compute_statistics(results):
         real_acc = data['real_accuracy']
         perm_accs = np.array(data['perm_accuracies'])
         
-        # P-value: fraction of permutations >= real accuracy
-        # (one-tailed test: is real accuracy higher than permutation?)
-        p_value = (perm_accs >= real_acc).sum() / len(perm_accs)
+        # Descriptive per-fold p-value (one held-out subject, so very coarse;
+        # use the aggregate test for inference). Add-one correction: a
+        # permutation p-value is never 0.
+        p_value = (1 + (perm_accs >= real_acc).sum()) / (1 + len(perm_accs))
         
         # Effect size: how much better is real than average permutation?
         effect_size = real_acc - perm_accs.mean()
@@ -217,6 +220,49 @@ def compute_statistics(results):
     return stats
 
 
+def aggregate_permutation_test(results):
+    """Across-fold permutation test (the primary inference).
+
+    Statistic: mean test accuracy over all LOOCV folds. Null: for each
+    permutation index k, the mean over folds of the permutation-k accuracy
+    (every fold was trained with label-permutation k, so each k gives one full
+    null LOOCV run). p = (1 + #{null >= real}) / (1 + n_perms).
+    """
+    fold_ids = sorted(results)
+    perm_ids = sorted(set.intersection(*[set(results[f]['perm_acc_by_id']) for f in fold_ids]))
+    real = float(np.mean([results[f]['real_accuracy'] for f in fold_ids]))
+    null = np.array([np.mean([results[f]['perm_acc_by_id'][k] for f in fold_ids]) for k in perm_ids])
+    n = len(null)
+    p = (1 + int((null >= real).sum())) / (1 + n)
+    return {
+        'n_folds': len(fold_ids),
+        'n_permutations': n,
+        'real_mean_accuracy': real,
+        'null_mean_accuracies': [float(x) for x in null],
+        'null_mean': float(null.mean()),
+        'null_std': float(null.std(ddof=1)) if n > 1 else None,
+        'p_value': float(p),
+        'min_attainable_p': 1.0 / (1 + n),
+        'significant_p05': bool(p < 0.05),
+    }
+
+
+def print_aggregate(agg):
+    print("\n" + "=" * 80)
+    print("AGGREGATE PERMUTATION TEST (mean accuracy over all folds)  <- primary result")
+    print("=" * 80)
+    print(f"  Folds: {agg['n_folds']}   Permutations: {agg['n_permutations']}")
+    print(f"  Real mean accuracy:  {agg['real_mean_accuracy']:.3f}")
+    sd = f" ± {agg['null_std']:.3f}" if agg['null_std'] is not None else ""
+    print(f"  Null mean accuracy:  {agg['null_mean']:.3f}{sd}")
+    print(f"  p = (1 + #null>=real) / (1 + n) = {agg['p_value']:.4f}")
+    if agg['min_attainable_p'] >= 0.05:
+        print(f"  WARNING: with {agg['n_permutations']} permutations the smallest attainable p is "
+              f"{agg['min_attainable_p']:.3f}; p < 0.05 needs >= 19 permutations "
+              f"(>= 100 recommended for reporting).")
+    print("=" * 80)
+
+
 def print_summary(stats):
     """Print summary statistics."""
     fold_ids = sorted(stats.keys())
@@ -235,8 +281,9 @@ def print_summary(stats):
     print(f"  Real accuracy range:             {np.min(real_accs):.3f} - {np.max(real_accs):.3f}")
     print(f"  Randomized label accuracy (mean): {np.mean(perm_means):.3f} ± {np.std(perm_means):.3f}")
     print(f"  Mean improvement (real - random): {np.mean(effect_sizes):.3f} ± {np.std(effect_sizes):.3f}")
-    print(f"\n  Folds significant at p < 0.05:   {sum(stats[fid]['significant_p05'] for fid in fold_ids)} / {len(fold_ids)}")
-    print(f"  Median p-value:                   {np.median(p_values):.3f}")
+    print(f"\n  (Per-fold p-values below are descriptive only: one held-out subject, few permutations.)")
+    print(f"  Folds with per-fold p < 0.05:    {sum(stats[fid]['significant_p05'] for fid in fold_ids)} / {len(fold_ids)}")
+    print(f"  Median per-fold p-value:          {np.median(p_values):.3f}")
     print(f"  Mean effect size (std units):     {np.mean([stats[fid]['effect_size_std'] for fid in fold_ids]):.2f}")
     print("="*80 + "\n")
     
@@ -391,8 +438,10 @@ def main():
         return 1
     
     stats = compute_statistics(results)
+    agg = aggregate_permutation_test(results)
+    print_aggregate(agg)
     print_summary(stats)
-    save_results(stats, args.output_file)
+    save_results({'aggregate': agg, 'per_fold': stats}, args.output_file)
     
     if not args.no_plot:
         plot_results(stats, results, args.plot_file)

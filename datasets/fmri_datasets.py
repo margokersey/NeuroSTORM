@@ -710,21 +710,26 @@ class Michigan(BaseDataset):
                 data_tuple = (i, subject, subject_path, start, self.stride, num_frames, label, 0)
                 data.append(data_tuple)
 
-        # Permute labels if requested (for permutation testing)
+        # Permute labels if requested (for permutation testing). The shuffle is
+        # WITHIN each subject: a subject's block labels are permuted among that
+        # subject's own blocks. This keeps every subject's class balance
+        # (10/10/10) and the subject-level structure fixed, and the exchangeable
+        # unit is the block -- the standard null for block-design fMRI. A pooled
+        # shuffle across subjects would instead give subjects unbalanced label
+        # counts, which the real labels never have.
         if self.permute_labels and self.train and not is_reid:
             seed = self.permutation_seed if self.permutation_seed is not None else 1234
             rng = np.random.RandomState(seed)
-            
-            # Extract labels (index 6 in data tuple)
-            labels = np.array([t[6] for t in data])
-            
-            # Shuffle labels
-            shuffled_labels = labels.copy()
-            rng.shuffle(shuffled_labels)
-            
-            # Replace labels in data tuples
-            data = [data[idx][:6] + (int(shuffled_labels[idx]),) + data[idx][7:]
-                    for idx in range(len(data))]
+            by_subject = {}
+            for idx, t in enumerate(data):
+                by_subject.setdefault(t[1], []).append(idx)
+            new_labels = [t[6] for t in data]
+            for subj in sorted(by_subject):  # sorted -> deterministic given seed
+                idxs = by_subject[subj]
+                shuffled = rng.permutation([data[i][6] for i in idxs])
+                for i, lab in zip(idxs, shuffled):
+                    new_labels[i] = int(lab)
+            data = [t[:6] + (new_labels[idx],) + t[7:] for idx, t in enumerate(data)]
 
         if self.train:
             self.target_values = np.array([t[6] for t in data]).reshape(-1, 1)

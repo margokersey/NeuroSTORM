@@ -1,5 +1,11 @@
 # Changes
 
+## Fix LOOCV permutation testing: within-subject shuffle and valid p-values
+
+- `datasets/fmri_datasets.py` (`Michigan._set_data`): `--permute_labels` now shuffles labels *within each subject* (preserving the 10/10/10 per-subject balance) instead of pooling all training blocks. **Existing `_perm*` runs used the pooled shuffle and should be re-run.**
+- `scripts/analyze_loocv_permutation_results.py`: p-values use `(1 + count) / (1 + n)` (never 0). New aggregate across-fold test (mean accuracy over folds vs. per-permutation fold-mean null) is the primary result; per-fold p-values are descriptive. JSON output is now `{aggregate, per_fold}`. Warns when `n_permutations < 19` (p < 0.05 unattainable).
+- `notes/LABEL_PERMUTATION_TESTING.md` updated accordingly.
+
 ## Final test uses the best-validation checkpoint
 
 - `main.py`: the automatic post-fit `trainer.test()` now loads `checkpoint_callback.best_model_path` (best `valid_acc` / `valid_mse` / `valid_reid_top1`) instead of the last-epoch weights. New flag `--final_test_ckpt {best,last}` (default `best`); falls back to last-epoch weights with a warning if no best checkpoint exists. Pretraining is unchanged.

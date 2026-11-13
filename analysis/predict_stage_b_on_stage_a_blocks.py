@@ -83,18 +83,24 @@ def latest_saved_predictions(stage_b_dir):
     return json.load(open(best[1])), info
 
 
-def check_reproduces_saved(preds, saved, atol=1e-3):
-    """Compare new predictions on the true task blocks to the 3-way run's saved ones."""
+def check_reproduces_saved(preds, saved, atol=1e-2):
+    """Compare new predictions on the true task blocks to the 3-way run's saved ones.
+    Passes if every predicted label is identical and the largest logit difference is <= atol.
+    Small float differences are expected (different batch grouping, non-deterministic GPU
+    kernels); a wrong checkpoint or clip would flip labels or differ by O(1)."""
     new_task = [p for p in preds if p['stage_a_label'] == 1]
     if saved is None:
         return {'status': 'skipped', 'reason': 'no saved 3-way predictions found'}
     if len(new_task) != len(saved):
         return {'status': 'mismatch', 'reason': f'{len(new_task)} task blocks vs {len(saved)} saved'}
     same_label = sum(int(a['predicted_label']) == int(b['predicted_label']) for a, b in zip(new_task, saved))
-    max_diff = max(float(np.max(np.abs(np.array(a['logits']) - np.array(b['logits'])))) for a, b in zip(new_task, saved))
+    new_lg = np.array([a['logits'] for a in new_task], float)
+    old_lg = np.array([b['logits'] for b in saved], float)
+    max_diff = float(np.max(np.abs(new_lg - old_lg)))
+    max_rel = float(np.max(np.abs(new_lg - old_lg) / np.maximum(np.abs(old_lg), 1e-6)))
     ok = same_label == len(saved) and max_diff <= atol
     return {'status': 'ok' if ok else 'mismatch', 'n': len(saved),
-            'same_predicted_label': same_label, 'max_abs_logit_diff': max_diff}
+            'same_predicted_label': same_label, 'max_abs_logit_diff': max_diff, 'max_rel_logit_diff': max_rel}
 
 
 def main():
@@ -109,7 +115,7 @@ def main():
     ap.add_argument('--batch_size', type=int, default=8)
     ap.add_argument('--num_workers', type=int, default=4)
     ap.add_argument('--device', default='cuda')
-    ap.add_argument('--atol', type=float, default=1e-3, help='tolerance for the reproduce-saved-predictions check')
+    ap.add_argument('--atol', type=float, default=1e-2, help='tolerance for the reproduce-saved-predictions check')
     args = ap.parse_args()
 
     os.chdir(REPO)

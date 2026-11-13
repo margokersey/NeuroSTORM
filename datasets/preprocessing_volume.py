@@ -328,6 +328,7 @@ def main():
     parser.add_argument('--save_root', type=str, required=True, help='directory to save data to')
     parser.add_argument('--delete_after_preprocess', action='store_true', help='delete nii file after preprocess')
     parser.add_argument('--delete_nii', action='store_true', help='if you did not delete after preprocess, you can use it to delete nii file')
+    parser.add_argument('--skip_existing', action='store_true', help='skip subjects whose data.pt already exists in save_root/img/<subj>')
     parser.add_argument('--num_processes', type=int, default=1, help='number of processes to use')
     parser.add_argument('--prefetch_chunk_size', type=int, default=0,
                         help='files per worker chunk for IO lookahead. 0 = auto '
@@ -402,6 +403,10 @@ def main():
         subj_name = determine_subject_name(dataset_name, filename)
         if args.delete_nii:
             handle_delete_nii(load_root, save_root, filename, subj_name)
+            continue
+
+        if args.skip_existing and os.path.isfile(os.path.join(save_root, subj_name, 'data.pt')):
+            print(f'{subj_name}: data.pt exists, skipping')
             continue
 
         count += 1

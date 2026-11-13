@@ -1,5 +1,9 @@
 # Changes
 
+## Add `--skip_existing` to volume preprocessing
+
+- `datasets/preprocessing_volume.py`: new `--skip_existing` flag skips subjects whose `img/<subj>/data.pt` already exists (default off; behaviour otherwise unchanged). `scripts/preprocess_michigan_xcpd_runs.sh` now passes it, so reruns resume instead of overwriting. Delete a subject's `data.pt` to force a rebuild.
+
 ## Add Stage A (Task vs. No Task) for two-stage decoding
 
 - `datasets/fmri_datasets.py`: new `MichiganTaskVsRest` (`MICHIGAN_TASK_VS_REST`): 30 imagery-run-1 blocks (Task) vs. 15 + 15 onset-matched mock blocks from rest-1/rest-2 (No Task). Missing rest runs are skipped per subject (sub-29); rest reads are capped at 770 TRs (sub-22 rest-1). Within-subject `--permute_labels` supported. Registered in `datasets/data_module.py` (shares `nas/splits/MICHIGAN/`).

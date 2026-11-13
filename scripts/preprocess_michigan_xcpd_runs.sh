@@ -45,4 +45,5 @@ python preprocessing_volume.py \
     --load_root "$LOAD_ROOT" \
     --save_root "$SAVE_ROOT" \
     --scaling_method z-norm \
+    --skip_existing \
     --num_processes 4 --prefetch_chunk_size 1

@@ -14,7 +14,7 @@
 #SBATCH --array=0-4
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
 #SBATCH --time=4:00:00
 #SBATCH --output=logs/mich_prep_%A_%a.log
@@ -46,4 +46,4 @@ python preprocessing_volume.py \
     --save_root "$SAVE_ROOT" \
     --scaling_method z-norm \
     --skip_existing \
-    --num_processes 4 --prefetch_chunk_size 1
+    --num_processes 3 --prefetch_chunk_size 1

@@ -27,7 +27,7 @@
 #SBATCH --job-name=xcpd_loocv_perm
 #SBATCH --chdir=/scratch/huangzu_root/huangzu0/mkersey
 #SBATCH --partition=spgpu              # A40s
-#SBATCH --array=101-126                # One task per fold; %2 suffix = max 2 concurrent
+#SBATCH --array=101-126%4                # One task per fold; %4 suffix = max 4 concurrent
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=1

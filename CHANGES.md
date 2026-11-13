@@ -1,5 +1,9 @@
 # Changes
 
+## Allow CPU runs of Stage B / LOR inference sbatch scripts
+
+- `analysis/sbatch_stage_b_predict.sh`, `analysis/sbatch_lor_task_decoding.sh`: new `DEVICE` env var (default `cuda`, unchanged). `DEVICE=cpu` skips the sbatch-level GPU assertion (which killed CPU-partition jobs before the Python's own CPU fallback) and passes `--device cpu`. Also set `--array=101-126%4` (max 4 concurrent) in `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_permutation_testing.sh`.
+
 ## Make permutation sbatch scripts resumable by index range
 
 - `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_permutation_testing.sh` (3-way) and `sbatch_loocv_taskvsrest_permutation.sh` (Stage A): new `PERM_START` / `PERM_END` env vars (defaults 1 / 5, unchanged behaviour) so more permutations can be added without redoing finished ones, e.g. `sbatch --export=ALL,PERM_START=6,PERM_END=10 --time=24:00:00 ...`. Seeds stay `1234 + idx`, so new indices never collide with existing runs.

@@ -49,8 +49,12 @@ export TRITON_CACHE_DIR="/tmp/triton_cache_${SLURM_JOB_ID}"
 
 echo "Job ${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID} (fold $SLURM_ARRAY_TASK_ID) on $(hostname) at $(date)"
 echo "Repo: $REPO_DIR @ $(git rev-parse --short HEAD 2>/dev/null || echo 'not a git repo')"
-python -c "import torch; assert torch.cuda.is_available(), 'No GPU visible!'; print('torch', torch.__version__)"
+# DEVICE=cuda (default) or cpu. For CPU: sbatch --export=ALL,DEVICE=cpu --partition=standard --gpus-per-node=0 ...
+DEVICE="${DEVICE:-cuda}"
+if [ "$DEVICE" = "cuda" ]; then
+    python -c "import torch; assert torch.cuda.is_available(), 'No GPU visible!'; print('torch', torch.__version__)"
+fi
 
-python analysis/predict_stage_b_on_stage_a_blocks.py --fold "$SLURM_ARRAY_TASK_ID"
+python analysis/predict_stage_b_on_stage_a_blocks.py --fold "$SLURM_ARRAY_TASK_ID" --device "$DEVICE"
 
 echo "Fold $SLURM_ARRAY_TASK_ID finished at $(date)"

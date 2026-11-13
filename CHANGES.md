@@ -1,8 +1,9 @@
 # Changes
 
-## Allow CPU runs of Stage B / LOR inference sbatch scripts
+## Cap 3-way permutation array concurrency
 
-- `analysis/sbatch_stage_b_predict.sh`, `analysis/sbatch_lor_task_decoding.sh`: new `DEVICE` env var (default `cuda`, unchanged). `DEVICE=cpu` skips the sbatch-level GPU assertion (which killed CPU-partition jobs before the Python's own CPU fallback) and passes `--device cpu`. Also set `--array=101-126%4` (max 4 concurrent) in `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_permutation_testing.sh`.
+- `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_permutation_testing.sh`: `--array=101-126%4` (max 4 folds at once).
+- Stage B / LOR inference sbatch scripts need a GPU: importing `mamba_ssm` (Triton) fails with "0 active drivers" on CPU nodes, so the CPU option added earlier was reverted.
 
 ## Make permutation sbatch scripts resumable by index range
 

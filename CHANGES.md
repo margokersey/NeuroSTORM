@@ -1,8 +1,8 @@
 # Changes
 
-## Make Stage A permutation sbatch resumable by index range
+## Make permutation sbatch scripts resumable by index range
 
-- `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_taskvsrest_permutation.sh`: new `PERM_START` / `PERM_END` env vars (defaults 1 / 5, unchanged behaviour) so more permutations can be added without redoing finished ones, e.g. `sbatch --export=ALL,PERM_START=6,PERM_END=10 --time=24:00:00 ...`. Seeds stay `1234 + idx`, so new indices never collide with existing runs.
+- `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_permutation_testing.sh` (3-way) and `sbatch_loocv_taskvsrest_permutation.sh` (Stage A): new `PERM_START` / `PERM_END` env vars (defaults 1 / 5, unchanged behaviour) so more permutations can be added without redoing finished ones, e.g. `sbatch --export=ALL,PERM_START=6,PERM_END=10 --time=24:00:00 ...`. Seeds stay `1234 + idx`, so new indices never collide with existing runs.
 - `notes/LABEL_PERMUTATION_TESTING.md`: corrected the "5-10 permutations for publication" advice; the aggregate p-value is `1/(1+n)` at best, so aim for 100+ total (>= 19 for p < 0.05).
 
 ## Add Test 3: task decoding during LOR (imagery runs 2-3)

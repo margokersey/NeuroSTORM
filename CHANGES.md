@@ -1,5 +1,9 @@
 # Changes
 
+## Add figure script for two-stage decoding
+
+- `analysis/plot_two_stage_decoding.py`: figure for the two-stage test (per-subject Stage A balanced accuracy, stage summary with chance levels, Stage A confusion matrix, and the Stage A permutation null or end-to-end confusion). Re-runnable on partial results: panels without data (Stage B folds, permutations) are skipped and appear on a later re-run. Styled to match `scripts/analyze_loocv_permutation_results.py`. Output: `output/two_stage/two_stage_figure.{png,pdf,svg}`.
+
 ## Add `--skip_existing` to volume preprocessing
 
 - `datasets/preprocessing_volume.py`: new `--skip_existing` flag skips subjects whose `img/<subj>/data.pt` already exists (default off; behaviour otherwise unchanged). `scripts/preprocess_michigan_xcpd_runs.sh` now passes it, so reruns resume instead of overwriting. Delete a subject's `data.pt` to force a rebuild.

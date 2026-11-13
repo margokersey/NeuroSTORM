@@ -9,8 +9,12 @@ still gives a figure; re-run with the same command later to fill in the rest.
   b  Stage summary: Stage A bal. acc, Stage B acc | called Task, end-to-end 4-way
      acc, each with its chance level (one dot per held-out subject, mean +/- SEM)
   c  Stage A confusion matrix (pooled over subjects)
-  d  Stage A permutation null (needs --stage_a_perm_glob) -- otherwise the pooled
-     end-to-end 4-way confusion matrix (needs Stage B folds) -- otherwise omitted
+  d  Stage A permutation null (needs --stage_a_perm_glob)
+  e  Pooled end-to-end confusion matrix (needs Stage B folds)
+  f  With --stage_b_pred_glob (Stage B run on all Stage A blocks, incl. mock):
+     Stage B predicted-class mix for real vs mock blocks, and
+  g  Stage B confidence (logit margin) per held-out subject, by block type x
+     Stage A call (real/mock x called Task / No Task)
 
 Styling is imported from scripts/analyze_loocv_permutation_results.py so the
 figure matches the 3-way one.
@@ -18,12 +22,12 @@ figure matches the 3-way one.
 Usage (repo root):
     python analysis/plot_two_stage_decoding.py \\
       --stage_a_glob "nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*" \\
-      --stage_b_glob "nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv_fold-*" \\
+      --stage_b_pred_glob "nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_stageB_allblocks_fold-*" \\
       --tsv "$DATA_ROOT/FIXED_xcp_nosmooth_task-imagery_run-1/metadata/timing_onehot_task1.tsv" \\
       --stage_a_perm_glob "nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*_perm*" \\
       --output_file output/two_stage/two_stage_figure
 
---stage_b_glob / --tsv / --stage_a_perm_glob are optional. Writes .png/.pdf/.svg.
+--stage_b_pred_glob / --tsv / --stage_a_perm_glob are optional (--stage_b_glob is the older lookup mode). Writes .png/.pdf/.svg.
 """
 import argparse
 import importlib.util
@@ -166,11 +170,71 @@ def plot_null(ax, real_mean, null_means):
     ax.set_title(f'Permutation null (n = {n})', loc='left', pad=S.TITLE_PAD)
 
 
+def plot_class_mix(ax, per_fold):
+    """Stage B predicted-class mix (100% stacked bars): real task blocks vs mock blocks."""
+    rows = [('Real task\n(all)', lambda r: r['block_type'] == 'task'),
+            ('Mock\n(all)', lambda r: r['block_type'] == 'mock'),
+            ('Mock called\nTask by A', lambda r: r['group'] == 'mock_called_task')]
+    colors = [S.SEQ_BLUE[2], S.SEQ_BLUE[4], S.SEQ_BLUE[6]]
+    names = [tsd.STAGE_B_NAMES[k] for k in range(3)]
+    n = len(rows)
+    for k, (lab, sel) in enumerate(rows):
+        yi = n - 1 - k
+        recs = [r for fr in per_fold for r in fr['records'] if sel(r)]
+        tot = max(len(recs), 1)
+        left = 0.0
+        for c in range(3):
+            frac = sum(r['stage_b_pred'] == c for r in recs) / tot
+            ax.barh(yi, frac, left=left, color=colors[c], edgecolor='white', linewidth=0.8, height=0.62)
+            if frac > 0.08:
+                ax.text(left + frac / 2, yi, f"{100 * frac:.0f}%", ha='center', va='center', fontsize=6.5,
+                        color='white' if c >= 1 else S.INK)
+            left += frac
+        ax.text(1.01, yi, f"n={len(recs)}", va='center', ha='left', fontsize=6.5, color=S.INK_2)
+    ax.axvline(1 / 3, color=S.CHANCE, lw=0.6, ls=(0, (1, 2)), zorder=0)
+    ax.set_yticks(np.arange(n)[::-1]); ax.set_yticklabels([r[0] for r in rows])
+    ax.tick_params(axis='y', length=0)
+    ax.set_xlim(0, 1); ax.set_ylim(-0.6, n - 0.4)
+    ax.set_xlabel('Fraction of blocks (Stage B prediction)')
+    ax.set_title('Stage B predicted class', loc='left', pad=S.TITLE_PAD)
+    _top_legend(ax, [Line2D([], [], marker='s', ls='', color=colors[c], markersize=5, label=names[c])
+                     for c in range(3)])
+
+
+def plot_confidence(ax, per_fold, measure='logit_margin'):
+    """Per-subject mean Stage B confidence for the four block groups (within-subject)."""
+    groups = [('real_called_task', 'Real\ncalled\nTask'), ('real_missed', 'Real\nmissed'),
+              ('mock_rejected', 'Mock\nrejected'), ('mock_called_task', 'Mock\nfalse\nalarm')]
+    means = tsd.subject_group_means(per_fold, measure)
+    jitter = np.random.default_rng(0)
+    colors = [S.REAL, S.REAL, S.PERM, S.PERM]
+    ns = []
+    for k, (g, lab) in enumerate(groups):
+        vals = np.array([d[g] for d in means.values() if g in d])
+        ns.append(len(vals))
+        if len(vals) == 0:
+            continue
+        ax.scatter(k + jitter.uniform(-0.12, 0.12, len(vals)), vals, s=10, color=colors[k],
+                   alpha=0.75, edgecolor='white', linewidth=0.3, zorder=3)
+        ax.plot([k - 0.27, k + 0.27], [vals.mean()] * 2, color=S.INK, lw=1.2, zorder=4)
+    ax.set_xticks(range(len(groups)))
+    ax.set_xticklabels([f"{g[1]}\n(n={n})" for g, n in zip(groups, ns)], fontsize=6.5)
+    ax.tick_params(axis='x', length=0)
+    ax.set_xlim(-0.6, len(groups) - 0.4)
+    ax.set_ylabel(tsd.CONF_MEASURES[measure])
+    ax.set_title('Stage B confidence', loc='left', pad=S.TITLE_PAD)
+    _top_legend(ax, [Line2D([], [], marker='o', ls='', color=S.REAL, markersize=4.5, label='Real task'),
+                     Line2D([], [], marker='o', ls='', color=S.PERM, markersize=4.5, label='Mock'),
+                     Line2D([], [], color=S.INK, lw=1.2, label='Mean of subjects')])
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--stage_a_glob', required=True)
-    ap.add_argument('--stage_b_glob', default=None)
-    ap.add_argument('--tsv', default=None, help='timing_onehot_task1.tsv (needed with --stage_b_glob)')
+    ap.add_argument('--stage_b_pred_glob', default=None,
+                    help='Stage B run on ALL Stage A blocks (predict_stage_b_on_stage_a_blocks.py output dirs)')
+    ap.add_argument('--stage_b_glob', default=None, help='older lookup mode (3-way LOOCV run dirs)')
+    ap.add_argument('--tsv', default=None, help='timing_onehot_task1.tsv (needed with either Stage B option)')
     ap.add_argument('--stage_a_perm_glob', default=None)
     ap.add_argument('--exclude_subjects', nargs='*', default=['sub-29'])
     ap.add_argument('--output_file', default='output/two_stage/two_stage_figure',
@@ -205,21 +269,30 @@ def main():
 
     # Stage B / end-to-end (optional)
     composed = []
-    if args.stage_b_glob and args.tsv:
-        b_runs = tsd.collect(args.stage_b_glob, excl, want_perm=False)
+    all_blocks = bool(args.stage_b_pred_glob)
+    if args.stage_b_pred_glob and args.stage_b_glob:
+        print("  [warn] pass only one of --stage_b_pred_glob / --stage_b_glob; skipping Stage B panels", file=sys.stderr)
+    elif (args.stage_b_pred_glob or args.stage_b_glob) and not args.tsv:
+        print("  [warn] --tsv is required for the Stage B panels; skipping them", file=sys.stderr)
+    elif args.stage_b_pred_glob or args.stage_b_glob:
         block_labels = tsd.tsv_block_labels(args.tsv)
+        if all_blocks:
+            b_runs = tsd.collect_stage_b_all(args.stage_b_pred_glob, excl)
+        else:
+            b_runs = tsd.collect(args.stage_b_glob, excl, want_perm=False)
         for f in folds:
             if f not in b_runs:
                 continue
             try:
-                composed.append(tsd.compose_fold(a_preds[f], b_runs[f][0][1], block_labels, f))
+                if all_blocks:
+                    composed.append(tsd.compose_fold_all(a_preds[f], b_runs[f], block_labels, f))
+                else:
+                    composed.append(tsd.compose_fold(a_preds[f], b_runs[f][0][1], block_labels, f))
             except ValueError as e:
                 print(f"  [warn] {e}", file=sys.stderr)
         missing = [f for f in folds if f not in {c['fold'] for c in composed}]
         if missing:
             print(f"  [note] Stage B unavailable for folds {missing}", file=sys.stderr)
-    elif args.stage_b_glob or args.tsv:
-        print("  [warn] need both --stage_b_glob and --tsv for Stage B panels", file=sys.stderr)
 
     rng = np.random.default_rng(0)
     stage_rows = [('Stage A\nTask vs. No Task\n(bal. acc.)', real_bal, 0.5,
@@ -240,21 +313,24 @@ def main():
     if null_means is not None:
         real_acc = float(np.mean([tsd.stage_a_metrics(a_preds[f])['accuracy'] for f in folds]))
         panels.append(lambda ax, fig: plot_null(ax, real_acc, null_means))
-    elif composed:
+    if composed:
         pooled = np.sum([np.array(c['end_to_end_confusion']) for c in composed], axis=0)
-        panels.append(lambda ax, fig: _single_confusion(
-            ax, fig, pooled, ['No task', 'tennis', 'navigation', 'squeeze'],
-            ['No task', 'tennis', 'navigation', 'squeeze', 'Task\n(unclassified)'],
-            'End-to-end confusion (pooled)'))
+        e2e_rows = ['No task', 'tennis', 'navigation', 'squeeze']
+        e2e_cols = e2e_rows if all_blocks else e2e_rows + ['Task\n(unclassified)']
+        panels.append(lambda ax, fig: _single_confusion(ax, fig, pooled, e2e_rows, e2e_cols,
+                                                         'End-to-end confusion (pooled)'))
+    if composed and all_blocks:
+        panels.append(lambda ax, fig: plot_class_mix(ax, composed))
+        panels.append(lambda ax, fig: plot_confidence(ax, composed))
 
-    ncols = 3 if len(panels) == 3 else 2
+    ncols = 3 if (len(panels) == 3 or len(panels) >= 5) else 2
     nrows = int(np.ceil(len(panels) / ncols))
-    fig = plt.figure(figsize=(7.2 if ncols == 2 else 9.0, 2.9 * nrows + 0.3))
+    fig = plt.figure(figsize=(7.2 if ncols == 2 else 9.0, 3.0 * nrows + 0.3))
     gs = fig.add_gridspec(nrows, ncols, hspace=0.75, wspace=0.75, left=0.08, right=0.97, top=0.93, bottom=0.08)
     for i, draw in enumerate(panels):
         ax = fig.add_subplot(gs[i // ncols, i % ncols])
         draw(ax, fig)
-        S._panel_letter(ax, 'abcd'[i])
+        S._panel_letter(ax, 'abcdefgh'[i])
     n_b = len(composed)
     fig.text(0.08, -0.03, f"{len(folds)} Stage A fold(s); {n_b} with Stage B; "
              f"{'permutations: ' + str(len(null_means)) if null_means is not None else 'no permutations'}",

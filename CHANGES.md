@@ -1,5 +1,11 @@
 # Changes
 
+## Run Stage B (3-way) on all Stage A blocks, incl. mock rest blocks
+
+- `analysis/predict_stage_b_on_stage_a_blocks.py` (+ `analysis/sbatch_stage_b_predict.sh`): inference-only. For each fold it loads that fold's own best 3-way checkpoint and predicts tennis/navigation/squeeze for all Stage A test blocks (30 real task + mock rest blocks) of the held-out subject, saving logits and softmax probabilities per block to `nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_stageB_allblocks_fold-<N>/`. Guards: checkpoint hparams must say `dataset_split_num == N` and be the 3-way, non-permuted model; predicted subjects must equal the split file's test subject; task-block predictions are compared with the 3-way run's saved predictions.
+- `analysis/two_stage_decoding.py`: new `--stage_b_pred_glob` mode. Stage A's call only decides whose Stage B prediction counts, so false-alarm mock blocks now receive a real 3-way label (4x4 end-to-end confusion, no "unclassified" column). Reports, by group (real/mock x Stage A right/wrong): Stage B accuracy (real blocks), predicted-class counts, and confidence (logit margin, max logit, max softmax prob, entropy), plus within-subject paired comparisons (one value per held-out subject, Wilcoxon signed-rank, no bootstrap). `--output_csv` writes one row per block. The old `--stage_b_glob` lookup mode is unchanged. Stage A AUROC now scores with the raw Task logit instead of the softmax probability (which saturates to exactly 1.0 and creates artificial ties); identical on fold 101.
+- `analysis/plot_two_stage_decoding.py`: accepts `--stage_b_pred_glob`; adds panels for the 4-way end-to-end confusion, Stage B predicted-class mix (real vs mock) and per-subject Stage B confidence by group. `tests/test_two_stage_all_blocks.py` covers the composition.
+
 ## Add figure script for two-stage decoding
 
 - `analysis/plot_two_stage_decoding.py`: figure for the two-stage test (per-subject Stage A balanced accuracy, stage summary with chance levels, Stage A confusion matrix, and the Stage A permutation null or end-to-end confusion). Re-runnable on partial results: panels without data (Stage B folds, permutations) are skipped and appear on a later re-run. Styled to match `scripts/analyze_loocv_permutation_results.py`. Output: `output/two_stage/two_stage_figure.{png,pdf,svg}`.

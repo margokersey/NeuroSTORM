@@ -218,7 +218,7 @@ descriptive; the numbers to report are the subject-mean metrics in panel d / `me
 
 - **Compute cost**: Same as real LOOCV × N permutations
   - 26 folds × 3 permutations × ~12 hours = ~36 hours wall-clock (parallel)
-  - Increase N_PERMUTATIONS for more robust null distribution (5-10 permutations recommended for publication)
+  - Increase N_PERMUTATIONS for more robust null distribution (aim for 100+ total permutations for publication; 19 is the minimum for p < 0.05)
 
 ## Troubleshooting
 

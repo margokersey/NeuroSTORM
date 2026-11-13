@@ -1,5 +1,10 @@
 # Changes
 
+## Make Stage A permutation sbatch resumable by index range
+
+- `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_taskvsrest_permutation.sh`: new `PERM_START` / `PERM_END` env vars (defaults 1 / 5, unchanged behaviour) so more permutations can be added without redoing finished ones, e.g. `sbatch --export=ALL,PERM_START=6,PERM_END=10 --time=24:00:00 ...`. Seeds stay `1234 + idx`, so new indices never collide with existing runs.
+- `notes/LABEL_PERMUTATION_TESTING.md`: corrected the "5-10 permutations for publication" advice; the aggregate p-value is `1/(1+n)` at best, so aim for 100+ total (>= 19 for p < 0.05).
+
 ## Add Test 3: task decoding during LOR (imagery runs 2-3)
 
 - `datasets/fmri_datasets.py`: new `MichiganLOR` (`MICHIGAN_LOR`, registered in `datasets/data_module.py`, shares `nas/splits/MICHIGAN/`). Emits every block of `task-imagery_run-2` and `run-3` with the same clip rule as the 3-way model (task + trailing rest, squeeze imagery+action merged) and tags each with a segment in `sample_info`: `pre_lor`, `boundary_lor`, `lor`, `boundary_ror`, `ror`. LOR TR (run-2 timing) = first failed squeeze command; ROR TR (run-3 timing) = first squeeze after LOR; N/A ROR = LOR through the end of run 3. Boundary blocks (the squeeze block containing the LOR/ROR TR) are tagged separately so the analysis can drop them. Scans whose frame count differs from their timing TSV are skipped (sub-29 run 3: 1417 vs 2270 TR).

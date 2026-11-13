@@ -45,7 +45,12 @@ REPO_DIR="$HOME/code/NeuroSTORM"
 FINETUNE_SCRIPT="${REPO_DIR}/run_finetune_scripts/greatlakes/loocv/run_loocv_taskvsrest.sh"
 export DATA_ROOT="/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM"
 
-N_PERMUTATIONS=5           # Permutations per fold. p < 0.05 needs >= 19; use 100+ to report (scale --time / array accordingly)
+# Permutation index range (inclusive). Override at submit time to add more without redoing old ones, e.g.
+#   sbatch --export=ALL,PERM_START=6,PERM_END=15 --time=40:00:00 <this script>
+# Seeds are 1234+idx, so new indices never collide with finished ones.
+PERM_START="${PERM_START:-1}"
+PERM_END="${PERM_END:-5}"
+N_PERMUTATIONS=$((PERM_END - PERM_START + 1))   # permutations in THIS submission (p < 0.05 needs >= 19 total; 100+ to report)
 MAX_EPOCHS=30              # Epochs for training on random labels (fewer than real may be needed)
 
 # ── Modules ──────────────────────────────────────────────────────────────────
@@ -77,15 +82,15 @@ PROJECT_PREFIX="xcpd_nosmooth_general"
 echo "============================================================================"
 echo "LOOCV Permutation Testing: Fold $FOLD_ID (Job $SLURM_JOB_ID)"
 echo "============================================================================"
-echo "N_PERMUTATIONS:  $N_PERMUTATIONS"
+echo "PERM RANGE:       $PERM_START-$PERM_END"
 echo "MAX_EPOCHS:      $MAX_EPOCHS"
 echo "GPU_IDS:         ${NUM_GPUS}"
 echo ""
 
 # ── Train Each Permutation for This Fold ─────────────────────────────────────
-for perm_idx in $(seq 1 "$N_PERMUTATIONS"); do
+for perm_idx in $(seq "$PERM_START" "$PERM_END"); do
     echo ""
-    echo "─── Fold $FOLD_ID, Permutation $perm_idx / $N_PERMUTATIONS ───"
+    echo "─── Fold $FOLD_ID, Permutation $perm_idx (range $PERM_START-$PERM_END) ───"
     
     # Uses the original split file, with --permute_labels; each permutation
     # gets a different seed for label shuffling.
@@ -101,4 +106,4 @@ for perm_idx in $(seq 1 "$N_PERMUTATIONS"); do
 done
 
 echo ""
-echo "✓ Fold $FOLD_ID: All $N_PERMUTATIONS permutations complete"
+echo "✓ Fold $FOLD_ID: Permutations $PERM_START-$PERM_END complete"

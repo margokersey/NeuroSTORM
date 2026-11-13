@@ -846,6 +846,113 @@ class MichiganTaskVsRest(Michigan):
         return data
 
 
+class MichiganLOR(Michigan):
+    """Test 3: task decoding during loss of responsiveness (LOR), imagery runs 2 and 3.
+
+    Applies a model trained on imagery run 1 (tennis / navigation / squeeze) to
+    task-imagery_run-2 and run-3, with NO training. Every block of both runs is
+    emitted (same clip rule as the 3-way model: block = task + trailing rest,
+    first `sample_duration` frames after TRIM_START), and each block is tagged
+    with a `segment` in self.sample_info (parallel to self.data):
+
+      pre_lor         run-2 blocks entirely before the block containing the LOR TR
+      boundary_lor    the block containing the LOR TR (first failed squeeze command)
+      lor             run-2 blocks after the LOR block, plus run-3 blocks before the
+                      ROR block (all of run 3 if the subject never returned: ROR = N/A)
+      boundary_ror    the run-3 block containing the ROR TR (first squeeze after LOR)
+      ror             run-3 blocks after the ROR block (responsive again)
+
+    LOR TR is in run-2 timing, ROR TR in run-3 timing (LOR_ROR_timing.csv). Both
+    fall inside a squeeze_action period, so "the block containing it" is the
+    squeeze block (imagery + action + trailing rest). A scan whose frame count
+    differs from its timing TSV is skipped (e.g. sub-29 run 3: 1417 vs 2270 TR).
+
+    Class attributes set by analysis/predict_lor_task_decoding.py before building:
+      TRIM_START  must equal the trim of the dataset the 3-way model was trained on
+      LOR_CSV     path to LOR_ROR_timing.csv (or env NEUROSTORM_LOR_CSV)
+    """
+
+    TRIM_START = 0
+    RUNS = (2, 3)
+    IMAGERY_TAG = 'task-imagery_run-1'
+    LOR_CSV = None
+    SUBJECT_COL, LOR_COL, ROR_COL = 'Subject', 'LOR time (TR in task2)', 'ROR time (TR in task3)'
+
+    @classmethod
+    def run_root(cls, root, run):
+        head, tail = os.path.split(os.path.normpath(root))
+        if cls.IMAGERY_TAG not in tail:
+            raise ValueError(f"MichiganLOR expects an image_path ending in '{cls.IMAGERY_TAG}', got {root!r}")
+        return os.path.join(head, tail.replace(cls.IMAGERY_TAG, f'task-imagery_run-{run}'))
+
+    @classmethod
+    def load_lor_table(cls):
+        """{ 'sub-02': (lor_tr:int, ror_tr:int|None) } from the spreadsheet CSV."""
+        path = cls.LOR_CSV or os.environ.get('NEUROSTORM_LOR_CSV')
+        if not path or not os.path.isfile(path):
+            raise FileNotFoundError(f"LOR/ROR CSV not found: {path!r} (set MichiganLOR.LOR_CSV or NEUROSTORM_LOR_CSV)")
+        df = pd.read_csv(path, encoding='utf-8-sig')
+        table = {}
+        for _, r in df.iterrows():
+            sid = str(r[cls.SUBJECT_COL]).strip()
+            sid = 'sub-' + sid.lstrip('Pp').lstrip('-').zfill(2) if not sid.startswith('sub-') else sid
+            ror = str(r[cls.ROR_COL]).strip()
+            table[sid] = (int(r[cls.LOR_COL]), None if ror.upper() in ('N/A', 'NA', 'NAN', '') else int(float(ror)))
+        return table
+
+    @staticmethod
+    def _block_containing(blocks0, tr):
+        for k, (s, e, _lab) in enumerate(blocks0):
+            if s <= tr < e:
+                return k
+        raise ValueError(f"TR {tr} is not inside any task block")
+
+    def _set_data(self, root, subject_dict):
+        data, info = [], []
+        table = self.load_lor_table()
+        run_info = {}
+        for run in self.RUNS:
+            rroot = self.run_root(root, run)
+            tsv = os.path.join(rroot, 'metadata', f'timing_onehot_task{run}.tsv')
+            n_tsv = len(pd.read_csv(tsv, sep='\t'))
+            run_info[run] = (os.path.join(rroot, 'img'), self._blocks_from_tsv(tsv, 0),
+                             self._blocks_from_tsv(tsv), n_tsv)
+
+        for i, subject in enumerate(subject_dict):
+            if subject not in table:
+                print(f"[MichiganLOR] {subject}: not in LOR/ROR table, skipped")
+                continue
+            lor_tr, ror_tr = table[subject]
+            lor_blk = self._block_containing(run_info[2][1], lor_tr)
+            ror_blk = None if ror_tr is None else self._block_containing(run_info[3][1], ror_tr)
+            for run in self.RUNS:
+                img_root, blocks0, blocks, n_tsv = run_info[run]
+                subject_path = os.path.join(img_root, subject)
+                if not os.path.isfile(os.path.join(subject_path, 'data.pt')) and not os.path.isdir(subject_path):
+                    print(f"[MichiganLOR] {subject} run-{run}: no data, skipped")
+                    continue
+                num_frames = self._count_frames(subject_path)
+                if num_frames != n_tsv:
+                    print(f"[MichiganLOR] {subject} run-{run}: {num_frames} frames != {n_tsv} timing rows, scan skipped")
+                    continue
+                for k, (start, end, lab) in enumerate(blocks):
+                    if start + self.sample_duration > end or start + self.sample_duration > num_frames:
+                        continue
+                    if run == 2:
+                        seg = 'pre_lor' if k < lor_blk else ('boundary_lor' if k == lor_blk else 'lor')
+                    elif ror_blk is None:
+                        seg = 'lor'
+                    else:
+                        seg = 'lor' if k < ror_blk else ('boundary_ror' if k == ror_blk else 'ror')
+                    data.append((i, subject, subject_path, start, self.stride, num_frames, self.LABEL_MAP[lab], 0))
+                    info.append({'subject': subject, 'run': run, 'block_idx': k, 'start': int(start),
+                                 'true_label_name': lab, 'segment': seg, 'lor_tr': lor_tr, 'ror_tr': ror_tr})
+        self.sample_info = info
+        if self.train:
+            self.target_values = np.array([t[6] for t in data]).reshape(-1, 1)
+        return data
+
+
 class MichiganSampleSplit(Michigan):
     """Same task-imagery_run-1 block design as Michigan (10 tennis / 10
     navigation / 10 squeeze blocks per subject, from

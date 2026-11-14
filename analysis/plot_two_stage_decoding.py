@@ -202,9 +202,10 @@ def plot_class_mix(ax, per_fold):
 
 
 def plot_confidence(ax, per_fold, measure='logit_margin'):
-    """Per-subject mean Stage B confidence for the four block groups (within-subject)."""
-    groups = [('real_called_task', 'Real\ncalled\nTask'), ('real_missed', 'Real\nmissed'),
-              ('mock_rejected', 'Mock\nrejected'), ('mock_called_task', 'Mock\nfalse\nalarm')]
+    """Per-subject mean Stage B confidence. x = block type (real task / mock rest) crossed with
+    Stage A's call; one dot per held-out subject (that subject's mean over the group's blocks)."""
+    groups = [('real_called_task', 'Task\n(correct)'), ('real_missed', 'No Task\n(missed)'),
+              ('mock_rejected', 'No Task\n(correct)'), ('mock_called_task', 'Task\n(false\nalarm)')]
     means = tsd.subject_group_means(per_fold, measure)
     jitter = np.random.default_rng(0)
     colors = [S.REAL, S.REAL, S.PERM, S.PERM]
@@ -218,10 +219,18 @@ def plot_confidence(ax, per_fold, measure='logit_margin'):
                    alpha=0.75, edgecolor='white', linewidth=0.3, zorder=3)
         ax.plot([k - 0.27, k + 0.27], [vals.mean()] * 2, color=S.INK, lw=1.2, zorder=4)
     ax.set_xticks(range(len(groups)))
-    ax.set_xticklabels([f"{g[1]}\n(n={n})" for g, n in zip(groups, ns)], fontsize=6.5)
+    ax.set_xticklabels([f"{g[1]}\nn={n}" for g, n in zip(groups, ns)], fontsize=6.5)
     ax.tick_params(axis='x', length=0)
     ax.set_xlim(-0.6, len(groups) - 0.4)
     ax.set_ylabel(tsd.CONF_MEASURES[measure])
+    # Second row under the ticks: block type, with a bracket over its two groups.
+    tr = ax.get_xaxis_transform()
+    for x0, x1, label, c in [(-0.4, 1.4, 'Real task blocks', S.REAL), (1.6, 3.4, 'Mock rest blocks', S.PERM)]:
+        ax.plot([x0, x1], [-0.285, -0.285], transform=tr, color=c, lw=1.2, clip_on=False)
+        ax.text((x0 + x1) / 2, -0.305, label, transform=tr, ha='center', va='top', fontsize=6.5,
+                color=S.INK, fontweight='bold')
+    ax.text(0.5, -0.43, "x labels: Stage A's call. Dot = one subject's mean;\nn = subjects with at least 1 block in the group",
+            transform=ax.transAxes, ha='center', va='top', fontsize=6, color=S.INK_2, linespacing=1.3)
     ax.set_title('Stage B confidence', loc='left', pad=S.TITLE_PAD)
     _top_legend(ax, [Line2D([], [], marker='o', ls='', color=S.REAL, markersize=4.5, label='Real task'),
                      Line2D([], [], marker='o', ls='', color=S.PERM, markersize=4.5, label='Mock'),

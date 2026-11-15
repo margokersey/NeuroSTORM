@@ -1,5 +1,9 @@
 # Changes
 
+## Write LOOCV run folders to turbo instead of nas/
+
+- `run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh` (and so `run_loocv_taskvsrest.sh`): passes `--output_dir $LOOCV_OUTPUT_ROOT/<project_name>` to `main.py`. Default root is `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output`; override with `LOOCV_OUTPUT_ROOT`. Folder layout is `<root>/<project_name>/` (no `neurostorm/` category level).
+
 ## Cap 3-way permutation array concurrency
 
 - `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_permutation_testing.sh`: `--array=101-126%4` (max 4 folds at once).

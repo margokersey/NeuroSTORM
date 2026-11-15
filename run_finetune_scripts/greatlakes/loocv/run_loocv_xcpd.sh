@@ -77,6 +77,10 @@ N_FOLDS=26
 MAX_EPOCHS=30   # 30 rather than 50 to save compute: earlier tests already peaked by epoch 30
 BATCH_SIZE=8
 
+# Where run folders (checkpoints, logs, predictions) are written, one folder per
+# project name: $OUTPUT_ROOT/<project_name>/. Overridable from the job file.
+OUTPUT_ROOT="${LOOCV_OUTPUT_ROOT:-/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output}"
+
 # Number of GPUs this job can see (set by the job file; 1 if run by hand).
 NUM_GPUS="${NUM_GPUS:-1}"
 GPU_IDS=$(seq -s, 0 $((NUM_GPUS - 1)))   # "0" for 1 GPU, "0,1" for 2, ...
@@ -148,6 +152,7 @@ for i in $(seq "$START_INDEX" "$END_INDEX"); do
         --load_model_path "$GENERAL_CKPT" \
         -- --dataset_split_num "$i" --tpt_strategy none \
              --project_name "${PROJECT_PREFIX}_fold-${i}${PROJECT_NAME_SUFFIX}" \
+             --output_dir "${OUTPUT_ROOT}/${PROJECT_PREFIX}_fold-${i}${PROJECT_NAME_SUFFIX}" \
              $PERMUTE_LABELS $PERMUTATION_SEED   # intentionally unquoted: empty or "--flag value"
 done
 

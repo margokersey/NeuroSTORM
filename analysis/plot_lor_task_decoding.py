@@ -153,22 +153,29 @@ def main():
     S._style()
     fig, ax = plt.subplots(figsize=(5.6 + 1.1 * ('recovery' in [x[0] for x in SEGMENTS]), 3.6))
     xs = {seg: i for i, (seg, _) in enumerate(SEGMENTS)}
+    # One fixed x-position per (segment, subject): the dot AND the end of every line that joins that
+    # subject use the same value, so lines always meet their dots.
     rng = np.random.RandomState(1)
+    xpos = {seg: {sub: xs[seg] + rng.uniform(-0.06, 0.06) for sub in sorted(acc[seg])} for seg, _ in SEGMENTS}
     # paired lines between adjacent segments
     for a, b in (('run1', 'pre_lor'), ('pre_lor', 'lor'), ('lor', 'ror'), ('ror', 'recovery')):
         if a not in xs or b not in xs:
             continue
-        for s in set(acc[a]) & set(acc[b]):
-            ax.plot([xs[a], xs[b]], [acc[a][s], acc[b][s]], color=S.CHANCE, lw=0.5, alpha=0.5, zorder=1)
+        for sub in sorted(set(acc[a]) & set(acc[b])):
+            ax.plot([xpos[a][sub], xpos[b][sub]], [acc[a][sub], acc[b][sub]], color=S.CHANCE, lw=0.5,
+                    alpha=0.5, zorder=1)
     for seg, _ in SEGMENTS:
-        v = np.array(list(acc[seg].values()))
-        subs_seg = list(acc[seg].keys())
-        jit = rng.uniform(-0.06, 0.06, len(v))
+        if not acc[seg]:
+            print(f"  {seg}: no subject has >= {args.min_blocks} blocks; column left empty")
+            continue
+        subs_seg = sorted(acc[seg])
+        v = np.array([acc[seg][x] for x in subs_seg])
+        px = np.array([xpos[seg][x] for x in subs_seg])
         na = np.array([seg == 'recovery' and ror_na[x] for x in subs_seg], bool)
-        ax.scatter((xs[seg] + jit)[~na], v[~na], s=14, color=SEG_COLORS[seg], alpha=0.75,
+        ax.scatter(px[~na], v[~na], s=14, color=SEG_COLORS[seg], alpha=0.75,
                    edgecolor='white', linewidth=0.4, zorder=3, clip_on=False)
         if na.any():   # open circles: ROR = N/A (woken manually before run 4)
-            ax.scatter((xs[seg] + jit)[na], v[na], s=16, facecolor='white', edgecolor=SEG_COLORS[seg],
+            ax.scatter(px[na], v[na], s=16, facecolor='white', edgecolor=SEG_COLORS[seg],
                        linewidth=1.0, zorder=3, clip_on=False)
         lo, hi = boot_ci(v)
         ax.plot([xs[seg] + 0.22] * 2, [lo, hi], color=S.INK, lw=1.2, zorder=4)
@@ -236,7 +243,7 @@ def main():
         print(f"  {name}: n={n} {fmt_p(p)}")
     for seg, _ in SEGMENTS:
         v = np.array(list(acc[seg].values()))
-        print(f"  {seg}: n={len(v)} mean acc={v.mean():.3f}")
+        print(f"  {seg}: n={len(v)} mean acc={v.mean():.3f}" if len(v) else f"  {seg}: n=0")
 
 
 if __name__ == '__main__':

@@ -1,5 +1,9 @@
 # Changes
 
+## Add LOR task-decoding accuracy plot
+
+- `analysis/plot_lor_task_decoding.py`: reads the per-fold `lor_predictions_fold_<N>.json` files and plots per-subject block accuracy for pre_lor / lor / ror (boundary blocks dropped, >= `--min_blocks` blocks per subject per segment) with paired lines, bootstrap-CI means, a chance line and Wilcoxon tests. Writes PNG/PDF/SVG + per-subject CSV. Only tested on synthetic predictions so far.
+
 ## Update default output/split paths to turbo
 
 - Replaced `nas/output/{neurostorm,supervised}` and `nas/splits` with `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/{output,splits}` in `analysis/`, `scripts/*.py`, `notes/` and `run_finetune_scripts/greatlakes/` (argparse defaults, shell vars, docstrings, examples). Run folders sit directly in `output/` (no `neurostorm/` level).

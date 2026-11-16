@@ -861,6 +861,8 @@ class MichiganLOR(Michigan):
                       ROR block (all of run 3 if the subject never returned: ROR = N/A)
       boundary_ror    the run-3 block containing the ROR TR (first squeeze after LOR)
       ror             run-3 blocks after the ROR block (responsive again)
+      recovery        every block of run 4 (recovery period; subjects with ROR = N/A
+                      were woken manually before run 4). Only emitted if 4 is in RUNS.
 
     LOR TR is in run-2 timing, ROR TR in run-3 timing (LOR_ROR_timing.csv). Both
     fall inside a squeeze_action period, so "the block containing it" is the
@@ -873,7 +875,7 @@ class MichiganLOR(Michigan):
     """
 
     TRIM_START = 0
-    RUNS = (2, 3)
+    RUNS = (2, 3)      # set to (4,) to score only the recovery run; any subset of (2, 3, 4)
     IMAGERY_TAG = 'task-imagery_run-1'
     LOR_CSV = None
     SUBJECT_COL, LOR_COL, ROR_COL = 'Subject', 'LOR time (TR in task2)', 'ROR time (TR in task3)'
@@ -923,8 +925,9 @@ class MichiganLOR(Michigan):
                 print(f"[MichiganLOR] {subject}: not in LOR/ROR table, skipped")
                 continue
             lor_tr, ror_tr = table[subject]
-            lor_blk = self._block_containing(run_info[2][1], lor_tr)
-            ror_blk = None if ror_tr is None else self._block_containing(run_info[3][1], ror_tr)
+            lor_blk = self._block_containing(run_info[2][1], lor_tr) if 2 in run_info else None
+            ror_blk = (None if (ror_tr is None or 3 not in run_info)
+                       else self._block_containing(run_info[3][1], ror_tr))
             for run in self.RUNS:
                 img_root, blocks0, blocks, n_tsv = run_info[run]
                 subject_path = os.path.join(img_root, subject)
@@ -938,7 +941,9 @@ class MichiganLOR(Michigan):
                 for k, (start, end, lab) in enumerate(blocks):
                     if start + self.sample_duration > end or start + self.sample_duration > num_frames:
                         continue
-                    if run == 2:
+                    if run == 4:
+                        seg = 'recovery'
+                    elif run == 2:
                         seg = 'pre_lor' if k < lor_blk else ('boundary_lor' if k == lor_blk else 'lor')
                     elif ror_blk is None:
                         seg = 'lor'

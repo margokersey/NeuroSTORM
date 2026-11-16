@@ -17,6 +17,10 @@ Run on a GPU node (sbatch analysis/sbatch_lor_task_decoding.sh), not the login n
     python analysis/predict_lor_task_decoding.py --fold 101 \\
         --lor_csv $DATA_ROOT/metadata/lor_ror/LOR_ROR_timing.csv
 
+Run 4 (recovery period) only, without redoing runs 2-3:
+    python analysis/predict_lor_task_decoding.py --fold 101 --runs 4 --lor_csv ...
+    -> lor_predictions_run4_fold_<N>.json next to the run-2/3 file (all blocks tagged 'recovery').
+
 Output (per fold):
     <output_root>/FIXED_mich_xcpd_nosmooth_lor_task_decoding_fold-<N>/lor_predictions_fold_<N>.json
     {"meta": {...}, "predictions": [{sample_idx, subject, run, block_idx, start,
@@ -48,6 +52,9 @@ def main():
     ap.add_argument('--output_root', default='/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output')
     ap.add_argument('--stage_b_prefix', default=STAGE_B_PREFIX,
                     help='project-name prefix of the 3-way LOOCV runs (<prefix>_fold-<N>)')
+    ap.add_argument('--runs', default='2,3',
+                    help="comma-separated imagery runs to score, subset of 2,3,4 (default 2,3). '4' writes "
+                         "lor_predictions_run4_fold_<N>.json (run-specific name) instead of overwriting the run-2/3 file")
     ap.add_argument('--ckpt', default=None, help='override the 3-way checkpoint (default: the one in the fold dir)')
     ap.add_argument('--image_path', default=None,
                     help='override the imagery run-1 data root stored in the checkpoint hparams '
@@ -94,6 +101,11 @@ def main():
         sys.exit(f"unexpected training dataset_name {train_ds_name!r}; set the block trim explicitly")
     MichiganLOR.TRIM_START = trim
     MichiganLOR.LOR_CSV = args.lor_csv
+    runs = tuple(int(r) for r in args.runs.split(','))
+    if not set(runs) <= {2, 3, 4}:
+        sys.exit(f"--runs must be a subset of 2,3,4, got {args.runs}")
+    MichiganLOR.RUNS = runs
+    print(f"[lor] scoring imagery runs {runs}", flush=True)
     print(f"[lor] trained on {train_ds_name} -> block trim {trim}; LOR table {args.lor_csv}", flush=True)
 
     from argparse import ArgumentParser
@@ -153,7 +165,7 @@ def main():
         key = f"run{p['run']}:{p['segment']}"
         seg_counts[key] = seg_counts.get(key, 0) + 1
     acc = {}
-    for seg in ('pre_lor', 'lor', 'ror'):
+    for seg in ('pre_lor', 'lor', 'ror', 'recovery'):
         ps = [p for p in preds if p['segment'] == seg]
         if ps:
             acc[seg] = [float(np.mean([p['predicted_label'] == p['true_label'] for p in ps])), len(ps)]
@@ -162,11 +174,12 @@ def main():
 
     out_dir = Path(args.output_root) / f"{OUT_PREFIX}_fold-{args.fold}"
     out_dir.mkdir(parents=True, exist_ok=True)
-    out = out_dir / f"lor_predictions_fold_{args.fold}.json"
+    run_tag = '' if runs == (2, 3) else '_run' + ''.join(str(r) for r in runs)
+    out = out_dir / f"lor_predictions{run_tag}_fold_{args.fold}.json"
     with open(out, 'w') as f:
         json.dump({'meta': {'fold': args.fold, 'subjects': subjects, 'checkpoint': os.path.abspath(ckpt_path),
                             'split_file': dm.split_file_path, 'trained_on_dataset': train_ds_name,
-                            'block_trim': trim, 'lor_csv': os.path.abspath(args.lor_csv),
+                            'block_trim': trim, 'runs': list(runs), 'lor_csv': os.path.abspath(args.lor_csv),
                             'segment_counts': seg_counts, 'class_names': STAGE_B_NAMES},
                    'predictions': preds}, f, indent=2)
     print(f"[lor] wrote {out}", flush=True)

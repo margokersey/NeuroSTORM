@@ -1,5 +1,11 @@
 # Changes
 
+## Add imagery run 4 (recovery) to the LOR task-decoding test
+
+- `datasets/fmri_datasets.py`: `MichiganLOR.RUNS` may now include 4. Every run-4 block is tagged `recovery` (subjects with ROR = N/A were woken manually before run 4). Runs 2/3 behave as before; `(4,)` alone needs no run-2/3 timing files.
+- `analysis/predict_lor_task_decoding.py`: new `--runs` (default `2,3`). `--runs 4` writes `lor_predictions_run4_fold_<N>.json` beside the existing file, so verified run-2/3 outputs are not overwritten. `analysis/sbatch_lor_task_decoding.sh` passes `LOR_RUNS` through (`LOR_RUNS=4 sbatch --array=101-126 ...`).
+- `analysis/plot_lor_task_decoding.py`: fifth column "Run 4 (recovery)" (auto-detected from `lor_predictions_run4_fold_*.json`, `--run4_glob` to override); open circles mark ROR = N/A subjects; paired tests of recovery vs pre_lor / lor printed to the console.
+
 ## Add LOR task-decoding accuracy plot
 
 - `analysis/plot_lor_task_decoding.py`: reads the per-fold `lor_predictions_fold_<N>.json` files and plots per-subject block accuracy for pre_lor / lor / ror (boundary blocks dropped, >= `--min_blocks` blocks per subject per segment) with paired lines, bootstrap-CI means, a chance line and Wilcoxon tests. Writes PNG/PDF/SVG + per-subject CSV. Adds a first "Run 1 (awake baseline)" column from each fold's saved 3-way test predictions (`--output_root`, `--stage_b_prefix`; `--no_run1` to omit), warning if those predictions were not made with the best checkpoint. Y-axis has headroom so dots at 1.0 are not clipped; caption lists subjects with no after-ROR point and notes sub-29 (run 2 only). Only tested on synthetic predictions so far.

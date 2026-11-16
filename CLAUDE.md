@@ -27,7 +27,7 @@ Fork of CUHK-AIM-Group/NeuroSTORM (fMRI foundation model, PyTorch Lightning), us
 
 - Model outputs (LOOCV/fine-tune run folders, predictions, Stage B outputs): `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output` — run folders sit directly in it (no `neurostorm/` subfolder), e.g. `.../output/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-101`.
 - Split folders (split files): `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits`
-- This applies to model outputs and splits only. Plots, figures, aggregated CSVs and other analysis products still go in the repo (`output/`, `output/`) as before.
+- This applies to model outputs and splits only. Plots, figures, aggregated CSVs and other analysis products still go in the repo (`output/`) as before.
 - These supersede older defaults such as `nas/output/neurostorm` and `nas/splits` that appear in scripts, docstrings, and notes. When running or writing commands, pass the turbo paths (e.g. `--output_dir`, `--output_root`, `--stage_a_glob`) rather than relying on those defaults.
 - This location may change again; if the user gives a new one, update this section.
 
@@ -40,7 +40,7 @@ Follow the site policy in `/etc/claude-code/CLAUDE.md`: never search recursively
 | What | Where | Tracked? |
 |---|---|---|
 | Throwaway / exploratory scripts, one-off tests | `scratch/` | No (gitignored) |
-| Results, figures, CSV/JSON outputs, logs | `output/` or `output/` | No |
+| Results, figures, CSV/JSON outputs, logs | `output/` | No |
 | Our reusable analysis / backfill scripts | `analysis/` | Yes |
 | Reusable pipeline scripts (splits, preprocessing, aggregation) | `scripts/` | Yes |
 | Our workflow docs / quickstarts | `notes/` (one doc per topic; update, don't add a new "quickstart/guide/implementation" variant) | Yes |
@@ -58,7 +58,7 @@ Rules for Claude:
 - This cluster checkout is the primary working copy and the user also keeps a laptop copy. **Keep GitHub in sync**: when asked to commit, also push, and `git pull --rebase origin main` first if the remote is ahead. Never force-push to `main` without explicit instruction.
 - Only commit/push when the user asks. When they do, commit all intended work, not just the file last edited.
 - Before committing: run `git status` and `git diff --stat`; stage specific paths (or `git add -A` after confirming nothing unwanted is untracked).
-- **Never commit**: data, checkpoints (`*.ckpt`, `*.pt`, `*.pth`), Slurm logs (`slurm-*.out`), `output/`, `output/`, wheels, `__pycache__`, credentials/tokens (Neptune API keys etc.). Check `.gitignore` and add patterns rather than committing such files. Flag any file over ~5 MB before adding it.
+- **Never commit**: data, checkpoints (`*.ckpt`, `*.pt`, `*.pth`), Slurm logs (`slurm-*.out`), `output/`, wheels, `__pycache__`, credentials/tokens (Neptune API keys etc.). Check `.gitignore` and add patterns rather than committing such files. Flag any file over ~5 MB before adding it.
 - Commit messages: short imperative summary line (≤72 chars, e.g. `Add LOOCV permutation testing scripts`), optional body explaining why. Group unrelated changes into separate commits (code vs. docs vs. scripts).
 - Moves/renames: use `git mv` or stage both sides so history shows a rename.
 - Pull requests: end the description with the attribution line the harness specifies. Commits end with the Co-Authored-By trailer the harness specifies.

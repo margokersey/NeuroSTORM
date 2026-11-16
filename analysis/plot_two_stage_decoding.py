@@ -337,7 +337,7 @@ def main():
 
     ncols = 3 if (len(panels) == 3 or len(panels) >= 5) else 2
     nrows = int(np.ceil(len(panels) / ncols))
-    fig = plt.figure(figsize=(7.2 if ncols == 2 else 9.0, 3.0 * nrows + 0.3))
+    fig = plt.figure(figsize=(7.2 if ncols == 2 else 11.0, 3.0 * nrows + 0.3))
     gs = fig.add_gridspec(nrows, ncols, hspace=0.6, wspace=0.75, left=0.08, right=0.97, top=0.93, bottom=0.08)
     for i, draw in enumerate(panels):
         ax = fig.add_subplot(gs[i // ncols, i % ncols])

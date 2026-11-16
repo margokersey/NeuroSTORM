@@ -5,8 +5,8 @@ For ONE LOOCV fold this loads that fold's best 3-way checkpoint (trained on imag
 run 1 with the held-out subject excluded) and predicts every block of the held-out
 subject's imagery run 2 and run 3. Nothing is trained. Each block is tagged with a
 segment (pre_lor / boundary_lor / lor / boundary_ror / ror -- see datasets.fmri_datasets.
-MichiganLOR) so the analysis can compare LOR accuracy with the responsive control
-segments of the SAME subject and scanner session. Selecting segments happens later.
+MichiganLOR) so the analysis can compare LOR accuracy with the pre-LOR (propofol started, still responsive)
+segment of the SAME subject and scanner session. Selecting segments happens later.
 
 Leakage guard (same as predict_stage_b_on_stage_a_blocks.py): fold N's checkpoint is
 only ever applied to fold N's test subject. The script asserts that (a) the checkpoint's

@@ -3,7 +3,7 @@
 
 Reads lor_predictions_fold_<N>.json from every fold (written by
 analysis/predict_lor_task_decoding.py). For each held-out subject computes block accuracy
-(3-way tennis / navigation / squeeze) in pre_lor (responsive control), lor and ror, drops
+(3-way tennis / navigation / squeeze) in pre_lor (propofol started, still responsive), lor and ror, drops
 boundary blocks, and draws paired per-subject dots/lines with group means (95% bootstrap CI).
 A segment is only used for a subject if it has >= --min_blocks blocks. Paired Wilcoxon
 signed-rank tests (pre_lor vs lor, lor vs ror) and a one-sample test of lor vs chance (1/3)
@@ -43,7 +43,7 @@ plt = S.plt if hasattr(S, 'plt') else None
 if plt is None:
     import matplotlib.pyplot as plt  # noqa: E402
 
-SEGMENTS = [('run1', 'Run 1\n(awake baseline)'), ('pre_lor', 'Before LOR\n(responsive control)'), ('lor', 'During LOR'), ('ror', 'After ROR\n(responsive again)'),
+SEGMENTS = [('run1', 'Run 1\n(awake baseline)'), ('pre_lor', 'Before LOR\n(propofol started,\nstill responsive)'), ('lor', 'During LOR'), ('ror', 'After ROR\n(responsive again)'),
             ('recovery', 'Run 4\n(recovery)')]
 SEG_COLORS = {'run1': '#8172B3', 'pre_lor': '#4C72B0', 'lor': '#C44E52', 'ror': '#55A868', 'recovery': '#CCB974'}
 CHANCE = 1 / 3

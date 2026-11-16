@@ -1,5 +1,9 @@
 # Changes
 
+## Clarify two-stage figure
+
+- `analysis/plot_two_stage_decoding.py`: panel e now titled "predicted-class mix" with an explicit "not accuracy" label and no misleading 1/3 line; panel b rows name their metric, baselines are full-height lines labeled "Chance / baseline"; panel f labels use hit / miss / correct reject / false alarm with shorter bracket labels; panel a drops the unreadable fold ticks; confusion-matrix panels top-align with their neighbours (`panchor=False`); figure-wide caption explains exclusions and the end-to-end 0.5 baseline. Not yet re-rendered on real data.
+
 ## Point model outputs and splits at turbo
 
 - Model outputs now live in `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output` (no `neurostorm/` level); split files in `.../neurostorm_output/splits`. Plots/aggregates stay in the repo.

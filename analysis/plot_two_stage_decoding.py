@@ -80,7 +80,7 @@ def _single_confusion(ax, fig, cm, rows, cols, title):
     ax.set_xlabel('Predicted class'); ax.set_ylabel('True class')
     ax.set_title(title, loc='left', pad=S.TITLE_PAD)
     ax.set_anchor('N')
-    cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, ticks=[0, 0.5, 1])
+    cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, ticks=[0, 0.5, 1], panchor=False)
     cb.ax.set_yticklabels(['0%', '50%', '100%'])
     cb.ax.tick_params(labelsize=7, length=2, width=0.5)
     cb.outline.set_linewidth(0.5)
@@ -99,13 +99,11 @@ def plot_per_subject(ax, folds, real, perm_by_fold):
     ax.axhline(0.5, color=S.CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0)
     ax.set_xlim(-0.8, max(len(x) - 0.2, 0.8))
     ax.set_ylim(0, 1.02)
-    ax.set_xticks(x)
-    ax.set_xticklabels([str(folds[i]) for i in order], rotation=90, fontsize=6)
-    ax.tick_params(axis='x', length=0, pad=2)
-    ax.set_xlabel('Held-out subject (fold, sorted)')
+    ax.set_xticks([])
+    ax.set_xlabel(f'Held-out subjects (n = {len(x)}, sorted by score)')
     ax.set_ylabel('Balanced accuracy')
     ax.set_title('Stage A: Task vs. No Task', loc='left', pad=S.TITLE_PAD)
-    handles = [Line2D([], [], marker='o', ls='', color=S.REAL, markersize=4.5, label='Real')]
+    handles = [Line2D([], [], marker='o', ls='', color=S.REAL, markersize=4.5, label='One subject')]
     if perm_by_fold:
         handles.append(Line2D([], [], color=S.PERM, alpha=0.7, lw=2.6, label='Permuted (range)'))
     handles.append(Line2D([], [], color=S.CHANCE, lw=0.8, ls=(0, (3, 2)), label='Chance'))
@@ -122,7 +120,7 @@ def plot_stages(ax, rows, rng):
         if null is not None and len(null):
             ax.plot([np.min(null), np.max(null)], [yi, yi], color=S.PERM, alpha=0.7, lw=6,
                     solid_capstyle='butt', zorder=1)
-        ax.plot([chance] * 2, [yi - 0.3, yi + 0.3], color=S.CHANCE, lw=0.8, ls=(0, (2, 1.5)), zorder=0)
+        ax.plot([chance] * 2, [yi - 0.42, yi + 0.42], color=S.CHANCE, lw=1.0, ls=(0, (2, 1.5)), zorder=0)
         ax.scatter(vals, yi - 0.22 + rng.uniform(-0.06, 0.06, len(vals)), s=9, color=S.REAL,
                    alpha=0.7, edgecolor='white', linewidth=0.3, zorder=3)
         m = vals.mean()
@@ -134,12 +132,13 @@ def plot_stages(ax, rows, rng):
     ax.set_yticks(np.arange(n)[::-1])
     ax.set_yticklabels([r[0] for r in rows])
     ax.tick_params(axis='y', length=0)
-    ax.set_xlim(0, 1.0)
+    ax.set_xlim(0, 1.03)
+    ax.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
     ax.set_ylim(-0.6, n - 0.35)
     ax.set_xlabel('Score per held-out subject')
-    ax.set_title('Stage summary', loc='left', pad=S.TITLE_PAD)
+    ax.set_title('Stage summary (one dot per subject)', loc='left', pad=S.TITLE_PAD)
     handles = [Line2D([], [], marker='o', color=S.REAL, lw=1.4, markersize=4.5, label='Mean ± SEM'),
-               Line2D([], [], color=S.CHANCE, lw=0.8, ls=(0, (2, 1.5)), label='Chance')]
+               Line2D([], [], color=S.CHANCE, lw=1.0, ls=(0, (2, 1.5)), label='Chance / baseline')]
     if any(r[3] is not None for r in rows):
         handles.insert(1, Line2D([], [], color=S.PERM, alpha=0.7, lw=6, label='Permuted (range)'))
     _top_legend(ax, handles)
@@ -172,8 +171,8 @@ def plot_null(ax, real_mean, null_means):
 
 def plot_class_mix(ax, per_fold):
     """Stage B predicted-class mix (100% stacked bars): real task blocks vs mock blocks."""
-    rows = [('Real task\n(all)', lambda r: r['block_type'] == 'task'),
-            ('Mock\n(all)', lambda r: r['block_type'] == 'mock'),
+    rows = [('Real task\n(all blocks)', lambda r: r['block_type'] == 'task'),
+            ('Mock\n(all blocks)', lambda r: r['block_type'] == 'mock'),
             ('Mock called\nTask by A', lambda r: r['group'] == 'mock_called_task')]
     colors = [S.SEQ_BLUE[2], S.SEQ_BLUE[4], S.SEQ_BLUE[6]]
     names = [tsd.STAGE_B_NAMES[k] for k in range(3)]
@@ -191,12 +190,11 @@ def plot_class_mix(ax, per_fold):
                         color='white' if c >= 1 else S.INK)
             left += frac
         ax.text(1.01, yi, f"n={len(recs)}", va='center', ha='left', fontsize=6.5, color=S.INK_2)
-    ax.axvline(1 / 3, color=S.CHANCE, lw=0.6, ls=(0, (1, 2)), zorder=0)
     ax.set_yticks(np.arange(n)[::-1]); ax.set_yticklabels([r[0] for r in rows])
     ax.tick_params(axis='y', length=0)
     ax.set_xlim(0, 1); ax.set_ylim(-0.6, n - 0.4)
-    ax.set_xlabel('Fraction of blocks (Stage B prediction)')
-    ax.set_title('Stage B predicted class', loc='left', pad=S.TITLE_PAD)
+    ax.set_xlabel('Fraction of blocks predicted as each class\n(a prediction mix, not accuracy)')
+    ax.set_title('Stage B predicted-class mix', loc='left', pad=S.TITLE_PAD)
     _top_legend(ax, [Line2D([], [], marker='s', ls='', color=colors[c], markersize=5, label=names[c])
                      for c in range(3)])
 
@@ -204,8 +202,8 @@ def plot_class_mix(ax, per_fold):
 def plot_confidence(ax, per_fold, measure='logit_margin'):
     """Per-subject mean Stage B confidence. x = block type (real task / mock rest) crossed with
     Stage A's call; one dot per held-out subject (that subject's mean over the group's blocks)."""
-    groups = [('real_called_task', 'Task\n(correct)'), ('real_missed', 'No Task\n(missed)'),
-              ('mock_rejected', 'No Task\n(correct)'), ('mock_called_task', 'Task\n(false\nalarm)')]
+    groups = [('real_called_task', 'Task\n(hit)'), ('real_missed', 'No Task\n(miss)'),
+              ('mock_rejected', 'No Task\n(correct\nreject)'), ('mock_called_task', 'Task\n(false\nalarm)')]
     means = tsd.subject_group_means(per_fold, measure)
     jitter = np.random.default_rng(0)
     colors = [S.REAL, S.REAL, S.PERM, S.PERM]
@@ -225,16 +223,14 @@ def plot_confidence(ax, per_fold, measure='logit_margin'):
     ax.set_ylabel(tsd.CONF_MEASURES[measure])
     # Second row under the ticks: block type, with a bracket over its two groups.
     tr = ax.get_xaxis_transform()
-    for x0, x1, label, c in [(-0.4, 1.4, 'Real task blocks', S.REAL), (1.6, 3.4, 'Mock rest blocks', S.PERM)]:
+    for x0, x1, label, c in [(-0.4, 1.4, 'Real task', S.REAL), (1.6, 3.4, 'Mock rest', S.PERM)]:
         ax.plot([x0, x1], [-0.285, -0.285], transform=tr, color=c, lw=1.2, clip_on=False)
         ax.text((x0 + x1) / 2, -0.305, label, transform=tr, ha='center', va='top', fontsize=6.5,
                 color=S.INK, fontweight='bold')
-    ax.text(0.5, -0.43, "x labels: Stage A's call. Dot = one subject's mean;\nn = subjects with at least 1 block in the group",
+    ax.text(0.5, -0.46, "x labels: Stage A's call (and whether it was right).\nDot = one subject's mean; n = subjects with at least 1 block in the group",
             transform=ax.transAxes, ha='center', va='top', fontsize=6, color=S.INK_2, linespacing=1.3)
-    ax.set_title('Stage B confidence', loc='left', pad=S.TITLE_PAD)
-    _top_legend(ax, [Line2D([], [], marker='o', ls='', color=S.REAL, markersize=4.5, label='Real task'),
-                     Line2D([], [], marker='o', ls='', color=S.PERM, markersize=4.5, label='Mock'),
-                     Line2D([], [], color=S.INK, lw=1.2, label='Mean of subjects')])
+    ax.set_title('Stage B confidence by block type', loc='left', pad=S.TITLE_PAD)
+    _top_legend(ax, [Line2D([], [], color=S.INK, lw=1.2, label='Mean over subjects')])
 
 
 def main():
@@ -335,15 +331,18 @@ def main():
     ncols = 3 if (len(panels) == 3 or len(panels) >= 5) else 2
     nrows = int(np.ceil(len(panels) / ncols))
     fig = plt.figure(figsize=(7.2 if ncols == 2 else 9.0, 3.0 * nrows + 0.3))
-    gs = fig.add_gridspec(nrows, ncols, hspace=0.75, wspace=0.75, left=0.08, right=0.97, top=0.93, bottom=0.08)
+    gs = fig.add_gridspec(nrows, ncols, hspace=0.6, wspace=0.75, left=0.08, right=0.97, top=0.93, bottom=0.08)
     for i, draw in enumerate(panels):
         ax = fig.add_subplot(gs[i // ncols, i % ncols])
         draw(ax, fig)
         S._panel_letter(ax, 'abcdefgh'[i])
     n_b = len(composed)
-    fig.text(0.08, -0.03, f"{len(folds)} Stage A fold(s); {n_b} with Stage B; "
-             f"{'permutations: ' + str(len(null_means)) if null_means is not None else 'no permutations'}",
-             fontsize=6, color=S.INK_2, va='top')
+    excl_txt = f" (excluded: {', '.join(sorted(excl))})" if excl else ""
+    perm_txt = f"{len(null_means)} Stage A permutations" if null_means is not None else "no permutations run"
+    fig.text(0.08, -0.03,
+             f"{len(folds)} held-out subjects (one LOOCV fold each){excl_txt}; {n_b} with Stage B; {perm_txt}.\n"
+             "Dashed lines: chance (Stage A 0.5, Stage B 1/3). End-to-end baseline 0.5 = always answering 'No task'.",
+             fontsize=6.5, color=S.INK_2, va='top', linespacing=1.4)
 
     out = Path(args.output_file)
     out.parent.mkdir(parents=True, exist_ok=True)

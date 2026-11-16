@@ -4,7 +4,8 @@
 Per held-out subject and run: block accuracy of the fold's 3-way model (run 1 = its own held-out
 test predictions; runs 2/3 = lor_predictions_fold_<N>.json; run 4 = lor_predictions_run4_fold_<N>.json)
 against a run-level motion metric computed from the XCP-D motion.tsv / outliers.tsv of that run.
-Each panel shows Spearman rho (+ 95% bootstrap CI) and p. Runs 2/3 mix pre-LOR / LOR / ROR blocks, so
+Each panel shows Spearman rho (+ 95% bootstrap CI) and p, plus an OLS line with a 95% bootstrap
+band (descriptive only; --no_fit to omit). Runs 2/3 mix pre-LOR / LOR / ROR blocks, so
 accuracy there is over all blocks of the run (use --drop_boundary to exclude boundary blocks).
 
 Motion metrics (--metric):
@@ -75,6 +76,23 @@ def spearman_boot(x, y, n=5000, seed=0):
     return rho, p, np.percentile(b, [2.5, 97.5])
 
 
+def add_fit(ax, x, y, color, n=2000, seed=0):
+    """OLS line with a 95% bootstrap band (descriptive; the reported statistic is Spearman rho)."""
+    xx = np.linspace(x.min(), x.max(), 100)
+    b, a = np.polyfit(x, y, 1)
+    rng = np.random.RandomState(seed)
+    boots = []
+    for _ in range(n):
+        i = rng.choice(len(x), len(x))
+        if np.ptp(x[i]) > 0:
+            bb, aa = np.polyfit(x[i], y[i], 1)
+            boots.append(aa + bb * xx)
+    if boots:
+        lo, hi = np.percentile(boots, [2.5, 97.5], axis=0)
+        ax.fill_between(xx, lo, hi, color=color, alpha=0.15, lw=0, zorder=1)
+    ax.plot(xx, a + b * xx, color=color, lw=1.2, zorder=2)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--pred_glob', required=True)
@@ -87,6 +105,7 @@ def main():
     ap.add_argument('--min_blocks', type=int, default=5)
     ap.add_argument('--drop_boundary', action='store_true')
     ap.add_argument('--exclude_subjects', nargs='*', default=[])
+    ap.add_argument('--no_fit', action='store_true', help='omit the regression line')
     ap.add_argument('--no_labels', action='store_true', help='do not label points with subject ids')
     args = ap.parse_args()
 
@@ -132,6 +151,8 @@ def main():
             for _, r in g.iterrows():
                 ax.annotate(r.subject.replace('sub-', ''), (r[args.metric], r.accuracy), fontsize=4.5,
                             color=S.INK_2, xytext=(2, 2), textcoords='offset points')
+        if len(g) >= 4 and g[args.metric].nunique() > 1 and not args.no_fit:
+            add_fit(ax, g[args.metric].values, g.accuracy.values, RUN_COLORS[run])
         ax.axhline(P.CHANCE, color=S.CHANCE, ls='--', lw=0.8, zorder=0)
         ax.set_title(RUN_TITLES[run], fontsize=8)
         ax.set_ylim(0, 1.03)

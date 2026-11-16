@@ -2,7 +2,7 @@
 
 ## Add accuracy-vs-motion plot for LOR task decoding
 
-- `analysis/plot_lor_accuracy_vs_motion.py`: one panel per imagery run (1-4) of per-subject block accuracy vs an XCP-D motion metric (`--metric pct_fd_gt_0.3` default, `pct_censored`, `median_fd`; read from `sub-*/func/*_motion.tsv` / `*_outliers.tsv` under `--deriv_dir`), with Spearman rho + bootstrap CI. Mean FD is not offered (run-3 max FD reaches ~1000 mm). XCP-D censor threshold for the `noGSR_highpass_fd-0.8_nosmooth` derivatives verified as FD >= 0.8 mm. Not yet run on real data.
+- `analysis/plot_lor_accuracy_vs_motion.py`: one panel per imagery run (1-4) of per-subject block accuracy vs an XCP-D motion metric (`--metric pct_fd_gt_0.3` default, `pct_censored`, `median_fd`; read from `sub-*/func/*_motion.tsv` / `*_outliers.tsv` under `--deriv_dir`), with Spearman rho + bootstrap CI and an OLS regression line with 95% bootstrap band (`--no_fit` to omit). Mean FD is not offered (run-3 max FD reaches ~1000 mm). XCP-D censor threshold for the `noGSR_highpass_fd-0.8_nosmooth` derivatives verified as FD >= 0.8 mm. Not yet run on real data.
 - `notes/LOR_TASK_DECODING.md` (new): scripts overview plus XCP-D motion notes (0.8 mm censor threshold, per-run censoring, why not mean FD, censored volumes retained in the denoised BOLD; interpolation not yet confirmed).
 
 ## Add imagery run 4 (recovery) to the LOR task-decoding test

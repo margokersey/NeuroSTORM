@@ -200,24 +200,31 @@ def plot_class_mix(ax, per_fold):
 
 
 def plot_confidence(ax, per_fold, measure='logit_margin'):
-    """Per-subject mean Stage B confidence. x = block type (real task / mock rest) crossed with
-    Stage A's call; one dot per held-out subject (that subject's mean over the group's blocks)."""
+    """Stage B confidence per block (small faint dots), with each subject's mean over the group's
+    blocks overlaid (larger dots) and the mean of those subject means as a black bar. x = block type
+    (real task / mock rest) crossed with Stage A's call."""
     groups = [('real_called_task', 'Task\n(hit)'), ('real_missed', 'No Task\n(miss)'),
               ('mock_rejected', 'No Task\n(correct\nreject)'), ('mock_called_task', 'Task\n(false\nalarm)')]
     means = tsd.subject_group_means(per_fold, measure)
     jitter = np.random.default_rng(0)
     colors = [S.REAL, S.REAL, S.PERM, S.PERM]
     ns = []
+    nb = []
     for k, (g, lab) in enumerate(groups):
+        blocks = np.array([float(r[measure]) for fr in per_fold for r in fr['records']
+                           if r['group'] == g and r[measure] is not None])
         vals = np.array([d[g] for d in means.values() if g in d])
         ns.append(len(vals))
-        if len(vals) == 0:
+        nb.append(len(blocks))
+        if len(blocks) == 0:
             continue
-        ax.scatter(k + jitter.uniform(-0.12, 0.12, len(vals)), vals, s=10, color=colors[k],
-                   alpha=0.75, edgecolor='white', linewidth=0.3, zorder=3)
-        ax.plot([k - 0.27, k + 0.27], [vals.mean()] * 2, color=S.INK, lw=1.2, zorder=4)
+        ax.scatter(k + jitter.uniform(-0.3, 0.3, len(blocks)), blocks, s=4, color=colors[k],
+                   alpha=0.25, linewidth=0, zorder=2)
+        ax.scatter(k + jitter.uniform(-0.1, 0.1, len(vals)), vals, s=14, color=colors[k],
+                   alpha=0.95, edgecolor='black', linewidth=0.5, zorder=3)
+        ax.plot([k - 0.33, k + 0.33], [vals.mean()] * 2, color=S.INK, lw=1.4, zorder=4)
     ax.set_xticks(range(len(groups)))
-    ax.set_xticklabels([f"{g[1]}\nn={n}" for g, n in zip(groups, ns)], fontsize=6.5)
+    ax.set_xticklabels([f"{g[1]}\n{nbk} blocks\n{n} subj" for g, n, nbk in zip(groups, ns, nb)], fontsize=6.5)
     ax.tick_params(axis='x', length=0)
     ax.set_xlim(-0.6, len(groups) - 0.4)
     ax.set_ylabel(tsd.CONF_MEASURES[measure])
@@ -227,7 +234,7 @@ def plot_confidence(ax, per_fold, measure='logit_margin'):
         ax.plot([x0, x1], [-0.285, -0.285], transform=tr, color=c, lw=1.2, clip_on=False)
         ax.text((x0 + x1) / 2, -0.305, label, transform=tr, ha='center', va='top', fontsize=6.5,
                 color=S.INK, fontweight='bold')
-    ax.text(0.5, -0.46, "x labels: Stage A's call (and whether it was right).\nDot = one subject's mean; n = subjects with at least 1 block in the group",
+    ax.text(0.5, -0.46, "x labels: Stage A's call (and whether it was right).\nFaint dot = one block; outlined dot = one subject's mean; bar = mean of subject means",
             transform=ax.transAxes, ha='center', va='top', fontsize=6, color=S.INK_2, linespacing=1.3)
     ax.set_title('Stage B confidence by block type', loc='left', pad=S.TITLE_PAD)
     _top_legend(ax, [Line2D([], [], color=S.INK, lw=1.2, label='Mean over subjects')])

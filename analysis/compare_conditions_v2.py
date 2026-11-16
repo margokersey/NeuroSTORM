@@ -1317,7 +1317,7 @@ def main():
     ap.add_argument("--condition", action="append", required=True, dest="conditions",
                      help="Repeatable. 'label|project_name_glob[|group[|facet]]'. See module docstring.")
     ap.add_argument("--output_root", default="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output")
-    ap.add_argument("--out_dir", default="figure_outputs/condition_sweep")
+    ap.add_argument("--out_dir", default="output/condition_sweep")
     ap.add_argument("--test_metrics", default="acc,AUROC")
     ap.add_argument("--val_metrics", default="acc,AUROC",
                      help="Comma-separated validation metrics to plot as a separate boxplot figure."

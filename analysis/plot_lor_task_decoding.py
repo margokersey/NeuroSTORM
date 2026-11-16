@@ -17,7 +17,7 @@ predictions use the best checkpoint). Run 1 vs pre_lor is reported in the consol
 
     python analysis/plot_lor_task_decoding.py \\
         --pred_glob "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_lor_task_decoding_fold-*/lor_predictions_fold_*.json" \\
-        --output_file figure_outputs/lor_task_decoding/lor_accuracy_by_segment
+        --output_file output/lor_task_decoding/lor_accuracy_by_segment
 
 Writes .png (600 dpi), .pdf, .svg and .csv.
 """
@@ -121,7 +121,7 @@ def fmt_p(p):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--pred_glob', required=True)
-    ap.add_argument('--output_file', default='figure_outputs/lor_task_decoding/lor_accuracy_by_segment')
+    ap.add_argument('--output_file', default='output/lor_task_decoding/lor_accuracy_by_segment')
     ap.add_argument('--output_root', default='/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output',
                     help='parent of the 3-way LOOCV run folders (for the run-1 baseline)')
     ap.add_argument('--stage_b_prefix', default=STAGE_B_PREFIX, help='3-way run folder prefix (<prefix>_fold-<N>)')

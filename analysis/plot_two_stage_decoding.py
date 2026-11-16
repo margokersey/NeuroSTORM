@@ -202,7 +202,7 @@ def plot_class_mix(ax, per_fold):
 def plot_confidence(ax, per_fold, measure='logit_margin'):
     """Stage B confidence per block (small faint dots), with each subject's mean over the group's
     blocks overlaid (larger dots) and the mean of those subject means as a black bar. x = block type
-    (real task / mock rest) crossed with Stage A's call."""
+    (real task / mock task) crossed with Stage A's call."""
     groups = [('real_called_task', 'Task\n(hit)'), ('real_missed', 'No Task\n(miss)'),
               ('mock_rejected', 'No Task\n(correct\nreject)'), ('mock_called_task', 'Task\n(false\nalarm)')]
     means = tsd.subject_group_means(per_fold, measure)
@@ -230,7 +230,7 @@ def plot_confidence(ax, per_fold, measure='logit_margin'):
     ax.set_ylabel(tsd.CONF_MEASURES[measure])
     # Second row under the ticks: block type, with a bracket over its two groups.
     tr = ax.get_xaxis_transform()
-    for x0, x1, label, c in [(-0.4, 1.4, 'Real task', S.REAL), (1.6, 3.4, 'Mock rest', S.PERM)]:
+    for x0, x1, label, c in [(-0.4, 1.4, 'Real task', S.REAL), (1.6, 3.4, 'Mock task', S.PERM)]:
         ax.plot([x0, x1], [-0.285, -0.285], transform=tr, color=c, lw=1.2, clip_on=False)
         ax.text((x0 + x1) / 2, -0.305, label, transform=tr, ha='center', va='top', fontsize=6.5,
                 color=S.INK, fontweight='bold')

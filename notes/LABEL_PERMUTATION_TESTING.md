@@ -137,8 +137,8 @@ After all models complete:
 
 ```bash
 python scripts/analyze_loocv_permutation_results.py \
-    --real_dir "nas/output/supervised/FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv_fold-*" \
-    --perm_dir "nas/output/supervised/FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv_fold-*_perm*" \
+    --real_dir "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv_fold-*" \
+    --perm_dir "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv_fold-*_perm*" \
     --n_permutations 3
 ```
 
@@ -227,7 +227,7 @@ descriptive; the numbers to report are the subject-mean metrics in panel d / `me
 - Verify pretrained checkpoint path: `pretrained_models/pretraining/pt_neurostorm_mae_5ds.ckpt`
 
 ### Wrong output directory
-- Ensure `nas/output/supervised/` exists
+- Ensure `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/` exists
 - Check SLURM working directory set in sbatch header
 
 ### Different accuracies than expected

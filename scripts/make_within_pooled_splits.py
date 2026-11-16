@@ -2,10 +2,10 @@
 make_within_pooled_splits.py
 
 Generates the split files for two new evaluation conditions to go with the
-existing between-subject 5-fold CV (nas/splits/MICHIGAN/split_fixed_N.txt):
+existing between-subject 5-fold CV (/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_N.txt):
 
   - MICHIGAN_POOLED: N_POOLED_FOLDS (default 5) split files,
-    nas/splits/MICHIGAN_POOLED/split_fixed_1.txt .. split_fixed_5.txt. Every
+    /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN_POOLED/split_fixed_1.txt .. split_fixed_5.txt. Every
     subject contributes all three of "<subject>::train::<seed>",
     "<subject>::val::<seed>", "<subject>::test::<seed>" to that fold's
     pooled train/val/test lists, with a DIFFERENT seed per fold -- so each
@@ -20,14 +20,14 @@ existing between-subject 5-fold CV (nas/splits/MICHIGAN/split_fixed_N.txt):
     silently use the same fixed split.
 
   - MICHIGAN_WITHIN: N split files (one per subject),
-    nas/splits/MICHIGAN_WITHIN/split_fixed_<k>.txt for k = 1..N. Each file
+    /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN_WITHIN/split_fixed_<k>.txt for k = 1..N. Each file
     lists ONLY that one subject's "::train"/"::val"/"::test" keys (no seed
     segment -- one subject IS the fold here, there's nothing to reshuffle)
     -- run with --dataset_split_num <k>, this trains and tests a
     completely separate model on that one subject's own blocks only (pure
     within-subject decoding: 21 train / 3 val / 6 test blocks, all from
     the same person). Also writes
-    nas/splits/MICHIGAN_WITHIN/fold_to_subject.txt (fold number -> subject
+    /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN_WITHIN/fold_to_subject.txt (fold number -> subject
     name) since there's no other way to tell which fold is which subject.
 
 Requires, in this order:
@@ -41,8 +41,8 @@ never imports or touches any model/dataset code.
 
 Usage (run from the repo root, on the machine with the real data/splits):
     python make_within_pooled_splits.py \\
-      --source_split nas/splits/MICHIGAN/split_fixed_1.txt \\
-      --split_root nas/splits \\
+      --source_split /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_1.txt \\
+      --split_root /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits \\
       --n_pooled_folds 5
 
 --source_split just supplies the roster of subject names -- any one of the
@@ -92,9 +92,9 @@ def write_split(path, train_keys, val_keys, test_keys):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--source_split", default="nas/splits/MICHIGAN/split_fixed_1.txt",
+    ap.add_argument("--source_split", default="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_1.txt",
                      help="Any existing MICHIGAN split_fixed_*.txt -- used only to read the subject roster.")
-    ap.add_argument("--split_root", default="nas/splits")
+    ap.add_argument("--split_root", default="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits")
     ap.add_argument("--n_pooled_folds", type=int, default=5,
                      help="Number of independently-reshuffled MICHIGAN_POOLED folds to generate "
                           "(must be <= N_POOLED_FOLDS in data_module.py's subject-dict branch, "

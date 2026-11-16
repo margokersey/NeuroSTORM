@@ -1,5 +1,10 @@
 # Changes
 
+## Update default output/split paths to turbo
+
+- Replaced `nas/output/{neurostorm,supervised}` and `nas/splits` with `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/{output,splits}` in `analysis/`, `scripts/*.py`, `notes/` and `run_finetune_scripts/greatlakes/` (argparse defaults, shell vars, docstrings, examples). Run folders sit directly in `output/` (no `neurostorm/` level).
+- Left unchanged on purpose: `datasets/data_module.py` fallback and `scripts/configs/datasets/*.yaml` (`./nas/splits`), `run_finetune_scripts/local/`, `scripts/sandbox/` and `notes/local_sandbox.md` (workstation/sandbox layouts).
+
 ## Clarify two-stage figure
 
 - `analysis/plot_two_stage_decoding.py`: panel e now titled "predicted-class mix" with an explicit "not accuracy" label and no misleading 1/3 line; panel b rows name their metric, baselines are full-height lines labeled "Chance / baseline"; panel f labels use hit / miss / correct reject / false alarm with shorter bracket labels; panel a drops the unreadable fold ticks; confusion-matrix panels top-align with their neighbours (`panchor=False`); figure-wide caption explains exclusions and the end-to-end 0.5 baseline. Not yet re-rendered on real data.

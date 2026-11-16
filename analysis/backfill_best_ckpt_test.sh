@@ -9,13 +9,13 @@
 # runs one more --mode test pass.
 #
 # Checkpoint location: main.py's TensorBoard-logger branch sets
-#   dirpath = args.default_root_dir   (= nas/output/neurostorm/<project_name>)
+#   dirpath = args.default_root_dir   (= /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/<project_name>)
 #   logger = TensorBoardLogger(dirpath)
 # i.e. ModelCheckpoint's dirpath is the PROJECT ROOT itself, not a
 # lightning_logs/version_N subfolder -- TensorBoardLogger creates that
 # version_N structure separately, on its own, for event files only. So
 # checkpt-*.ckpt / last.ckpt live directly in
-# nas/output/neurostorm/<project_name>/, one level above lightning_logs/.
+# /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/<project_name>/, one level above lightning_logs/.
 #
 # It writes into the SAME --project_name as the original training run, so
 # PyTorch Lightning creates a new, later lightning_logs/version_N there for
@@ -31,7 +31,7 @@
 #     --dataset michigan_xcpd --task task6 --tpt_strategy none
 #
 # (project_base + "_fold-<i>" must exactly match the --project_name your
-# training runs actually used -- check nas/output/neurostorm/ if unsure.
+# training runs actually used -- check /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/ if unsure.
 # --dataset/--task/--tpt_strategy must also match what that condition was
 # trained with; --dataset_split_num is set automatically per fold.)
 #
@@ -68,7 +68,7 @@ if [[ -z "$PROJECT_BASE" || -z "$DATASET" || -z "$TASK" || -z "$TPT_STRATEGY" ]]
     exit 1
 fi
 
-OUTPUT_ROOT="nas/output/neurostorm"
+OUTPUT_ROOT="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output"
 
 for i in $(seq "$START_FOLD_NUM" "$END_FOLD_NUM"); do
     PROJECT_NAME="${PROJECT_BASE}_fold-${i}"

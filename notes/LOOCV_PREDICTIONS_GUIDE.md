@@ -34,7 +34,7 @@ A PyTorch Lightning callback that:
 After each LOOCV fold completes, you'll find:
 
 ```
-nas/output/supervised/xcpd_nosmooth_general_fold-101/
+/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-101/
 ├── checkpt-XX-valid_acc-YY.ckpt          (best model)
 ├── last.ckpt                              (last epoch)
 └── test_predictions/
@@ -88,7 +88,7 @@ nas/output/supervised/xcpd_nosmooth_general_fold-101/
 Inspect predictions from a single fold:
 
 ```bash
-python scripts/inspect_fold_predictions.py --fold_dir nas/output/supervised/xcpd_nosmooth_general_fold-101
+python scripts/inspect_fold_predictions.py --fold_dir /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-101
 ```
 
 **Output:**
@@ -106,7 +106,7 @@ After all 26 folds complete, analyze permutation chance:
 
 ```bash
 python scripts/analyze_loocv_predictions.py \
-  --output_dir "nas/output/supervised/xcpd_nosmooth_general_fold-*" \
+  --output_dir "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-*" \
   --n_permutations 1000
 ```
 
@@ -195,14 +195,14 @@ tail -f logs/xcpd_loocv_<jobid>_101.log  # Watch fold 101
 
 After each fold finishes:
 ```bash
-python scripts/inspect_fold_predictions.py --fold_dir nas/output/supervised/xcpd_nosmooth_general_fold-101
+python scripts/inspect_fold_predictions.py --fold_dir /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-101
 # Verify accuracy looks reasonable
 ```
 
 ### Step 3: After All Folds Complete
 ```bash
 python scripts/analyze_loocv_predictions.py \
-  --output_dir "nas/output/supervised/xcpd_nosmooth_general_fold-*" \
+  --output_dir "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-*" \
   --n_permutations 1000
 ```
 
@@ -219,7 +219,7 @@ For specific folds or custom analysis:
 # Load and explore predictions directly
 import json
 
-with open('nas/output/supervised/xcpd_nosmooth_general_fold-101/test_predictions/test_predictions_fold_101.json') as f:
+with open('/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-101/test_predictions/test_predictions_fold_101.json') as f:
     preds = json.load(f)
 
 # Per-subject performance
@@ -245,19 +245,19 @@ for subj, perf in sorted(subj_perfs.items()):
 
 **Possible causes:**
 1. **Task name mismatch:** Callback only activates for `task_name='imagery_task_classification'`
-   - Check: `cat nas/output/supervised/xcpd_nosmooth_general_fold-101/.hydra/config.yaml | grep task_name`
+   - Check: `cat /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-101/.hydra/config.yaml | grep task_name`
 
 2. **Mode issue:** Callback only activates in finetune mode (not pretraining)
    - Check: `grep "mode:" config.yaml`
 
 3. **Test set empty:** If validation split is empty or drop_last=True with small splits
-   - Check: `ls nas/output/supervised/xcpd_nosmooth_general_fold-101/events.out.tfevents.*`
+   - Check: `ls /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-101/events.out.tfevents.*`
 
 ### test_summary_fold_X.json but no test_predictions_fold_X.json
 
 The callback saves both; if only summary exists, predictions might have been truncated. Check file sizes:
 ```bash
-ls -lh nas/output/supervised/xcpd_nosmooth_general_fold-*/test_predictions/
+ls -lh /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-*/test_predictions/
 ```
 
 If predictions file is 0 bytes, the test phase had 0 samples. Check split files.
@@ -265,9 +265,9 @@ If predictions file is 0 bytes, the test phase had 0 samples. Check split files.
 ### analyze_loocv_predictions.py finds 0 folds
 
 **Check:**
-1. Glob pattern is correct: `ls nas/output/supervised/xcpd_nosmooth_general_fold-*`
+1. Glob pattern is correct: `ls /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-*`
 2. Folds completed (not still running): `squeue -u mkersey`
-3. Fold directories exist and contain output: `ls nas/output/supervised/xcpd_nosmooth_general_fold-101/`
+3. Fold directories exist and contain output: `ls /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-101/`
 
 ### ImportError: No module named 'matplotlib'
 
@@ -321,8 +321,8 @@ Modify `ImageryPredictionsCallback` to save:
 
 | Task | Command |
 |------|---------|
-| Inspect fold 101 | `python scripts/inspect_fold_predictions.py --fold_dir nas/output/supervised/xcpd_nosmooth_general_fold-101` |
-| Analyze all folds | `python scripts/analyze_loocv_predictions.py --output_dir "nas/output/supervised/xcpd_nosmooth_general_fold-*"` |
+| Inspect fold 101 | `python scripts/inspect_fold_predictions.py --fold_dir /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-101` |
+| Analyze all folds | `python scripts/analyze_loocv_predictions.py --output_dir "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-*"` |
 | Increase permutations | `--n_permutations 10000` |
-| Load predictions in Python | `json.load(open('nas/output/.../test_predictions_fold_101.json'))` |
+| Load predictions in Python | `json.load(open('/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/.../test_predictions_fold_101.json'))` |
 | Per-subject breakdown | Check `test_summary_fold_101.json` → `per_subject_accuracy` |

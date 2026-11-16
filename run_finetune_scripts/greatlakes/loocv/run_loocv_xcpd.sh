@@ -29,14 +29,14 @@
 # training curves on fold 101 before committing to all 26.
 #
 # Prerequisites:
-#   1. On the machine where nas/splits/MICHIGAN/split_fixed_1..5.txt
+#   1. On the machine where /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_1..5.txt
 #      already exist, generate the LOOCV split files:
 #
 #        python scripts/make_loocv_splits.py \
 #          --dataset_name MICHIGAN --source_fold 1 --start_index 101
 #
 #      This reads the 26-subject roster from split_fixed_1.txt and writes
-#      nas/splits/MICHIGAN/split_fixed_101.txt .. split_fixed_126.txt
+#      /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_101.txt .. split_fixed_126.txt
 #      (indices 101+ so they can't collide with/overwrite the existing
 #      5-fold files 1-5, which stay untouched and usable in parallel).
 #      Each fold has: 22 training subjects, 3 validation subjects (for
@@ -69,7 +69,7 @@ DATASET="${LOOCV_DATASET:-michigan_xcpd_nosmooth_fullblock}"
 IMG_ROOT="$DATA_ROOT/FIXED_xcp_nosmooth_task-imagery_run-1/img"
 
 TASK="${LOOCV_TASK:-task6}"
-# Split files live on turbo; data_module.py reads NEUROSTORM_SPLIT_ROOT (default ./nas/splits).
+# Split files live on turbo; data_module.py reads NEUROSTORM_SPLIT_ROOT (code fallback is ./nas/splits).
 export NEUROSTORM_SPLIT_ROOT="${LOOCV_SPLIT_ROOT:-/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits}"
 SPLIT_DIR="$NEUROSTORM_SPLIT_ROOT/MICHIGAN"
 PROJECT_PREFIX="${LOOCV_PROJECT_PREFIX:-FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv}"

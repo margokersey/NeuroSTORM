@@ -25,8 +25,8 @@ Test labels are always the true labels; only training labels are permuted.
 
 Usage:
     python scripts/analyze_loocv_permutation_results.py \
-        --real_dir "nas/output/neurostorm/xcpd_nosmooth_general_fold-*" \
-        --perm_dir "nas/output/neurostorm/xcpd_nosmooth_general_fold-*_perm*" \
+        --real_dir "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-*" \
+        --perm_dir "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-*_perm*" \
         --n_permutations 100
 
 Output (defaults under output/loocv_permutation/):

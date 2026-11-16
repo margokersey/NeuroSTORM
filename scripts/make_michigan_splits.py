@@ -9,7 +9,7 @@ format fMRIDataModule.load_split() expects, with real subject-level rotation.
 Usage:
     python scripts/make_michigan_splits.py \
         --image_path ./processed_data/michigan \
-        --split_root ./nas/splits \
+        --split_root /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits \
         --n_folds 5 --seed 0
 """
 import argparse
@@ -33,7 +33,7 @@ def save_split(path, train, val, test):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--image_path", required=True, help="dataset root, e.g. ./processed_data/michigan")
-    ap.add_argument("--split_root", default="./nas/splits")
+    ap.add_argument("--split_root", default="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits")
     ap.add_argument("--dataset_name", default="MICHIGAN")
     ap.add_argument("--n_folds", type=int, default=5)
     ap.add_argument("--seed", type=int, default=0)

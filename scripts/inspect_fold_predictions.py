@@ -3,7 +3,7 @@
 Quick inspection of test predictions from a single LOOCV fold.
 
 Usage:
-    python scripts/inspect_fold_predictions.py --fold_dir nas/output/supervised/xcpd_nosmooth_general_fold-101
+    python scripts/inspect_fold_predictions.py --fold_dir /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-101
 
 This prints:
 - Summary statistics
@@ -127,7 +127,7 @@ def main():
     )
     parser.add_argument('--fold_dir', type=str, required=True,
                         help='Path to fold output directory (e.g., '
-                             'nas/output/supervised/xcpd_nosmooth_general_fold-101)')
+                             '/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/xcpd_nosmooth_general_fold-101)')
     parser.add_argument('--misclass_top_n', type=int, default=20,
                         help='Number of top misclassifications to show (default: 20)')
     

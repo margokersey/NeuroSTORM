@@ -41,7 +41,7 @@ Usage (CPU only, run from the NeuroSTORM repo root in the neurostorm conda env):
 
     python scripts/window_sweep_linear_probe.py \
         --image_path /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_sub_voxel_norm \
-        --split_root ./nas/splits --fold 1
+        --split_root /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits --fold 1
 
     # narrower/wider sweep:
     python scripts/window_sweep_linear_probe.py \
@@ -184,7 +184,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--image_path", required=True,
                      help="e.g. /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_sub_voxel_norm")
-    ap.add_argument("--split_root", default="./nas/splits")
+    ap.add_argument("--split_root", default="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits")
     ap.add_argument("--dataset_name", default="MICHIGAN")
     ap.add_argument("--fold", type=int, default=1, help="which split_fixed_N.txt to use")
     ap.add_argument("--pool_factor", type=int, default=16, help="spatial average-pool factor, matches baseline_linear_probe.py's default")

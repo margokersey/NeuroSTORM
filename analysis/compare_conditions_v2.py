@@ -177,7 +177,7 @@ change. Omit group/facet entirely and it behaves like one flat, ungrouped,
 unfaceted comparison.
 
 Optional:
-    --output_root nas/output/neurostorm     (default)
+    --output_root /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output     (default)
     --out_dir "output/condition_sweep"   (default; created if missing)
     --test_metrics acc,AUROC                (default; comma-separated,
                                               matched against test_<metric>
@@ -1316,7 +1316,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--condition", action="append", required=True, dest="conditions",
                      help="Repeatable. 'label|project_name_glob[|group[|facet]]'. See module docstring.")
-    ap.add_argument("--output_root", default="nas/output/neurostorm")
+    ap.add_argument("--output_root", default="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output")
     ap.add_argument("--out_dir", default="figure_outputs/condition_sweep")
     ap.add_argument("--test_metrics", default="acc,AUROC")
     ap.add_argument("--val_metrics", default="acc,AUROC",

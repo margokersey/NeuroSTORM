@@ -170,7 +170,7 @@ Lightning training loop
        ...
    ```
 
-3. **Data module** loads splits (nas/splits/MICHIGAN/split_fixed_101.txt, etc.):
+3. **Data module** loads splits (/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_101.txt, etc.):
    - Selects which subjects are train/val/test for this fold
    - For each subject, loads blocks from timing_onehot_task1.tsv
    - Creates windows with labels
@@ -221,7 +221,7 @@ Lightning training loop
 
 ## Split Files: How Train/Val/Test Subjects Are Assigned
 
-**File:** `nas/splits/MICHIGAN/split_fixed_101.txt` (for LOOCV fold 101)
+**File:** `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_101.txt` (for LOOCV fold 101)
 
 **Format** (example):
 ```
@@ -332,7 +332,7 @@ for imgs, labels in train_loader:
 | [datasets/fmri_datasets.py](/home/mkersey/code/NeuroSTORM/datasets/fmri_datasets.py) | Label loading, block extraction | Michigan class, LABEL_MAP, _blocks_from_tsv() |
 | [scripts/configs/datasets/michigan_xcpd_nosmooth_fullblock.yaml](/home/mkersey/code/NeuroSTORM/scripts/configs/datasets/michigan_xcpd_nosmooth_fullblock.yaml) | Task/dataset config | num_classes: 3, task_name: imagery_task_classification |
 | `/nfs/turbo/.../timing_onehot_task1.tsv` | Ground truth labels | One-hot per TR (rest, squeeze_imagery, squeeze_action, navigation, tennis) |
-| `nas/splits/MICHIGAN/split_fixed_*.txt` | Train/val/test subject partition | One subject ID per line, grouped by partition |
+| `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_*.txt` | Train/val/test subject partition | One subject ID per line, grouped by partition |
 
 ## Summary
 

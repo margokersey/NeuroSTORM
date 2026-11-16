@@ -144,7 +144,7 @@ def main():
     ap.add_argument("--project_name_glob")
     ap.add_argument("--compare_project_names", nargs="+")
     ap.add_argument("--compare_project_name_glob")
-    ap.add_argument("--output_root", default="nas/output/neurostorm")
+    ap.add_argument("--output_root", default="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output")
     ap.add_argument("--class_names", nargs="+", default=DEFAULT_CLASS_NAMES)
     args = ap.parse_args()
 

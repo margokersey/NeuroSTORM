@@ -31,8 +31,8 @@ or, if your 5 folds' --project_name values all share a common prefix:
     python scripts/aggregate_cv_results.py \\
       --project_name_glob "michigan_gender_fi_neurostorm_task7_sex_train1.0_fold*"
 
-By default looks for logs under nas/output/neurostorm/<project_name>/lightning_logs/
-(matching the "Missing logger folder: nas/output/neurostorm/.../lightning_logs"
+By default looks for logs under /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/<project_name>/lightning_logs/
+(matching the "Missing logger folder: /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/.../lightning_logs"
 path seen in run_experiment.sh's own output) -- override with --output_root
 if your logs land somewhere else.
 
@@ -114,8 +114,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--project_names", nargs="+", help="explicit list of --project_name values, one per fold")
     ap.add_argument("--project_name_glob", help="glob pattern matched against directory names under --output_root")
-    ap.add_argument("--output_root", default="nas/output/neurostorm",
-                     help="parent directory containing <project_name>/lightning_logs/ (default: nas/output/neurostorm)")
+    ap.add_argument("--output_root", default="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output",
+                     help="parent directory containing <project_name>/lightning_logs/ (default: /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output)")
     ap.add_argument("--test_metrics", nargs="+", default=["test_AUROC", "test_acc"],
                      help="scalar tags to report the final test-time value for")
     ap.add_argument("--val_auroc_tag", default="valid_AUROC", help="val AUROC scalar tag (reports best/max epoch)")

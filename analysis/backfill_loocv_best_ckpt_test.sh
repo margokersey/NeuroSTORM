@@ -37,7 +37,7 @@ MAX_PARALLEL=2       # Limit concurrent GPU jobs (adjust for your partition)
 GPUS=0
 
 # Where LOOCV outputs live
-OUTPUT_ROOT="nas/output/neurostorm"
+OUTPUT_ROOT="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output"
 
 # ──────────────────────────────────────────────────────────────────────────
 # Parse arguments

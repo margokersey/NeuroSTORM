@@ -8,7 +8,7 @@ of what the model actually learned).
 
 Produces N_FOLDS stratified-by-sex splits (default 5, for 5-fold CV -- a
 single fixed 15/5/6 split is too fragile to trust at n=26) in the exact
-text format fMRIDataModule expects, e.g. nas/splits/MICHIGAN_GENDER/split_fixed_1.txt:
+text format fMRIDataModule expects, e.g. /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN_GENDER/split_fixed_1.txt:
 
     train_subjects
     sub-28
@@ -26,10 +26,10 @@ both already used elsewhere in this codebase):
 
     python make_stratified_gender_splits.py \\
       --participants_tsv /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_resting/metadata/participants.tsv \\
-      --out_dir nas/splits/MICHIGAN_GENDER \\
+      --out_dir /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN_GENDER \\
       --n_folds 5 --val_frac 0.2 --seed 1
 
-This OVERWRITES nas/splits/MICHIGAN_GENDER/split_fixed_1.txt..split_fixed_N.txt.
+This OVERWRITES /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN_GENDER/split_fixed_1.txt..split_fixed_N.txt.
 Back up the existing (copied-from-MICHIGAN) files first if you want to keep them.
 """
 import argparse

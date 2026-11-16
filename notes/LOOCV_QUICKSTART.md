@@ -7,7 +7,7 @@ mkdir -p /scratch/huangzu_root/huangzu0/mkersey/logs
 
 # Ensure split files exist (101-126)
 # If not, run: python scripts/make_loocv_splits.py --dataset_name MICHIGAN --source_fold 1 --start_index 101
-ls -la nas/splits/MICHIGAN/split_fixed_10*.txt | wc -l   # should be 26
+ls -la /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_10*.txt | wc -l   # should be 26
 
 # Verify data is copied to Great Lakes
 ls -la /nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1/img/ | head -5
@@ -112,5 +112,5 @@ Stage A (new, binary) + Stage B (the existing 3-way LOOCV above, **not retrained
 - **Submission script**: `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh`
 - **Training script**: `run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh`
 - **Change history**: see `CHANGES.md`
-- **Split files**: `nas/splits/MICHIGAN/split_fixed_101.txt` ... `split_fixed_126.txt`
+- **Split files**: `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_101.txt` ... `split_fixed_126.txt`
 - **Data**: `/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM/FIXED_xcp_nosmooth_task-imagery_run-1/img/`

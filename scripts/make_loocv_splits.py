@@ -9,7 +9,7 @@ changes are needed anywhere else -- these files just slot into the existing
 
 Why fold numbers start at 101 by default, not 1: the existing 5-fold CV
 splits already occupy split_fixed_1.txt .. split_fixed_5.txt under
-nas/splits/<DATASET_NAME>/. Writing LOOCV splits at indices 1..26 in that
+/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/<DATASET_NAME>/. Writing LOOCV splits at indices 1..26 in that
 same directory would silently overwrite (or be shadowed by) those 5-fold
 files. --start_index puts LOOCV splits at a disjoint range (101..126 for 26
 subjects) in the SAME directory, so both the 5-fold CV and LOOCV splits
@@ -56,9 +56,9 @@ def save_split(sets_dict, path):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--split_root", default="./nas/splits")
+    ap.add_argument("--split_root", default="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits")
     ap.add_argument("--dataset_name", required=True,
-                     help="Must match an existing nas/splits/<name>/split_fixed_<source_fold>.txt directory "
+                     help="Must match an existing /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/<name>/split_fixed_<source_fold>.txt directory "
                           "(use MICHIGAN; MICHIGAN_FULL_BLOCK reads the same dir) -- LOOCV splits are written into the SAME directory.")
     ap.add_argument("--source_fold", type=int, default=1,
                      help="Which existing split_fixed_<N>.txt to read the full 26-subject roster from "

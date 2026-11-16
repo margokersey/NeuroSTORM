@@ -31,7 +31,7 @@ scikit-learn is already in requirements.txt, nothing extra to install):
 
     python scripts/baseline_linear_probe.py \
         --image_path /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_v2 \
-        --split_root ./nas/splits --fold 1
+        --split_root /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits --fold 1
 
 Runs on CPU only, no GPU needed. Takes a few minutes (reads every subject's
 data.pt blob once).
@@ -169,7 +169,7 @@ def evaluate(name, X_train, y_train, X_eval, y_eval, C):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--image_path", required=True, help="e.g. /data/margo_datasets/Michigan_Dataset_1_for_NeuroSTORM/processed_output_v2")
-    ap.add_argument("--split_root", default="./nas/splits")
+    ap.add_argument("--split_root", default="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits")
     ap.add_argument("--dataset_name", default="MICHIGAN")
     ap.add_argument("--fold", type=int, default=1, help="which split_fixed_N.txt to use")
     ap.add_argument("--sequence_length", type=int, default=32, help="must match the deep-model run's --sequence_length")

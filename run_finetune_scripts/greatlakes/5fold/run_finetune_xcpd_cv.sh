@@ -12,7 +12,7 @@
 #   2. The preprocessed data (img/sub-*/data.pt + metadata/) has been copied to
 #      DATA_ROOT.
 #   3. GENERAL_CKPT exists.
-#   4. nas/splits/MICHIGAN/split_fixed_1.txt .. split_fixed_5.txt exist.
+#   4. /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_1.txt .. split_fixed_5.txt exist.
 #
 # Run from the repo root:
 #   bash run_finetune_scripts/greatlakes/5fold/run_finetune_xcpd_cv.sh              # all folds, in order
@@ -34,7 +34,7 @@ DATASET="michigan_xcpd_nosmooth_fullblock"
 IMG_ROOT="$DATA_ROOT/FIXED_xcp_nosmooth_task-imagery_run-1/img"
 
 TASK="task6"
-SPLIT_DIR="nas/splits/MICHIGAN"
+SPLIT_DIR="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN"
 N_FOLDS=5
 STRATEGY="none"
 DS_LABEL="nosmooth"

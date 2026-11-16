@@ -4,7 +4,7 @@
 #   Task    = 30 imagery-run-1 blocks      (label 1)
 #   No Task = 15 mock blocks from rest-1 + 15 from rest-2, at the onsets of the
 #             first 15 imagery blocks        (label 0)
-# Same 26 folds (nas/splits/MICHIGAN/split_fixed_101..126), model, checkpoint
+# Same 26 folds (/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits/MICHIGAN/split_fixed_101..126), model, checkpoint
 # and hyperparameters as the 3-way LOOCV in run_loocv_xcpd.sh -- this script
 # only swaps the dataset/task/project name and forwards all options (--start_index,
 # --n_folds, --max_epochs, --permute_labels, --project_name_suffix, --dry_run, ...).

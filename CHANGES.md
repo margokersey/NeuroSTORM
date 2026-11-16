@@ -13,6 +13,7 @@
 
 - `datasets/fmri_datasets.py`: `MichiganLOR.RUNS` may now include 4. Every run-4 block is tagged `recovery` (subjects with ROR = N/A were woken manually before run 4). Runs 2/3 behave as before; `(4,)` alone needs no run-2/3 timing files.
 - `analysis/predict_lor_task_decoding.py`: new `--runs` (default `2,3`). `--runs 4` writes `lor_predictions_run4_fold_<N>.json` beside the existing file, so verified run-2/3 outputs are not overwritten. `analysis/sbatch_lor_task_decoding.sh` passes `LOR_RUNS` through (`LOR_RUNS=4 sbatch --array=101-126 ...`).
+- `analysis/sbatch_lor_task_decoding.sh`: resources reduced to `gpu_mig40`, 4 CPUs, 24 GB (fold 102 run 4 ran fine on this; spgpu queue waits were long). Run 4 has no data for sub-29, so skip fold 125 for `LOR_RUNS=4`.
 - `analysis/plot_lor_task_decoding.py`: fifth column "Run 4 (recovery)" (auto-detected from `lor_predictions_run4_fold_*.json`, `--run4_glob` to override); open circles mark ROR = N/A subjects; paired tests of recovery vs pre_lor / lor printed to the console.
 
 ## Add LOR task-decoding accuracy plot

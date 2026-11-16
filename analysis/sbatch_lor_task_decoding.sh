@@ -32,6 +32,7 @@
 set -euo pipefail
 
 REPO_DIR="$HOME/code/NeuroSTORM"
+export NEUROSTORM_SPLIT_ROOT="/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits"
 export DATA_ROOT="/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroSTORM"
 
 module load gcc/11.2.0 cuda/12.8.1

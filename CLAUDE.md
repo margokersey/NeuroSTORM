@@ -23,6 +23,14 @@ Fork of CUHK-AIM-Group/NeuroSTORM (fMRI foundation model, PyTorch Lightning), us
 - Work happens on the Great Lakes login node (shared!). Do not run training/heavy compute on the login node; submit with `sbatch`.
 - Env setup: `source set_env.sh`; deps in `requirements.txt` / `neurostorm_hpc.yml`.
 
+## Output and split locations (moved to turbo — home dir was out of space)
+
+- Model outputs (LOOCV/fine-tune run folders, predictions, Stage B outputs): `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output` — run folders sit directly in it (no `neurostorm/` subfolder), e.g. `.../output/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-101`.
+- Split folders (split files): `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits`
+- This applies to model outputs and splits only. Plots, figures, aggregated CSVs and other analysis products still go in the repo (`output/`, `figure_outputs/`) as before.
+- These supersede older defaults such as `nas/output/neurostorm` and `nas/splits` that appear in scripts, docstrings, and notes. When running or writing commands, pass the turbo paths (e.g. `--output_dir`, `--output_root`, `--stage_a_glob`) rather than relying on those defaults.
+- This location may change again; if the user gives a new one, update this section.
+
 ## Shared-filesystem rules
 
 Follow the site policy in `/etc/claude-code/CLAUDE.md`: never search recursively outside this project or `$HOME`; use `-maxdepth`/`-xdev`; ask for exact paths elsewhere; don't poll `squeue`/`sacct` in loops (at most once a minute, or use `sbatch --wait`); stop any background process you start.

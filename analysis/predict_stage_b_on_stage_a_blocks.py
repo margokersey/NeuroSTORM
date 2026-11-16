@@ -106,7 +106,7 @@ def check_reproduces_saved(preds, saved, atol=1e-2):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--fold', type=int, required=True, help='LOOCV fold / split number, e.g. 101')
-    ap.add_argument('--output_root', default='nas/output/neurostorm')
+    ap.add_argument('--output_root', default='/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output')
     ap.add_argument('--stage_b_prefix', default=STAGE_B_PREFIX,
                     help='project-name prefix of the 3-way LOOCV runs (<prefix>_fold-<N>)')
     ap.add_argument('--ckpt', default=None, help='override the 3-way checkpoint (default: the one in the fold dir)')

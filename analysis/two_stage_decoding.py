@@ -34,13 +34,13 @@ held-out subject, Wilcoxon signed-rank; no bootstrap).
 
 Usage (from the repo root, after both sets of folds finished):
     python analysis/two_stage_decoding.py \\
-      --stage_a_glob "nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*" \\
-      --stage_b_pred_glob "nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_stageB_allblocks_fold-*" \\
+      --stage_a_glob "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*" \\
+      --stage_b_pred_glob "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_stageB_allblocks_fold-*" \\
       --tsv "$DATA_ROOT/FIXED_xcp_nosmooth_task-imagery_run-1/metadata/timing_onehot_task1.tsv" \\
       --exclude_subjects sub-29 \\
       --output_json output/two_stage_decoding.json
 
-Add --stage_a_perm_glob "nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*_perm*"
+Add --stage_a_perm_glob "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*_perm*"
 for the Stage A permutation test. `_perm` directories are never picked up by the
 real-run globs above.
 """
@@ -401,7 +401,7 @@ def main():
     ap.add_argument('--stage_a_glob', required=True)
     ap.add_argument('--stage_b_pred_glob', default=None,
                     help='Stage B run on ALL Stage A blocks (analysis/predict_stage_b_on_stage_a_blocks.py output dirs, '
-                         'e.g. nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_stageB_allblocks_fold-*). Preferred.')
+                         'e.g. /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_stageB_allblocks_fold-*). Preferred.')
     ap.add_argument('--stage_b_glob', default=None,
                     help='OLD lookup mode: the 3-way LOOCV run dirs; Stage B predictions exist only for true task blocks')
     ap.add_argument('--tsv', required=True, help='timing_onehot_task1.tsv of the imagery run-1 data')

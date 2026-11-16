@@ -69,7 +69,9 @@ DATASET="${LOOCV_DATASET:-michigan_xcpd_nosmooth_fullblock}"
 IMG_ROOT="$DATA_ROOT/FIXED_xcp_nosmooth_task-imagery_run-1/img"
 
 TASK="${LOOCV_TASK:-task6}"
-SPLIT_DIR="nas/splits/MICHIGAN"
+# Split files live on turbo; data_module.py reads NEUROSTORM_SPLIT_ROOT (default ./nas/splits).
+export NEUROSTORM_SPLIT_ROOT="${LOOCV_SPLIT_ROOT:-/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits}"
+SPLIT_DIR="$NEUROSTORM_SPLIT_ROOT/MICHIGAN"
 PROJECT_PREFIX="${LOOCV_PROJECT_PREFIX:-FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv}"
 
 START_INDEX=101

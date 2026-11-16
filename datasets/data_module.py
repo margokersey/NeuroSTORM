@@ -376,7 +376,7 @@ class fMRIDataModule(pl.LightningDataModule):
                 f"Got dataset_name={self.hparams.dataset_name} without --pretraining."
             )
 
-        split_root = getattr(self.hparams, 'split_root', './nas/splits')
+        split_root = getattr(self.hparams, 'split_root', os.environ.get('NEUROSTORM_SPLIT_ROOT', './nas/splits'))
         if self.hparams.pretraining:
             self.split_file_paths = []
             for name in self.dataset_names:

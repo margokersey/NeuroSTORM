@@ -21,10 +21,10 @@ figure matches the 3-way one.
 
 Usage (repo root):
     python analysis/plot_two_stage_decoding.py \\
-      --stage_a_glob "nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*" \\
-      --stage_b_pred_glob "nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_stageB_allblocks_fold-*" \\
+      --stage_a_glob "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*" \\
+      --stage_b_pred_glob "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_stageB_allblocks_fold-*" \\
       --tsv "$DATA_ROOT/FIXED_xcp_nosmooth_task-imagery_run-1/metadata/timing_onehot_task1.tsv" \\
-      --stage_a_perm_glob "nas/output/neurostorm/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*_perm*" \\
+      --stage_a_perm_glob "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*_perm*" \\
       --output_file output/two_stage/two_stage_figure
 
 --stage_b_pred_glob / --tsv / --stage_a_perm_glob are optional (--stage_b_glob is the older lookup mode). Writes .png/.pdf/.svg.

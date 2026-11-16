@@ -1,5 +1,13 @@
 # Changes
 
+## Point model outputs and splits at turbo
+
+- Model outputs now live in `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output` (no `neurostorm/` level); split files in `.../neurostorm_output/splits`. Plots/aggregates stay in the repo.
+- `datasets/data_module.py`: split root now defaults to `$NEUROSTORM_SPLIT_ROOT` (fallback `./nas/splits`, so local copies are unchanged).
+- `run_loocv_xcpd.sh`: exports `NEUROSTORM_SPLIT_ROOT` (override with `LOOCV_SPLIT_ROOT`) and preflights splits there.
+- `analysis/predict_stage_b_on_stage_a_blocks.py`, `predict_lor_task_decoding.py`: `--output_root` defaults to the turbo output dir; their sbatch scripts export `NEUROSTORM_SPLIT_ROOT`. Docstring examples in `two_stage_decoding.py` / `plot_two_stage_decoding.py` updated.
+- Not yet moved: other scripts still defaulting to `nas/output/neurostorm` or `nas/splits` (compare_conditions*, backfill_*, scripts/*, 5fold runners).
+
 ## Write LOOCV run folders to turbo instead of nas/
 
 - `run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh` (and so `run_loocv_taskvsrest.sh`): passes `--output_dir $LOOCV_OUTPUT_ROOT/<project_name>` to `main.py`. Default root is `/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output`; override with `LOOCV_OUTPUT_ROOT`. Folder layout is `<root>/<project_name>/` (no `neurostorm/` category level).

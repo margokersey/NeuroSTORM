@@ -734,7 +734,7 @@ def plot_null(ax, test, n_perm, chance):
     lo = min(null.min(), real, chance) if len(null) else min(real, chance)
     hi = max(null.max(), real) if len(null) else real
     pad = 0.08 * (hi - lo + 1e-6)
-    if len(null) >= 10:
+    if len(null) >= 30:   # histogram only once there are enough permutations to fill bins
         bins = np.linspace(lo - pad, hi + pad, 30)
         ax.hist(null, bins=bins, color=PERM, alpha=0.8, edgecolor='white', linewidth=0.5, zorder=1)
         ax.set_ylabel('Permutations')

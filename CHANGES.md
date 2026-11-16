@@ -1,5 +1,9 @@
 # Changes
 
+## Permutation figure: dot plot for small nulls
+
+- `scripts/analyze_loocv_permutation_results.py`: panel c (permutation null) now draws a jittered dot per permutation when there are fewer than 30 permutations (was fewer than 10); the histogram is used from 30 up. With 10-29 perms the 30-bin histogram gave thin, misleading bars.
+
 ## Add accuracy-vs-motion plot for LOR task decoding
 
 - `analysis/plot_lor_accuracy_vs_motion.py`: one panel per imagery run (1-4) of per-subject block accuracy vs an XCP-D motion metric (`--metric pct_fd_gt_0.3` default, `pct_censored`, `median_fd`; read from `sub-*/func/*_motion.tsv` / `*_outliers.tsv` under `--deriv_dir`), with Spearman rho + bootstrap CI and an OLS regression line with 95% bootstrap band (`--no_fit` to omit). Mean FD is not offered (run-3 max FD reaches ~1000 mm). XCP-D censor threshold for the `noGSR_highpass_fd-0.8_nosmooth` derivatives verified as FD >= 0.8 mm. Not yet run on real data.

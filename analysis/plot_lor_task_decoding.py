@@ -141,7 +141,7 @@ def main():
     for seg, _ in SEGMENTS:
         v = np.array(list(acc[seg].values()))
         ax.scatter(xs[seg] + rng.uniform(-0.06, 0.06, len(v)), v, s=14, color=SEG_COLORS[seg], alpha=0.75,
-                   edgecolor='white', linewidth=0.4, zorder=3)
+                   edgecolor='white', linewidth=0.4, zorder=3, clip_on=False)
         lo, hi = boot_ci(v)
         ax.plot([xs[seg] + 0.22] * 2, [lo, hi], color=S.INK, lw=1.2, zorder=4)
         ax.scatter([xs[seg] + 0.22], [v.mean()], marker='D', s=22, color=S.INK, zorder=5)
@@ -152,7 +152,7 @@ def main():
     if 'run1' in xs:
         sb, va, vb = paired('run1', 'pre_lor')
         stats.append(('run1 vs pre_lor', len(sb), wilcoxon(va, vb)))
-    for (a, b), y in ((('pre_lor', 'lor'), 1.04), (('lor', 'ror'), 1.12)):
+    for (a, b), y in ((('pre_lor', 'lor'), 1.09), (('lor', 'ror'), 1.17)):
         subs, va, vb = paired(a, b)
         p = wilcoxon(va, vb)
         stats.append((f'{a} vs {b}', len(subs), p))
@@ -166,19 +166,24 @@ def main():
     ax.set_xticks(range(len(SEGMENTS)))
     ax.set_xticklabels([lab for _, lab in SEGMENTS])
     ax.set_xlim(-0.5, len(SEGMENTS) - 0.5)
-    ax.set_ylim(0, 1.0)
+    ax.set_ylim(0, 1.03)   # headroom so dots at 1.0 are not cut off
     ax.set_yticks(np.arange(0, 1.01, 0.2))
     ax.set_ylabel('Block accuracy (3-way task decoding)')
     ax.set_title('Task decoding by responsiveness segment', pad=38)
 
     n_all = len(rows)
+    all_subs = [r['subject'] for r in rows]
+    no_ror = [x for x in all_subs if x not in acc['ror']] if 'ror' in acc else []
     fig.text(0.0, -0.04,
              f"{n_all} held-out subjects (one LOOCV fold each); each dot = one subject's block accuracy;\n"
              f"lines join the same subject. Diamond + bar: mean, 95% bootstrap CI. Dashed line: chance.\n"
              f"Run 1 = the same 3-way model's own held-out test blocks (awake); other columns are\n"
              f"runs 2-3 of the same subject. Subjects need >= {args.min_blocks} blocks in a segment to be\n"
              f"included there; boundary blocks excluded. Paired Wilcoxon signed-rank tests.\n"
-             f"During LOR vs chance (1/3): {fmt_p(p_chance)} (n={len(lv)}).",
+             f"During LOR vs chance (1/3): {fmt_p(p_chance)} (n={len(lv)}).\n"
+             f"No after-ROR point (ROR N/A, run 3 unusable, or < {args.min_blocks} blocks): "
+             f"{', '.join(s.replace('sub-', '') for s in no_ror) or 'none'}."
+             + ("\nSub-29: run 3 excluded (frame count != timing file); run 2 only." if 'sub-29' in all_subs else ""),
              fontsize=6.5, color=S.INK_2, va='top', linespacing=1.4)
 
     out = Path(args.output_file)

@@ -2,7 +2,7 @@
 
 ## Add LOR task-decoding accuracy plot
 
-- `analysis/plot_lor_task_decoding.py`: reads the per-fold `lor_predictions_fold_<N>.json` files and plots per-subject block accuracy for pre_lor / lor / ror (boundary blocks dropped, >= `--min_blocks` blocks per subject per segment) with paired lines, bootstrap-CI means, a chance line and Wilcoxon tests. Writes PNG/PDF/SVG + per-subject CSV. Only tested on synthetic predictions so far.
+- `analysis/plot_lor_task_decoding.py`: reads the per-fold `lor_predictions_fold_<N>.json` files and plots per-subject block accuracy for pre_lor / lor / ror (boundary blocks dropped, >= `--min_blocks` blocks per subject per segment) with paired lines, bootstrap-CI means, a chance line and Wilcoxon tests. Writes PNG/PDF/SVG + per-subject CSV. Adds a first "Run 1 (awake baseline)" column from each fold's saved 3-way test predictions (`--output_root`, `--stage_b_prefix`; `--no_run1` to omit), warning if those predictions were not made with the best checkpoint. Only tested on synthetic predictions so far.
 
 ## Update default output/split paths to turbo
 

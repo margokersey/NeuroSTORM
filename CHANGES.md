@@ -1,5 +1,9 @@
 # Changes
 
+## Add classical-decoder benchmark across propofol states
+
+- New `analysis/benchmark_decoders.py` + `sbatch_benchmark_decoders.sh`: leave-one-subject-out GLM template matching, logistic regression, linear SVM, PCA+LDA and random forest on single-trial GLM betas and 32-frame window means (raw / run z-scored / spatial z-scored), trained on imagery run 1 and scored on run 1, pre-LOR, LOR, ROR and recovery blocks with the same block and segment definitions as the NeuroSTORM LOR analysis. Optionally adds NeuroSTORM rows from the LOR prediction files. Not yet run on real data.
+
 ## Add prompt_ln LOOCV runner
 
 - `run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh`: tpt strategy now set by `LOOCV_TPT_STRATEGY` (default `none`, so existing end-to-end runs and project names are unchanged); project prefix follows it.

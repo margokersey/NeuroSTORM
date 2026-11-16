@@ -162,7 +162,7 @@ Output (default `output/loocv_permutation/`, override with `--output_file` / `--
 - `loocv_permutation_figure.{png,pdf,svg}` - figure, 183 mm wide (double column), Arial 7–10 pt, editable text in PDF/SVG. Real = blue, permuted = orange (seaborn "deep" colors). Only panels with data are drawn:
   - **a** per-subject balanced accuracy (real vs. that subject's permutation range), sorted
   - **b** KDE of per-subject test accuracy: all real runs vs. all permuted runs (subjects × permutations), reflected at 0/1, with means and a rug of real values
-  - **c** permutation null of the mean balanced accuracy, with the real value and p
+  - **c** permutation null of the mean balanced accuracy, with the real value and p. Drawn only with >= 30 permutations; with fewer, the summary-metrics panel already shows the null range and p, so this panel is omitted and later panels shift up a letter
   - **d** summary metrics: real mean ± 95% CI vs. null, with chance markers and p per metric
   - **e** pooled row-normalized confusion matrix
   - **f** pooled one-vs-rest ROC and **g** calibration (reliability) diagram with ECE. These need `softmax_probs` from per-sample `test_predictions_fold_*.json`; they are skipped when only `test_summary_fold_*.json` exists.

@@ -728,13 +728,16 @@ def plot_kde(ax, stats, n_classes):
     _top_legend(ax, [Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (1, 2)), label='Chance')])
 
 
+NULL_HIST_MIN_PERMS = 30
+
+
 def plot_null(ax, test, n_perm, chance):
     null = np.array(test['null_means'])
     real = test['real_mean']
     lo = min(null.min(), real, chance) if len(null) else min(real, chance)
     hi = max(null.max(), real) if len(null) else real
     pad = 0.08 * (hi - lo + 1e-6)
-    if len(null) >= 30:   # histogram only once there are enough permutations to fill bins
+    if len(null) >= NULL_HIST_MIN_PERMS:
         bins = np.linspace(lo - pad, hi + pad, 30)
         ax.hist(null, bins=bins, color=PERM, alpha=0.8, edgecolor='white', linewidth=0.5, zorder=1)
         ax.set_ylabel('Permutations')
@@ -898,8 +901,11 @@ def plot_results(stats, results, tests, class_names, n_perm, output_file):
     panels = [
         ('per-subject', lambda ax, fig: plot_per_subject(ax, stats, metric, chance)),
         ('kde', lambda ax, fig: plot_kde(ax, stats, n_classes)),
-        ('null', lambda ax, fig: plot_null(ax, tests[metric], n_perm, chance)),
     ]
+    # The null histogram is only informative with enough permutations; with fewer
+    # it duplicates the null range + p already shown in the summary-metrics panel.
+    if n_perm >= NULL_HIST_MIN_PERMS:
+        panels.append(('null', lambda ax, fig: plot_null(ax, tests[metric], n_perm, chance)))
     if len(tests) > 1:
         panels.append(('forest', lambda ax, fig: plot_metric_forest(ax, tests, n_perm)))
     if y is not None and HAS_SKLEARN:

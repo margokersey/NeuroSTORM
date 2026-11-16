@@ -1,8 +1,8 @@
 # Changes
 
-## Permutation figure: dot plot for small nulls
+## Permutation figure: drop null panel for small n
 
-- `scripts/analyze_loocv_permutation_results.py`: panel c (permutation null) now draws a jittered dot per permutation when there are fewer than 30 permutations (was fewer than 10); the histogram is used from 30 up. With 10-29 perms the 30-bin histogram gave thin, misleading bars.
+- `scripts/analyze_loocv_permutation_results.py`: the permutation-null panel is now drawn only with >= 30 permutations (`NULL_HIST_MIN_PERMS`); with fewer it duplicated the null range and p in the summary-metrics panel and the 30-bin histogram gave thin, misleading bars. Below the threshold the figure has 6 panels (a-f, 2x3); letters reflow automatically.
 
 ## Add accuracy-vs-motion plot for LOR task decoding
 

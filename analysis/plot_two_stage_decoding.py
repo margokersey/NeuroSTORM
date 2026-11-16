@@ -5,16 +5,17 @@ Re-runnable at any point: it plots whatever folds exist. Panels whose data are
 missing are skipped, so a Stage-A-only run (no Stage B folds yet, no permutations)
 still gives a figure; re-run with the same command later to fill in the rest.
 
-  a  Per-subject Stage A balanced accuracy (real dot; permuted range if available)
-  b  Stage summary: Stage A bal. acc, Stage B acc | called Task, end-to-end 4-way
-     acc, each with its chance level (one dot per held-out subject, mean +/- SEM)
-  c  Stage A confusion matrix (pooled over subjects)
-  d  Stage A permutation null (needs --stage_a_perm_glob)
-  e  Pooled end-to-end confusion matrix (needs Stage B folds)
-  f  With --stage_b_pred_glob (Stage B run on all Stage A blocks, incl. mock):
+  a  Stage summary: Stage A bal. acc (with permuted range if available), Stage B acc | called
+     Task, end-to-end 4-way acc, each with its chance level (one dot per held-out subject,
+     mean +/- SEM)
+  b  Stage A confusion matrix (pooled over subjects)
+  c  Stage A permutation null (needs --stage_a_perm_glob)
+  d  Pooled end-to-end confusion matrix (needs Stage B folds)
+  e  With --stage_b_pred_glob (Stage B run on all Stage A blocks, incl. mock):
      Stage B predicted-class mix for real vs mock blocks, and
-  g  Stage B confidence (logit margin) per held-out subject, by block type x
+  f  Stage B confidence per block and per held-out subject, by block type x
      Stage A call (real/mock x called Task / No Task)
+(Letters shift if optional panels are absent.)
 
 Styling is imported from scripts/analyze_loocv_permutation_results.py so the
 figure matches the 3-way one.
@@ -84,30 +85,6 @@ def _single_confusion(ax, fig, cm, rows, cols, title):
     cb.ax.set_yticklabels(['0%', '50%', '100%'])
     cb.ax.tick_params(labelsize=7, length=2, width=0.5)
     cb.outline.set_linewidth(0.5)
-
-
-def plot_per_subject(ax, folds, real, perm_by_fold):
-    order = np.argsort(real)
-    x = np.arange(len(folds))
-    for xi, i in zip(x, order):
-        pv = perm_by_fold.get(folds[i])
-        if pv is not None and len(pv):
-            ax.plot([xi, xi], [np.min(pv), np.max(pv)], color=S.PERM, alpha=0.55, lw=2.6,
-                    solid_capstyle='round', zorder=1)
-            ax.plot([xi - 0.34, xi + 0.34], [np.mean(pv)] * 2, color=S.PERM_DARK, lw=1.0, zorder=2)
-    ax.scatter(x, np.asarray(real)[order], s=20, color=S.REAL, edgecolor='white', linewidth=0.6, zorder=3)
-    ax.axhline(0.5, color=S.CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0)
-    ax.set_xlim(-0.8, max(len(x) - 0.2, 0.8))
-    ax.set_ylim(0, 1.02)
-    ax.set_xticks([])
-    ax.set_xlabel(f'Held-out subjects (n = {len(x)}, sorted by score)')
-    ax.set_ylabel('Balanced accuracy')
-    ax.set_title('Stage A: Task vs. No Task', loc='left', pad=S.TITLE_PAD)
-    handles = [Line2D([], [], marker='o', ls='', color=S.REAL, markersize=4.5, label='One subject')]
-    if perm_by_fold:
-        handles.append(Line2D([], [], color=S.PERM, alpha=0.7, lw=2.6, label='Permuted (range)'))
-    handles.append(Line2D([], [], color=S.CHANCE, lw=0.8, ls=(0, (3, 2)), label='Chance'))
-    _top_legend(ax, handles)
 
 
 def plot_stages(ax, rows, rng):
@@ -317,7 +294,6 @@ def main():
     S._style()
     cm_a = np.sum([np.array(tsd_cm(a_preds[f])) for f in folds], axis=0)
     panels = [
-        lambda ax, fig: plot_per_subject(ax, folds, real_bal, perm_by_fold),
         lambda ax, fig: plot_stages(ax, stage_rows, rng),
         lambda ax, fig: _single_confusion(ax, fig, cm_a, ['No task', 'Task'], ['No task', 'Task'],
                                           'Stage A confusion (pooled)'),

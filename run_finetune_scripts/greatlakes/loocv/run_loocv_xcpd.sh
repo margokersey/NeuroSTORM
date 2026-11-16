@@ -72,7 +72,9 @@ TASK="${LOOCV_TASK:-task6}"
 # Split files live on turbo; data_module.py reads NEUROSTORM_SPLIT_ROOT (code fallback is ./nas/splits).
 export NEUROSTORM_SPLIT_ROOT="${LOOCV_SPLIT_ROOT:-/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/splits}"
 SPLIT_DIR="$NEUROSTORM_SPLIT_ROOT/MICHIGAN"
-PROJECT_PREFIX="${LOOCV_PROJECT_PREFIX:-FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv}"
+# Fine-tuning strategy: none = end-to-end (default), prompt_ln = prompt tokens + LayerNorms only.
+TPT_STRATEGY="${LOOCV_TPT_STRATEGY:-none}"
+PROJECT_PREFIX="${LOOCV_PROJECT_PREFIX:-FIXED_mich_xcpd_nosmooth_tpt_strategy-${TPT_STRATEGY}_loocv}"
 
 START_INDEX=101
 N_FOLDS=26
@@ -152,7 +154,7 @@ for i in $(seq "$START_INDEX" "$END_INDEX"); do
         --model neurostorm --dataset "$DATASET" --task "$TASK" --mode finetune \
         --max_epochs "$MAX_EPOCHS" --batch_size "$BATCH_SIZE" --gpus "$GPU_IDS" \
         --load_model_path "$GENERAL_CKPT" \
-        -- --dataset_split_num "$i" --tpt_strategy none \
+        -- --dataset_split_num "$i" --tpt_strategy "$TPT_STRATEGY" \
              --project_name "${PROJECT_PREFIX}_fold-${i}${PROJECT_NAME_SUFFIX}" \
              --output_dir "${OUTPUT_ROOT}/${PROJECT_PREFIX}_fold-${i}${PROJECT_NAME_SUFFIX}" \
              $PERMUTE_LABELS $PERMUTATION_SEED   # intentionally unquoted: empty or "--flag value"

@@ -1,5 +1,10 @@
 # Changes
 
+## Add prompt_ln LOOCV runner
+
+- `run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh`: tpt strategy now set by `LOOCV_TPT_STRATEGY` (default `none`, so existing end-to-end runs and project names are unchanged); project prefix follows it.
+- New `run_loocv_xcpd_prompt_ln.sh` and `sbatch_loocv_xcpd_prompt_ln.sh`: 26-fold LOOCV with `--tpt_strategy prompt_ln`, writing `FIXED_mich_xcpd_nosmooth_tpt_strategy-prompt_ln_loocv_fold-<N>` for fold-by-fold comparison against end-to-end.
+
 ## Permutation figure: drop null panel for small n
 
 - `scripts/analyze_loocv_permutation_results.py`: the permutation-null panel is now drawn only with >= 30 permutations (`NULL_HIST_MIN_PERMS`); with fewer it duplicated the null range and p in the summary-metrics panel and the 30-bin histogram gave thin, misleading bars. Below the threshold the figure has 6 panels (a-f, 2x3); letters reflow automatically.

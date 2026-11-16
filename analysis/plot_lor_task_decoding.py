@@ -173,6 +173,8 @@ def main():
         lo, hi = boot_ci(v)
         ax.plot([xs[seg] + 0.22] * 2, [lo, hi], color=S.INK, lw=1.2, zorder=4)
         ax.scatter([xs[seg] + 0.22], [v.mean()], marker='D', s=22, color=S.INK, zorder=5)
+        ax.text(xs[seg] + 0.22, hi + 0.02, f'{v.mean():.2f}', ha='center', va='bottom', fontsize=7.5,
+                fontweight='bold', color='black', zorder=6, clip_on=False)
     ax.axhline(CHANCE, color=S.CHANCE, ls='--', lw=0.8, zorder=0)
     ax.text(len(SEGMENTS) - 0.55, CHANCE + 0.01, 'chance', fontsize=6.5, color=S.INK_2, ha='right', va='bottom')
 
@@ -208,7 +210,7 @@ def main():
     no_ror = [x for x in all_subs if x not in acc['ror']] if 'ror' in acc else []
     fig.text(0.0, -0.04,
              f"{n_all} held-out subjects (one LOOCV fold each); each dot = one subject's block accuracy;\n"
-             f"lines join the same subject. Diamond + bar: mean, 95% bootstrap CI. Dashed line: chance.\n"
+             f"lines join the same subject. Diamond + bar: mean (value above), 95% bootstrap CI. Dashed line: chance.\n"
              f"Run 1 = the same 3-way model's own held-out test blocks (awake); other columns are\n"
              f"runs 2-4 of the same subject. Subjects need >= {args.min_blocks} blocks in a segment to be\n"
              f"included there; boundary blocks excluded. Paired Wilcoxon signed-rank tests.\n"

@@ -432,6 +432,28 @@ class LightningModel(pl.LightningModule):
                 self.log(f"{mode}_AUROC", auroc, sync_dist=True)
             return
 
+        if self.hparams.task_name == 'tennis_vs_nav_classification':
+            # 2-class tennis (0) vs navigation (1). Binary head -> one logit per
+            # block; block-level evaluation like the imagery branch below.
+            scores = torch.sigmoid(total_out_logits.reshape(-1).float())
+            targets = total_out_target.reshape(-1).long()
+            preds = (scores >= 0.5).long()
+            zero = torch.tensor(0.0, device=scores.device)
+            acc = (preds == targets).float().mean() if targets.numel() > 0 else zero
+            pos = targets == 1
+            neg = targets == 0
+            recall_nav = (preds[pos] == 1).float().mean() if pos.any() else zero
+            recall_tennis = (preds[neg] == 0).float().mean() if neg.any() else zero
+            self.log(f"{mode}_acc", acc, sync_dist=True)
+            self.log(f"{mode}_balacc", (recall_nav + recall_tennis) / 2, sync_dist=True)
+            self.log(f"{mode}_recall_navigation", recall_nav, sync_dist=True)
+            self.log(f"{mode}_recall_tennis", recall_tennis, sync_dist=True)
+            self.log(f"{mode}_pred_frac_navigation", preds.float().mean() if preds.numel() > 0 else zero, sync_dist=True)
+            if pos.any() and neg.any():
+                auroc = BinaryAUROC().to(scores.device)(scores, targets)
+                self.log(f"{mode}_AUROC", auroc, sync_dist=True)
+            return
+
         if self.hparams.task_name == 'imagery_task_classification':
             # Michigan blocks are per-block labeled (tennis/navigation/squeeze), so a
             # single subject contributes many blocks spanning ALL classes -- unlike

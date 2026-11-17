@@ -754,6 +754,23 @@ class MichiganFullBlock(Michigan):
     TRIM_START = 0
 
 
+class MichiganTennisNav(MichiganFullBlock):
+    """2-class variant of the 3-way imagery task: tennis (0) vs navigation (1).
+
+    Identical to MichiganFullBlock (same 37-TR full-block windows, same
+    timing_onehot_task1.tsv parsing, same splits) except every squeeze block
+    is dropped, leaving 10 tennis + 10 navigation blocks per subject. The
+    within-subject permutation shuffle inherited from Michigan._set_data
+    therefore keeps each subject's 10/10 balance.
+    """
+
+    LABEL_MAP = {'tennis': 0, 'navigation': 1}
+
+    def _blocks_from_tsv(self, tsv_path, trim_start=None):
+        blocks = super()._blocks_from_tsv(tsv_path, trim_start)
+        return [b for b in blocks if b[2] in self.LABEL_MAP]
+
+
 class MichiganTaskVsRest(Michigan):
     """Stage A of the two-stage decoding test: Task vs. No Task.
 

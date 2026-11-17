@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader, Subset, ConcatDataset, Sampler
 from torch.utils.data.distributed import DistributedSampler
 from torch_geometric.data import DataLoader as GeometricDataLoader
-from .fmri_datasets import HCP1200, ABCD, UKB, Cobre, ADHD200, UCLA, HCPEP, HCPTASK, GOD, MOVIE, TransDiag, ABIDE, Michigan, MichiganFullBlock, MichiganGender, MichiganSampleSplit, MichiganTaskVsRest, MichiganLOR
+from .fmri_datasets import HCP1200, ABCD, UKB, Cobre, ADHD200, UCLA, HCPEP, HCPTASK, GOD, MOVIE, TransDiag, ABIDE, Michigan, MichiganFullBlock, MichiganTennisNav, MichiganGender, MichiganSampleSplit, MichiganTaskVsRest, MichiganLOR
 from .roi_datasets import ROIDataset, FCDataset, FCGraphDataset
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from utils.parser import str2bool
@@ -459,6 +459,8 @@ class fMRIDataModule(pl.LightningDataModule):
             return Michigan
         elif name == 'MICHIGAN_FULL_BLOCK':
             return MichiganFullBlock
+        elif name == 'MICHIGAN_TENNIS_NAV':
+            return MichiganTennisNav
         elif name == 'MICHIGAN_TASK_VS_REST':
             return MichiganTaskVsRest
         elif name == 'MICHIGAN_LOR':
@@ -943,7 +945,7 @@ class fMRIDataModule(pl.LightningDataModule):
 
             print('Load dataset MOVIE, {} subjects'.format(len(final_dict)))
 
-        elif self.hparams.dataset_name in ("MICHIGAN", "MICHIGAN_FULL_BLOCK", "MICHIGAN_TASK_VS_REST", "MICHIGAN_LOR"):
+        elif self.hparams.dataset_name in ("MICHIGAN", "MICHIGAN_FULL_BLOCK", "MICHIGAN_TENNIS_NAV", "MICHIGAN_TASK_VS_REST", "MICHIGAN_LOR"):
             # Labels live at the block level (tennis/navigation/squeeze), assigned
             # per-clip inside Michigan._set_data (MichiganFullBlock inherits it
             # unchanged) from timing_onehot_task1.tsv, not per-subject -- this

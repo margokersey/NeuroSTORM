@@ -18,7 +18,10 @@ import pytorch_lightning as pl
 CLASS_NAMES = {
     'imagery_task_classification': {0: 'tennis', 1: 'navigation', 2: 'squeeze'},
     'taskvsrest_classification': {0: 'notask', 1: 'task'},
+    'tennis_vs_nav_classification': {0: 'tennis', 1: 'navigation'},
 }
+
+BINARY_TASKS = ('taskvsrest_classification', 'tennis_vs_nav_classification')
 
 
 class ImageryPredictionsCallback(pl.Callback):
@@ -72,8 +75,8 @@ class ImageryPredictionsCallback(pl.Callback):
         )):
             true_label_int = int(true_label)
             logit_vec = np.atleast_1d(logit_vec)
-            if task_name == 'taskvsrest_classification':
-                # binary head: a single logit; P(Task) = sigmoid(logit)
+            if task_name in BINARY_TASKS:
+                # binary head: a single logit; P(class 1) = sigmoid(logit)
                 p_task = float(1.0 / (1.0 + np.exp(-logit_vec[0])))
                 softmax_probs = np.array([1.0 - p_task, p_task])
                 pred_label = int(p_task >= 0.5)

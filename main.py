@@ -250,7 +250,7 @@ def cli_main():
 
     # Add callback to save per-sample test predictions for imagery classification
     if (args.downstream_task_type == "classification" and 
-        args.task_name in ('imagery_task_classification', 'taskvsrest_classification') and
+        args.task_name in ('imagery_task_classification', 'taskvsrest_classification', 'tennis_vs_nav_classification') and
         not args.pretraining):
         callbacks.append(ImageryPredictionsCallback())
 

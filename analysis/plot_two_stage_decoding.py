@@ -151,15 +151,16 @@ def plot_class_mix(ax, per_fold):
     rows = [('Real task\n(all blocks)', lambda r: r['block_type'] == 'task'),
             ('Mock\n(all blocks)', lambda r: r['block_type'] == 'mock'),
             ('Mock called\nTask by A', lambda r: r['group'] == 'mock_called_task')]
-    colors = [S.SEQ_BLUE[2], S.SEQ_BLUE[4], S.SEQ_BLUE[6]]
-    names = [tsd.STAGE_B_NAMES[k] for k in range(3)]
+    nb = tsd.N_B
+    colors = [S.SEQ_BLUE[2], S.SEQ_BLUE[4], S.SEQ_BLUE[6]] if nb == 3 else [S.SEQ_BLUE[2], S.SEQ_BLUE[5]]
+    names = [tsd.STAGE_B_NAMES[k] for k in range(nb)]
     n = len(rows)
     for k, (lab, sel) in enumerate(rows):
         yi = n - 1 - k
         recs = [r for fr in per_fold for r in fr['records'] if sel(r)]
         tot = max(len(recs), 1)
         left = 0.0
-        for c in range(3):
+        for c in range(nb):
             frac = sum(r['stage_b_pred'] == c for r in recs) / tot
             ax.barh(yi, frac, left=left, color=colors[c], edgecolor='white', linewidth=0.8, height=0.62)
             if frac > 0.08:
@@ -173,7 +174,7 @@ def plot_class_mix(ax, per_fold):
     ax.set_xlabel('Fraction of blocks predicted as each class\n(a prediction mix, not accuracy)')
     ax.set_title('Stage B predicted-class mix', loc='left', pad=S.TITLE_PAD)
     _top_legend(ax, [Line2D([], [], marker='s', ls='', color=colors[c], markersize=5, label=names[c])
-                     for c in range(3)])
+                     for c in range(nb)])
 
 
 def plot_confidence(ax, per_fold, measure='logit_margin'):
@@ -225,11 +226,15 @@ def main():
     ap.add_argument('--stage_b_glob', default=None, help='older lookup mode (3-way LOOCV run dirs)')
     ap.add_argument('--tsv', default=None, help='timing_onehot_task1.tsv (needed with either Stage B option)')
     ap.add_argument('--stage_a_perm_glob', default=None)
+    ap.add_argument('--stage_b_classes', type=int, choices=(2, 3), default=3,
+                    help='2 = tennis-vs-navigation Stage B (see two_stage_decoding.py)')
     ap.add_argument('--exclude_subjects', nargs='*', default=['sub-29'])
     ap.add_argument('--output_file', default='output/two_stage/two_stage_figure',
                     help='path stem; .png/.pdf/.svg are written')
     args = ap.parse_args()
 
+    tsd.configure(args.stage_b_classes)
+    nb = tsd.N_B
     excl = set(args.exclude_subjects)
     a_runs = tsd.collect(args.stage_a_glob, excl, want_perm=False)
     if not a_runs:
@@ -287,9 +292,9 @@ def main():
     stage_rows = [('Stage A\nTask vs. No Task\n(bal. acc.)', real_bal, 0.5,
                    [x for v in perm_by_fold.values() for x in v] or None)]
     if composed:
-        stage_rows.append(('Stage B | called Task\n(3-way acc.)',
-                           [c['stage_b_called_task_acc'] for c in composed], 1 / 3, None))
-        stage_rows.append(('End-to-end\n(4-way acc.)', [c['end_to_end_acc'] for c in composed], E2E_CHANCE, None))
+        stage_rows.append((f'Stage B | called Task\n({nb}-way acc.)',
+                           [c['stage_b_called_task_acc'] for c in composed], 1 / nb, None))
+        stage_rows.append((f'End-to-end\n({nb + 1}-way acc.)', [c['end_to_end_acc'] for c in composed], E2E_CHANCE, None))
 
     S._style()
     cm_a = np.sum([np.array(tsd_cm(a_preds[f])) for f in folds], axis=0)
@@ -303,7 +308,7 @@ def main():
         panels.append(lambda ax, fig: plot_null(ax, real_acc, null_means))
     if composed:
         pooled = np.sum([np.array(c['end_to_end_confusion']) for c in composed], axis=0)
-        e2e_rows = ['No task', 'tennis', 'navigation', 'squeeze']
+        e2e_rows = ['No task'] + list(tsd.STAGE_B_NAMES)
         e2e_cols = e2e_rows if all_blocks else e2e_rows + ['Task\n(unclassified)']
         panels.append(lambda ax, fig: _single_confusion(ax, fig, pooled, e2e_rows, e2e_cols,
                                                          'End-to-end confusion (pooled)'))
@@ -324,7 +329,7 @@ def main():
     perm_txt = f"{len(null_means)} Stage A permutations" if null_means is not None else "no permutations run"
     fig.text(0.08, -0.03,
              f"{len(folds)} held-out subjects (one LOOCV fold each){excl_txt}; {n_b} with Stage B; {perm_txt}.\n"
-             "Dashed lines: chance (Stage A 0.5, Stage B 1/3). End-to-end baseline 0.5 = always answering 'No task'.",
+             f"Dashed lines: chance (Stage A 0.5, Stage B 1/{nb}). End-to-end baseline 0.5 = always answering 'No task'.",
              fontsize=6.5, color=S.INK_2, va='top', linespacing=1.4)
 
     out = Path(args.output_file)

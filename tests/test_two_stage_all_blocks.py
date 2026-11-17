@@ -58,3 +58,23 @@ def test_within_subject_difference_uses_subject_means():
     t = tsd.within_subject_test(per_fold, 'logit_margin', 'mock_called_task', 'mock_rejected')
     assert t['n_subjects'] == 3
     assert t['mean_diff'] == pytest.approx(np.mean([4.0, 2.0, 4.0]))
+
+
+def test_two_class_stage_b():
+    tsd.configure(2)
+    try:
+        # binary head: one logit per block (>0 = navigation); 2 real blocks (tennis, nav), 2 mock
+        labels = [1, 1, 0, 0]
+        a = [{'sample_idx': i, 'subject': 'sub-01', 'true_label': y, 'predicted_label': c, 'logits': [1.0],
+              'softmax_probs': [0.3, 0.7]} for i, (y, c) in enumerate(zip(labels, [1, 1, 0, 1]))]
+        b = [{'sample_idx': i, 'subject': 'sub-01', 'stage_a_label': y, 'predicted_label': int(z > 0),
+              'logits': [z], 'softmax_probs': [0.5, 0.5]} for i, (y, z) in enumerate(zip(labels, [-3.0, 3.0, 1.0, -2.0]))]
+        r = tsd.compose_fold_all(a, {'predictions': b}, [0, 1], 101)
+        cm = np.array(r['end_to_end_confusion'])
+        assert cm.shape == (3, 3)
+        assert cm[1, 1] == 1 and cm[2, 2] == 1 and cm[0, 0] == 1 and cm[0, 1] == 1   # false alarm -> tennis
+        assert r['stage_b_called_task_acc'] == 1.0
+        assert r['records'][0]['logit_margin'] == pytest.approx(3.0)
+        assert tsd.group_summary([r])['mock_called_task']['predicted_class_counts'] == {'tennis': 1, 'navigation': 0}
+    finally:
+        tsd.configure(3)

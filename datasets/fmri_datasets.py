@@ -863,6 +863,29 @@ class MichiganTaskVsRest(Michigan):
         return data
 
 
+class MichiganTennisNavVsRest(MichiganTaskVsRest):
+    """Stage A variant for the tennis/navigation two-stage test: Task vs. No Task
+    with squeeze left out of "Task".
+
+    Task (label 1):    the 10 tennis + 10 navigation blocks of task-imagery_run-1
+                       (same 37-TR full-block clips as MichiganTennisNav).
+    No Task (label 0): mock blocks from task-rest_run-1 and run-2 cut at the onsets
+                       of the first MOCK_BLOCKS_PER_RUN tennis/navigation blocks:
+                       10 + 10 = 20 mock blocks, matching the 20 task blocks.
+
+    Task blocks are in the same order as MichiganTennisNav's, so Stage B's
+    (tennis vs navigation) samples line up one-to-one with this Stage A's
+    true-Task samples. Everything else is inherited from MichiganTaskVsRest.
+    """
+
+    MOCK_BLOCKS_PER_RUN = 10
+    TASK_NAMES = ('tennis', 'navigation')
+
+    def _blocks_from_tsv(self, tsv_path, trim_start=None):
+        blocks = super()._blocks_from_tsv(tsv_path, trim_start)
+        return [b for b in blocks if b[2] in self.TASK_NAMES]
+
+
 class MichiganLOR(Michigan):
     """Test 3: task decoding during loss of responsiveness (LOR), imagery runs 2 and 3.
 

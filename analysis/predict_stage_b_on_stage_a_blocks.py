@@ -37,9 +37,21 @@ from pathlib import Path
 import numpy as np
 
 REPO = Path(__file__).resolve().parent.parent
-STAGE_B_PREFIX = "FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv"
-STAGE_B_NAMES = {0: 'tennis', 1: 'navigation', 2: 'squeeze'}
-STAGE_A_DATASET = "MICHIGAN_TASK_VS_REST"
+# Stage B variants. "threeway": existing 3-way model on the 30+30 Stage A blocks.
+# "tennisnav": 2-class tennis-vs-navigation model (one sigmoid logit) on the 20+20 blocks of
+# the tennis/navigation Stage A (MICHIGAN_TENNISNAV_VS_REST).
+VARIANTS = {
+    'threeway': dict(prefix="FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv",
+                     names={0: 'tennis', 1: 'navigation', 2: 'squeeze'}, n_out=3,
+                     task_name='imagery_task_classification', num_classes=3,
+                     stage_a_dataset="MICHIGAN_TASK_VS_REST",
+                     out_prefix="FIXED_mich_xcpd_nosmooth_stageB_allblocks"),
+    'tennisnav': dict(prefix="FIXED_mich_xcpd_nosmooth_tennisnav_tpt_strategy-none_loocv",
+                      names={0: 'tennis', 1: 'navigation'}, n_out=1,
+                      task_name='tennis_vs_nav_classification', num_classes=2,
+                      stage_a_dataset="MICHIGAN_TENNISNAV_VS_REST",
+                      out_prefix="FIXED_mich_xcpd_nosmooth_tennisnav_stageB_allblocks"),
+}
 
 
 def read_split_test_subjects(split_file):
@@ -96,6 +108,8 @@ def check_reproduces_saved(preds, saved, atol=1e-2):
     same_label = sum(int(a['predicted_label']) == int(b['predicted_label']) for a, b in zip(new_task, saved))
     new_lg = np.array([a['logits'] for a in new_task], float)
     old_lg = np.array([b['logits'] for b in saved], float)
+    if new_lg.shape != old_lg.shape:
+        return {'status': 'mismatch', 'reason': f'logit shapes {new_lg.shape} vs {old_lg.shape}'}
     max_diff = float(np.max(np.abs(new_lg - old_lg)))
     max_rel = float(np.max(np.abs(new_lg - old_lg) / np.maximum(np.abs(old_lg), 1e-6)))
     ok = same_label == len(saved) and max_diff <= atol
@@ -107,8 +121,11 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--fold', type=int, required=True, help='LOOCV fold / split number, e.g. 101')
     ap.add_argument('--output_root', default='/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output')
-    ap.add_argument('--stage_b_prefix', default=STAGE_B_PREFIX,
-                    help='project-name prefix of the 3-way LOOCV runs (<prefix>_fold-<N>)')
+    ap.add_argument('--stage_b', choices=sorted(VARIANTS), default='threeway',
+                    help="'threeway' (default): 3-way model, MICHIGAN_TASK_VS_REST blocks; 'tennisnav': "
+                         "tennis-vs-navigation model, MICHIGAN_TENNISNAV_VS_REST blocks")
+    ap.add_argument('--stage_b_prefix', default=None,
+                    help='project-name prefix of the Stage B LOOCV runs (<prefix>_fold-<N>); default per --stage_b')
     ap.add_argument('--ckpt', default=None, help='override the 3-way checkpoint (default: the one in the fold dir)')
     ap.add_argument('--image_path', default=None,
                     help='override the imagery-run-1 data root stored in the checkpoint hparams')
@@ -124,7 +141,9 @@ def main():
     from models.lightning_model import LightningModel
     from datasets.data_module import fMRIDataModule
 
-    stage_b_dir = os.path.join(args.output_root, f"{args.stage_b_prefix}_fold-{args.fold}")
+    V = VARIANTS[args.stage_b]
+    STAGE_B_NAMES, STAGE_A_DATASET, n_out = V['names'], V['stage_a_dataset'], V['n_out']
+    stage_b_dir = os.path.join(args.output_root, f"{args.stage_b_prefix or V['prefix']}_fold-{args.fold}")
     ckpt_path = args.ckpt or find_checkpoint(stage_b_dir)
     if f"fold-{args.fold}" not in os.path.abspath(ckpt_path) and args.ckpt is None:
         raise RuntimeError(f"checkpoint {ckpt_path} is not from fold {args.fold}")
@@ -137,8 +156,8 @@ def main():
     problems = []
     if int(hp.get('dataset_split_num', -1)) != args.fold:
         problems.append(f"checkpoint dataset_split_num={hp.get('dataset_split_num')} != fold {args.fold}")
-    if hp.get('task_name') != 'imagery_task_classification' or int(hp.get('num_classes', 0)) != 3:
-        problems.append(f"checkpoint is not the 3-way model (task_name={hp.get('task_name')}, num_classes={hp.get('num_classes')})")
+    if hp.get('task_name') != V['task_name'] or int(hp.get('num_classes', 0)) != V['num_classes']:
+        problems.append(f"checkpoint is not the {args.stage_b} model (task_name={hp.get('task_name')}, num_classes={hp.get('num_classes')})")
     if hp.get('permute_labels'):
         problems.append("checkpoint was trained with permuted labels")
     if hp.get('tpt_strategy', 'none') != 'none':
@@ -180,12 +199,17 @@ def main():
         for batch in loader:
             batch = {k: (v.to(dev) if isinstance(v, torch.Tensor) else v) for k, v in batch.items()}
             subj, logits, target, _, _ = model._compute_logits(batch)
-            logits = logits.detach().float().cpu().reshape(-1, 3).numpy()   # reshape: a 1-block batch squeezes to (3,)
+            logits = logits.detach().float().cpu().reshape(-1, n_out).numpy()   # reshape: a 1-block batch squeezes
             target = target.detach().cpu().reshape(-1).numpy()
             for s, lg, t in zip(subj, logits, target):
-                e = np.exp(lg - lg.max())
-                probs = e / e.sum()
-                pred = int(np.argmax(lg))
+                if n_out == 1:      # binary head: one logit, P(class 1) = sigmoid(logit)
+                    p1 = 1.0 / (1.0 + np.exp(-lg[0]))
+                    probs = np.array([1.0 - p1, p1])
+                    pred = int(lg[0] >= 0)
+                else:
+                    e = np.exp(lg - lg.max())
+                    probs = e / e.sum()
+                    pred = int(np.argmax(lg))
                 preds.append({
                     'sample_idx': len(preds),
                     'subject': str(s),
@@ -215,13 +239,13 @@ def main():
         print("[stage B] WARNING: task-block predictions differ from the saved 3-way run -- "
               "check the checkpoint and data root before using these results", flush=True)
 
-    out_dir = Path(args.output_root) / f"FIXED_mich_xcpd_nosmooth_stageB_allblocks_fold-{args.fold}"
+    out_dir = Path(args.output_root) / f"{V['out_prefix']}_fold-{args.fold}"
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / f"stage_b_predictions_fold_{args.fold}.json"
     with open(out, 'w') as f:
         json.dump({'meta': {'fold': args.fold, 'subjects': subjects, 'checkpoint': os.path.abspath(ckpt_path),
                             'split_file': dm.split_file_path, 'n_task_blocks': n_task, 'n_mock_blocks': n_mock,
-                            'reproduces_saved_3way': check, 'class_names': STAGE_B_NAMES},
+                            'stage_b_variant': args.stage_b, 'reproduces_saved_3way': check, 'class_names': STAGE_B_NAMES},
                    'predictions': preds}, f, indent=2)
     print(f"[stage B] wrote {out}", flush=True)
 

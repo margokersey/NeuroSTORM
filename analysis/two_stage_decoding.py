@@ -32,6 +32,11 @@ x Stage A right / wrong): Stage B accuracy (real blocks), predicted-class counts
 softmax prob, entropy), plus within-subject paired comparisons (one value per
 held-out subject, Wilcoxon signed-rank; no bootstrap).
 
+Tennis-vs-navigation variant: pass --stage_b_classes 2 with Stage A runs from
+run_loocv_tennisnav_vs_rest.sh (Task = tennis+navigation only, 20 mock blocks) and Stage B
+predictions from `predict_stage_b_on_stage_a_blocks.py --stage_b tennisnav`. Everything
+(confusion matrix, chance level, groups) then uses 2 Stage B classes.
+
 Usage (from the repo root, after both sets of folds finished):
     python analysis/two_stage_decoding.py \\
       --stage_a_glob "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-*" \\
@@ -55,6 +60,22 @@ import numpy as np
 
 STAGE_B_NAMES = ['tennis', 'navigation', 'squeeze']          # label ids 0, 1, 2
 LABEL_MAP = {'tennis': 0, 'navigation': 1, 'squeeze': 2}
+ALL_STAGE_B_NAMES = {3: ['tennis', 'navigation', 'squeeze'], 2: ['tennis', 'navigation']}
+N_B = 3   # Stage B classes; switch with configure(2) for the tennis-vs-navigation variant
+
+
+def configure(n_classes):
+    """Select the Stage B class set: 3 = tennis/navigation/squeeze (default), 2 = tennis/navigation
+    (Stage A "Task" then means tennis+navigation only). Call before tsv_block_labels / composing."""
+    global N_B, STAGE_B_NAMES, LABEL_MAP, E2E4_LABELS
+    if n_classes not in ALL_STAGE_B_NAMES:
+        raise ValueError(f"n_classes must be 2 or 3, got {n_classes}")
+    N_B = n_classes
+    STAGE_B_NAMES = list(ALL_STAGE_B_NAMES[n_classes])
+    LABEL_MAP = {n: i for i, n in enumerate(STAGE_B_NAMES)}
+    E2E4_LABELS = ['notask'] + STAGE_B_NAMES
+
+
 E2E_ROWS = ['notask', 'tennis', 'navigation', 'squeeze']      # true classes
 E2E_COLS = ['notask', 'tennis', 'navigation', 'squeeze', 'task_unclassified']
 
@@ -92,14 +113,15 @@ def perm_of(path):
 
 
 def tsv_block_labels(tsv_path):
-    """Class id (0/1/2) of each imagery block, in time order (matches Michigan._blocks_from_tsv)."""
+    """Class id of each imagery block, in time order (matches Michigan._blocks_from_tsv).
+    With configure(2), squeeze blocks are skipped (as MichiganTennisNav does)."""
     import pandas as pd
     df = pd.read_csv(tsv_path, sep='\t')
     df['squeeze'] = df['squeeze_imagery'] | df['squeeze_action']
     labels = df[['rest', 'squeeze', 'navigation', 'tennis']].idxmax(axis=1).tolist()
     out, prev = [], None
     for lab in labels:
-        if lab != prev and lab != 'rest':
+        if lab != prev and lab != 'rest' and lab in LABEL_MAP:
             out.append(LABEL_MAP[lab])
         prev = lab
     return out
@@ -140,6 +162,8 @@ def stage_a_metrics(preds):
 
 def compose_fold(a_preds, b_preds, block_labels, fold):
     """Return per-fold results or raise ValueError describing an alignment problem."""
+    if N_B != 3:
+        raise ValueError("the lookup mode (--stage_b_glob) only supports the 3-way Stage B; use --stage_b_pred_glob")
     a_task = [p for p in a_preds if int(p['true_label']) == 1]
     a_notask = [p for p in a_preds if int(p['true_label']) == 0]
     if len(a_task) != len(b_preds) or len(b_preds) != len(block_labels):
@@ -202,7 +226,7 @@ CONF_MEASURES = {   # per-block Stage B confidence measures
     'max_prob': 'Max softmax prob',
     'entropy': 'Softmax entropy (nats)',
 }
-E2E4_LABELS = ['notask', 'tennis', 'navigation', 'squeeze']
+E2E4_LABELS = ['notask', 'tennis', 'navigation', 'squeeze']   # reassigned by configure()
 
 
 def load_stage_b_all(output_dir):
@@ -228,8 +252,15 @@ def collect_stage_b_all(glob_pat, exclude_subjects):
     return found
 
 
+def logit_vector(logits):
+    """Per-class logits. A binary head saves ONE logit z (P(class 1) = sigmoid(z)); [0, z] has the
+    same softmax, so margin / max-prob / entropy are computed uniformly."""
+    lg = np.asarray(logits, float).reshape(-1)
+    return np.array([0.0, lg[0]]) if lg.size == 1 else lg
+
+
 def block_confidence(logits):
-    lg = np.asarray(logits, float)
+    lg = logit_vector(logits)
     srt = np.sort(lg)[::-1]
     e = np.exp(lg - lg.max())
     p = e / e.sum()
@@ -266,14 +297,14 @@ def compose_fold_all(a_preds, b_data, block_labels, fold):
                'stage_a_called_task': bool(called), 'stage_a_logit': float(pa['logits'][0]),
                'stage_b_pred': int(pb['predicted_label']), 'stage_b_true': b_true,
                'stage_b_correct': (int(pb['predicted_label']) == b_true) if is_task else None,
-               'stage_b_logits': [float(x) for x in pb['logits']],
+               'stage_b_logits': [float(x) for x in logit_vector(pb['logits'])],
                'stage_b_probs': [float(x) for x in pb['softmax_probs']]}
         rec.update(block_confidence(pb['logits']))
         records.append(rec)
 
     # 4x4 end-to-end confusion: rows true (notask, tennis, navigation, squeeze),
     # cols final prediction. Stage A "No Task" -> col 0; "Task" -> Stage B's label.
-    cm = np.zeros((4, 4), dtype=int)
+    cm = np.zeros((1 + N_B, 1 + N_B), dtype=int)
     for r in records:
         row = 0 if r['block_type'] == 'mock' else 1 + r['stage_b_true']
         col = 1 + r['stage_b_pred'] if r['stage_a_called_task'] else 0
@@ -341,7 +372,7 @@ def group_summary(per_fold):
     for g, _, _, _ in GROUPS:
         recs = [r for fr in per_fold for r in fr['records'] if r['group'] == g]
         d = {'n_blocks': len(recs), 'n_subjects': len({r['subject'] for r in recs}),
-             'predicted_class_counts': {STAGE_B_NAMES[k]: sum(r['stage_b_pred'] == k for r in recs) for k in range(3)}}
+             'predicted_class_counts': {STAGE_B_NAMES[k]: sum(r['stage_b_pred'] == k for r in recs) for k in range(N_B)}}
         if recs and recs[0]['block_type'] == 'task':
             d['stage_b_accuracy_pooled'] = float(np.mean([r['stage_b_correct'] for r in recs]))
         for m in CONF_MEASURES:
@@ -404,6 +435,9 @@ def main():
                          'e.g. /nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_stageB_allblocks_fold-*). Preferred.')
     ap.add_argument('--stage_b_glob', default=None,
                     help='OLD lookup mode: the 3-way LOOCV run dirs; Stage B predictions exist only for true task blocks')
+    ap.add_argument('--stage_b_classes', type=int, choices=(2, 3), default=3,
+                    help='3 = tennis/navigation/squeeze (default); 2 = tennis/navigation, with Stage A Task = '
+                         'tennis+navigation blocks only (needs --stage_b_pred_glob)')
     ap.add_argument('--tsv', required=True, help='timing_onehot_task1.tsv of the imagery run-1 data')
     ap.add_argument('--output_csv', default=None, help='(--stage_b_pred_glob) one row per block with Stage A/B outputs')
     ap.add_argument('--exclude_subjects', nargs='*', default=['sub-29'],
@@ -414,6 +448,9 @@ def main():
 
     if bool(args.stage_b_pred_glob) == bool(args.stage_b_glob):
         sys.exit("Pass exactly one of --stage_b_pred_glob (preferred) or --stage_b_glob (old lookup mode).")
+    configure(args.stage_b_classes)
+    if N_B == 2 and not args.stage_b_pred_glob:
+        sys.exit("--stage_b_classes 2 requires --stage_b_pred_glob")
     block_labels = tsv_block_labels(args.tsv)
     excl = set(args.exclude_subjects)
     a_runs = collect(args.stage_a_glob, excl, want_perm=False)
@@ -445,7 +482,8 @@ def main():
         'mode': 'stage_b_all_blocks' if all_blocks else 'lookup_true_task_blocks_only',
         'n_folds': len(per_fold),
         'excluded_subjects': sorted(excl),
-        'chance': {'stage_a': 0.5, 'stage_b': 1 / 3, 'end_to_end_majority': 0.5},
+        'stage_b_classes': N_B,
+        'chance': {'stage_a': 0.5, 'stage_b': 1 / N_B, 'end_to_end_majority': 0.5},
         'stage_a': {k: mean_sem([r['stage_a'][k] for r in per_fold])
                     for k in ('accuracy', 'balanced_accuracy', 'recall_task', 'recall_notask', 'auroc')},
         'stage_b_all_task_blocks_acc': mean_sem([r['stage_b_all_task_blocks_acc'] for r in per_fold]),
@@ -509,9 +547,9 @@ def main():
     print(f"  Stage A accuracy          {fmt(result['stage_a']['accuracy'])}   chance 0.50")
     print(f"  Stage A balanced acc      {fmt(result['stage_a']['balanced_accuracy'])}")
     print(f"  Stage A AUROC             {fmt(result['stage_a']['auroc'])}")
-    print(f"  Stage B acc | called Task {fmt(result['stage_b_called_task_acc'])}   chance 0.33")
-    print(f"  Stage B acc | all task    {fmt(result['stage_b_all_task_blocks_acc'])}   (plain 3-way LOOCV)")
-    print(f"  End-to-end 4-way acc      {fmt(result['end_to_end_acc'])}")
+    print(f"  Stage B acc | called Task {fmt(result['stage_b_called_task_acc'])}   chance {1 / N_B:.2f}")
+    print(f"  Stage B acc | all task    {fmt(result['stage_b_all_task_blocks_acc'])}   (plain {N_B}-class LOOCV)")
+    print(f"  End-to-end {1 + N_B}-way acc      {fmt(result['end_to_end_acc'])}")
     rows_lab = E2E4_LABELS if all_blocks else E2E_ROWS
     cols_lab = E2E4_LABELS if all_blocks else E2E_COLS
     print("  Pooled end-to-end confusion (rows=true, cols=predicted):")
@@ -520,7 +558,7 @@ def main():
         print(f"  {name[:10]:>10} " + " ".join(f"{v:>10d}" for v in row))
     if all_blocks:
         print("\n  Stage B on every Stage A block, by block type and Stage A call (pooled):")
-        print(f"    {'group':<38}{'n':>5}{'subj':>5}  {'tennis/nav/squeeze':>19}{'acc':>7}{'margin':>8}{'maxprob':>9}")
+        print(f"    {'group':<38}{'n':>5}{'subj':>5}  {'/'.join(n[:4] for n in STAGE_B_NAMES):>19}{'acc':>7}{'margin':>8}{'maxprob':>9}")
         for g, _, _, lab in GROUPS:
             d = result['groups'][g]
             cc = d['predicted_class_counts']
@@ -528,7 +566,7 @@ def main():
             mm = f"{d['mean_logit_margin']:.2f}" if d['mean_logit_margin'] is not None else '-'
             mp = f"{d['mean_max_prob']:.3f}" if d['mean_max_prob'] is not None else '-'
             print(f"    {lab:<38}{d['n_blocks']:>5}{d['n_subjects']:>5}  "
-                  f"{cc['tennis']:>6}/{cc['navigation']:>3}/{cc['squeeze']:>5}{acc:>7}{mm:>8}{mp:>9}")
+                  f"{'/'.join(str(cc[n]) for n in STAGE_B_NAMES):>19}{acc:>7}{mm:>8}{mp:>9}")
         print("\n  Within-subject comparisons (a - b; one value per held-out subject, Wilcoxon signed-rank):")
         for t in result['within_subject_tests']:
             if t['n_subjects'] == 0:

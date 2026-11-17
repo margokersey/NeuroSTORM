@@ -175,3 +175,28 @@ def test_compose_fold_rejects_misalignment():
         m.compose_fold(a, wrong_order, labels, 101)
     with pytest.raises(ValueError, match="cannot align"):
         m.compose_fold(a, [_b_pred(t, t) for t in labels[:-1]], labels, 101)
+
+
+# ---- tennis/navigation Stage A variant (squeeze dropped from "Task") ----------
+from datasets.fmri_datasets import MichiganTennisNavVsRest  # noqa: E402
+
+
+@pytest.mark.unit
+def test_tennisnav_vs_rest_blocks(dataset_root):
+    root, order = dataset_root
+    ds = MichiganTennisNavVsRest(
+        root=str(root / IMAGERY_TAG), subject_dict={s: [0, 0] for s in ("sub-01", "sub-29")},
+        sequence_length=SEQ, stride_within_seq=1, stride_between_seq=1.0, train=False)
+    for subj, runs in (("sub-01", 2), ("sub-29", 1)):          # sub-29 has no rest-2
+        rows = [t for t in ds.data if t[1] == subj]
+        assert sum(t[6] == 1 for t in rows) == 20               # 10 tennis + 10 navigation
+        n_mock = sum(t[6] == 0 for t in rows)
+        assert 0 < n_mock <= 10 * runs
+    # task blocks keep time order of the non-squeeze blocks; mock onsets reuse the first 10 of them
+    full = MichiganTennisNavVsRest(
+        root=str(root / IMAGERY_TAG), subject_dict={"sub-01": [0, 0]},
+        sequence_length=SEQ, stride_within_seq=1, stride_between_seq=1.0, train=False)
+    blocks = full._blocks_from_tsv(str(root / IMAGERY_TAG / "metadata" / "timing_onehot_task1.tsv"))
+    assert [b[2] for b in blocks] == [o for o in order if o != "squeeze"]
+    starts = [t[3] for t in full.data if t[6] == 0 and "run-1" in t[2]]
+    assert starts == [b[0] for b in blocks[:10] if b[0] + SEQ <= 770]

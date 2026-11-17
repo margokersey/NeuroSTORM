@@ -9,6 +9,8 @@
 #   sbatch --array=101 analysis/sbatch_stage_b_predict.sh        # just fold 101 (check this first)
 #   sbatch analysis/sbatch_stage_b_predict.sh                    # all 26 folds
 #   sbatch --array=101-126%4 analysis/sbatch_stage_b_predict.sh  # max 4 at once
+# Tennis-vs-navigation variant (2-class Stage B on the tennis/nav Stage A blocks):
+#   sbatch --export=ALL,STAGE_B=tennisnav analysis/sbatch_stage_b_predict.sh
 # Watch:   squeue -u mkersey      tail -f logs/stageB_predict_<jobid>_<fold>.log
 # =============================================================================
 #SBATCH --account=huangzu99
@@ -52,6 +54,6 @@ echo "Job ${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID} (fold $SLURM_ARRAY_TASK_I
 echo "Repo: $REPO_DIR @ $(git rev-parse --short HEAD 2>/dev/null || echo 'not a git repo')"
 python -c "import torch; assert torch.cuda.is_available(), 'No GPU visible!'; print('torch', torch.__version__)"
 
-python analysis/predict_stage_b_on_stage_a_blocks.py --fold "$SLURM_ARRAY_TASK_ID"
+python analysis/predict_stage_b_on_stage_a_blocks.py --fold "$SLURM_ARRAY_TASK_ID" --stage_b "${STAGE_B:-threeway}"
 
 echo "Fold $SLURM_ARRAY_TASK_ID finished at $(date)"

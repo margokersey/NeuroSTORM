@@ -2,7 +2,7 @@
 # =============================================================================
 # 2-class (tennis vs navigation) LOOCV permutation testing on Great Lakes
 #
-# One array task per (fold, permutation): 26 folds x 20 permutations = 520 tasks,
+# One array task per (fold, permutation): 26 folds x 10 permutations = 260 tasks,
 # each a single fine-tune on within-subject-shuffled labels, so every fold and
 # every permutation can run in parallel. Task id -> fold/perm:
 #     fold = 101 + id / N_PERMS        perm = PERM_START + id % N_PERMS
@@ -11,12 +11,12 @@
 #
 # Prerequisites: none beyond the splits (real runs are independent of these).
 # One-time setup:   mkdir -p /scratch/huangzu_root/huangzu0/mkersey/logs
-# Submit (all 26 folds x 20 perms):
+# Submit (all 26 folds x 10 perms):
 #   sbatch run_finetune_scripts/greatlakes/loocv/sbatch_loocv_tennisnav_permutation.sh
-# Change the cap:     sbatch --array=0-519%20 <this script>   (default %20)
-# Rerun one task:     sbatch --array=<id> <this script>   (id = (fold-101)*20 + perm-1)
-# More perms later (e.g. 21-40; array size = 26 * 20 = 520 again):
-#   sbatch --export=ALL,PERM_START=21,PERM_END=40 <this script>
+# Change the cap:     sbatch --array=0-259%10 <this script>   (default %20)
+# Rerun one task:     sbatch --array=<id> <this script>   (id = (fold-101)*10 + perm-1)
+# More perms later (e.g. 11-20; array size = 26 * 10 = 260 again):
+#   sbatch --export=ALL,PERM_START=11,PERM_END=20 <this script>
 # Watch:   squeue -u mkersey      tail -f logs/tennisnav_loocv_perm_<jobid>_<id>.log
 # =============================================================================
 
@@ -24,7 +24,7 @@
 #SBATCH --job-name=tennisnav_loocv_perm
 #SBATCH --chdir=/scratch/huangzu_root/huangzu0/mkersey
 #SBATCH --partition=spgpu              # A40s
-#SBATCH --array=0-519%20               # 26 folds x 20 perms; one task each, max 20 running at once
+#SBATCH --array=0-259%20               # 26 folds x 10 perms; one task each, max 20 running at once
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=1
@@ -32,7 +32,7 @@
 #SBATCH --mem=64G
 #SBATCH --time=02:00:00                # one run (same budget as a real fold)
 #SBATCH --output=logs/tennisnav_loocv_perm_%A_%a.log
-#SBATCH --mail-type=FAIL               # not END: 520 emails otherwise
+#SBATCH --mail-type=FAIL               # not END: 260 emails otherwise
 #SBATCH --mail-user=mkersey@umich.edu
 
 set -euo pipefail
@@ -45,7 +45,7 @@ export DATA_ROOT="/nfs/turbo/umms-huanglab/mkersey/Michigan_Dataset_1_for_NeuroS
 FIRST_FOLD=101
 N_FOLDS=26
 PERM_START="${PERM_START:-1}"
-PERM_END="${PERM_END:-20}"
+PERM_END="${PERM_END:-10}"
 N_PERMS=$((PERM_END - PERM_START + 1))
 MAX_EPOCHS=30
 

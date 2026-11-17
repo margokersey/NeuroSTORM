@@ -1,5 +1,12 @@
 # Changes
 
+## Two-stage test, tennis/navigation version (squeeze dropped)
+
+- `datasets/fmri_datasets.py`, `datasets/data_module.py`: new `MichiganTennisNavVsRest` (`MICHIGAN_TENNISNAV_VS_REST`), Stage A where "Task" = the 10 tennis + 10 navigation blocks (no squeeze) and "No Task" = 10 mock blocks from rest-1 + 10 from rest-2 (onsets of the first 10 tennis/nav blocks; 20 vs 20, balanced). Config `michigan_xcpd_nosmooth_tennisnav_vs_rest.yaml` (`task9`, same `taskvsrest_classification` head and metrics).
+- New `run_loocv_tennisnav_vs_rest.sh`, `sbatch_loocv_tennisnav_vs_rest.sh` and `sbatch_loocv_tennisnav_vs_rest_permutation.sh` (26 folds x 10 perms). Runs: `FIXED_mich_xcpd_nosmooth_tennisnav_vs_rest_loocv_fold-<N>[_perm<K>]`. Not yet run on real data.
+- Stage B is the existing tennis-vs-navigation LOOCV model. `analysis/predict_stage_b_on_stage_a_blocks.py --stage_b tennisnav` (or `STAGE_B=tennisnav` for `sbatch_stage_b_predict.sh`) runs it on every Stage A block, real and mock; writes `FIXED_mich_xcpd_nosmooth_tennisnav_stageB_allblocks_fold-<N>`.
+- `analysis/two_stage_decoding.py`, `plot_two_stage_decoding.py`: `--stage_b_classes 2` (chance 1/2, 3x3 end-to-end confusion, binary single-logit confidence). Default behavior unchanged.
+
 ## LOR task decoding with the 2-class tennis-vs-navigation model
 
 - `datasets/fmri_datasets.py`, `datasets/data_module.py`: new `MichiganLORTennisNav` (`MICHIGAN_LOR_TENNIS_NAV`). Same LOR/ROR segmenting and run 4 as `MichiganLOR` (the LOR/ROR TRs sit in squeeze blocks, so they stay in the block indexing) but squeeze blocks are not scored. `MichiganLOR` now skips any block whose label is not in `LABEL_MAP` (no change for the 3-way model).

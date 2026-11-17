@@ -108,6 +108,23 @@ Stage A (new, binary) + Stage B (the existing 3-way LOOCV above, **not retrained
   Runs are named `FIXED_mich_xcpd_nosmooth_taskvsrest_loocv_fold-<N>[_perm<k>]`.
 - **Compose the two stages:** `python analysis/two_stage_decoding.py --stage_a_glob ... --stage_b_glob ... --tsv .../timing_onehot_task1.tsv --exclude_subjects sub-29` (full example in the script's docstring). Reports Stage A accuracy/balanced accuracy/AUROC, Stage B accuracy on blocks Stage A called "Task", and an end-to-end 4-way confusion matrix. Alignment between stages is verified per fold against the TSV.
 
+### Variant: tennis vs. navigation only (squeeze dropped)
+
+Stage A "Task" = the 10 tennis + 10 navigation blocks; "No Task" = 10 mock blocks from each rest run (20 vs 20). Stage B = the 2-class tennis-vs-navigation LOOCV model (`run_loocv_tennisnav.sh`), run on every Stage A block.
+
+```bash
+sbatch run_finetune_scripts/greatlakes/loocv/sbatch_loocv_tennisnav_vs_rest.sh               # Stage A, 26 folds
+sbatch run_finetune_scripts/greatlakes/loocv/sbatch_loocv_tennisnav_vs_rest_permutation.sh   # Stage A null (26 x 10)
+sbatch run_finetune_scripts/greatlakes/loocv/sbatch_loocv_tennisnav.sh                        # Stage B real folds, if not already done
+sbatch --export=ALL,STAGE_B=tennisnav analysis/sbatch_stage_b_predict.sh                      # Stage B on all Stage A blocks (after both above)
+python analysis/two_stage_decoding.py --stage_b_classes 2 \
+  --stage_a_glob ".../output/FIXED_mich_xcpd_nosmooth_tennisnav_vs_rest_loocv_fold-*" \
+  --stage_b_pred_glob ".../output/FIXED_mich_xcpd_nosmooth_tennisnav_stageB_allblocks_fold-*" \
+  --stage_a_perm_glob ".../output/FIXED_mich_xcpd_nosmooth_tennisnav_vs_rest_loocv_fold-*_perm*" \
+  --tsv "$DATA_ROOT/FIXED_xcp_nosmooth_task-imagery_run-1/metadata/timing_onehot_task1.tsv" --exclude_subjects sub-29
+```
+`plot_two_stage_decoding.py` takes the same globs plus `--stage_b_classes 2`.
+
 ## Key Files
 - **Submission script**: `run_finetune_scripts/greatlakes/loocv/sbatch_loocv_xcpd.sh`
 - **Training script**: `run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh`

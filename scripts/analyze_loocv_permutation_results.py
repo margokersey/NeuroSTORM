@@ -396,6 +396,39 @@ def compute_statistics(results, n_classes):
     return stats
 
 
+def add_pooled_subject_pvalues(stats, alpha=0.05):
+    """Per-subject significance against the null pooled across all subjects.
+
+    With few permutations per fold (n_perm), a subject's own null can never give
+    p < 0.05 (min p = 1/(1+n_perm)). Instead compare each subject's real accuracy
+    to the pooled null (all permuted accuracies from all folds, N = folds * n_perm),
+    p = (1 + #{pooled >= real}) / (1 + N), then Benjamini-Hochberg FDR across
+    subjects. Assumes the null accuracy distribution is similar across subjects
+    (similar numbers of test samples); a warning is printed if it clearly is not.
+    TODO: once more permutations per fold exist, switch to each subject's own null.
+    """
+    folds = sorted(stats)
+    perm = {f: np.array([m['accuracy'] for m in stats[f]['perm_metrics'].values()]) for f in folds}
+    pooled = np.concatenate([perm[f] for f in folds])
+    N = len(pooled)
+    p = np.array([(1 + (pooled >= stats[f]['real_accuracy']).sum()) / (1 + N) for f in folds])
+    order = np.argsort(p)
+    m = len(p)
+    q = np.empty(m)
+    q[order] = np.minimum.accumulate((p[order] * m / np.arange(1, m + 1))[::-1])[::-1]
+    q = np.minimum(q, 1.0)
+    for f, pi, qi in zip(folds, p, q):
+        stats[f]['p_value_pooled'] = float(pi)
+        stats[f]['q_value_fdr'] = float(qi)
+        stats[f]['significant_fdr'] = bool(qi < alpha)
+    means = np.array([perm[f].mean() for f in folds])
+    sd_pooled = pooled.std()
+    if sd_pooled > 0 and means.std() > 2 * sd_pooled / np.sqrt(max(len(perm[folds[0]]), 1)):
+        print("WARNING: per-subject null means differ more than expected from sampling "
+              "noise; the pooled-null per-subject test may be miscalibrated.")
+    return int(sum(stats[f]['significant_fdr'] for f in folds)), N
+
+
 def aggregate_permutation_test(results):
     """Across-fold permutation test on mean accuracy (kept for continuity).
 
@@ -556,13 +589,15 @@ def save_per_fold_csv(stats, output_file):
     with open(path, 'w', newline='') as f:
         w = csv.writer(f)
         w.writerow(['fold', 'n_samples']
-                   + [f'real_{c}' for c in cols] + [f'perm_mean_{c}' for c in cols])
+                   + [f'real_{c}' for c in cols] + [f'perm_mean_{c}' for c in cols]
+                   + ['p_pooled', 'q_fdr', 'significant_fdr'])
         for fid in sorted(stats):
             s = stats[fid]
             perm = s['perm_metrics'].values()
             w.writerow([fid, s['n_samples']]
                        + [s['real_metrics'][c] for c in cols]
-                       + [np.nanmean([p[c] for p in perm]) for c in cols])
+                       + [np.nanmean([p[c] for p in perm]) for c in cols]
+                       + [s.get('p_value_pooled'), s.get('q_value_fdr'), s.get('significant_fdr')])
     print(f"Saved per-fold table to {path}")
 
 
@@ -637,20 +672,21 @@ def _fmt_p(p, n_perm):
 
 
 def _pooled(results, which='real'):
-    ys, ps, yh = [], [], []
+    ys, ps, yh, gs = [], [], [], []
     for f in sorted(results):
         runs = [results[f]['real_preds']] if which == 'real' else list(results[f]['perm_preds'].values())
         for r in runs:
             if r is None:
                 continue
             ys.append(r['y']); yh.append(r['yhat'])
+            gs.append(np.full(len(r['y']), f))
             if r['probs'] is not None:
                 ps.append(r['probs'])
     if not ys:
-        return None, None, None
+        return None, None, None, None
     y, yhat = np.concatenate(ys), np.concatenate(yh)
     probs = np.concatenate(ps) if len(ps) == len(ys) else None
-    return y, yhat, probs
+    return y, yhat, probs, np.concatenate(gs)
 
 
 def plot_per_subject(ax, stats, metric, chance):
@@ -709,8 +745,12 @@ def plot_kde(ax, stats, n_classes):
         for box in bp['boxes']:
             box.set_facecolor('white')
         if color == REAL:
-            ax.scatter(vals, y0 - 0.2 + rng.uniform(-0.06, 0.06, len(vals)), s=8, color=REAL,
-                       edgecolor='white', linewidth=0.3, zorder=3)
+            ypos = y0 - 0.2 + rng.uniform(-0.06, 0.06, len(vals))
+            sig = np.array([stats[f].get('significant_fdr', False) for f in folds])
+            ax.scatter(vals[~sig], ypos[~sig], s=8, facecolor='white', edgecolor=REAL,
+                       linewidth=0.7, zorder=3)
+            ax.scatter(vals[sig], ypos[sig], s=9, color=REAL, edgecolor='white',
+                       linewidth=0.3, zorder=3)
         else:   # many points: small, translucent, no outline
             ax.scatter(vals, y0 - 0.2 + rng.uniform(-0.08, 0.08, len(vals)), s=2, color=color,
                        alpha=min(0.5, 60.0 / len(vals) + 0.08), linewidth=0, rasterized=True, zorder=3)
@@ -725,7 +765,12 @@ def plot_kde(ax, stats, n_classes):
     ax.tick_params(axis='y', length=0)
     ax.set_xlabel('Test accuracy per held-out subject')
     ax.set_title('Accuracy distributions', loc='left', pad=TITLE_PAD)
-    _top_legend(ax, [Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (1, 2)), label='Chance')])
+    _top_legend(ax, [
+        Line2D([], [], marker='o', ls='', color=REAL, markersize=4, label='Subject, FDR < 0.05'),
+        Line2D([], [], marker='o', ls='', markerfacecolor='white', markeredgecolor=REAL,
+               markersize=4, label='n.s.'),
+        Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (1, 2)), label='Chance'),
+    ], fontsize=6)
 
 
 NULL_HIST_MIN_PERMS = 30
@@ -775,8 +820,6 @@ def plot_metric_forest(ax, tests, n_perm):
                     ls=(0, (2, 1.5)), zorder=0)
         ax.plot(t['real_ci95'], [yi, yi], color=REAL, lw=1.2, zorder=3)
         ax.scatter([t['real_mean']], [yi], s=22, color=REAL, edgecolor='white', linewidth=0.6, zorder=4)
-        ax.text(0.99, yi + 0.33, _fmt_p(t['perm_p_value'], n_perm), transform=ax.get_yaxis_transform(),
-                va='center', ha='right', fontsize=6.5, color=INK_2)
     ax.set_yticks(y)
     ax.set_yticklabels([tests[k]['label'] for k in keys])
     ax.tick_params(axis='y', length=0)
@@ -843,34 +886,75 @@ def plot_roc(ax, y, probs, class_names):
     ax.legend(loc='lower right', title='AUROC', title_fontsize=7, borderaxespad=0.2)
 
 
-def _reliability(y, probs, n_bins=10, min_count=5):
+CAL_BINS = 10
+CAL_MIN_COUNT = 5
+CAL_N_BOOT = 2000
+
+
+def _bin_stats(y, probs, groups, n_bins=CAL_BINS):
+    """Per-group, per-bin counts, #correct and summed confidence: (G, B) arrays."""
     conf = probs.max(1)
     correct = (probs.argmax(1) == y).astype(float)
     edges = np.linspace(0, 1, n_bins + 1)
-    xs, ys = [], []
-    for lo, hi in zip(edges[:-1], edges[1:]):
-        m = (conf > lo) & (conf <= hi)
-        if m.sum() >= min_count:
-            xs.append(conf[m].mean()); ys.append(correct[m].mean())
-    return np.array(xs), np.array(ys)
+    b = np.clip(np.searchsorted(edges, conf, side='left') - 1, 0, n_bins - 1)  # (lo, hi] bins
+    _, gi = np.unique(groups, return_inverse=True)
+    G = gi.max() + 1
+    n, c, s = (np.zeros((G, n_bins)) for _ in range(3))
+    np.add.at(n, (gi, b), 1)
+    np.add.at(c, (gi, b), correct)
+    np.add.at(s, (gi, b), conf)
+    return n, c, s
+
+
+def _reliability(y, probs, groups, n_boot=CAL_N_BOOT, min_count=CAL_MIN_COUNT, seed=0):
+    """Reliability curve with a subject-level bootstrap 95% CI per bin.
+    Subjects (folds) are resampled, not samples, since samples within a subject
+    are not independent. Returns bin index, x, y, lo, hi, counts-per-bin."""
+    n, c, s = _bin_stats(y, probs, groups)
+    tn, tc, ts = n.sum(0), c.sum(0), s.sum(0)
+    keep = np.where(tn >= min_count)[0]
+    x, acc = ts[keep] / tn[keep], tc[keep] / tn[keep]
+    rng = np.random.default_rng(seed)
+    G = n.shape[0]
+    w = np.apply_along_axis(lambda _: np.bincount(rng.integers(0, G, G), minlength=G), 1,
+                            np.zeros((n_boot, 1)))
+    bn, bc = w @ n, w @ c
+    with np.errstate(invalid='ignore', divide='ignore'):
+        boot = bc[:, keep] / bn[:, keep]
+    lo, hi = np.nanpercentile(boot, [2.5, 97.5], axis=0)
+    return keep, x, acc, lo, hi, tn
 
 
 def plot_calibration(ax, real, null, n_classes):
     lo = 1.0 / n_classes
     ax.plot([lo, 1], [lo, 1], color=CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0, label='Perfect')
-    for (y, probs), color, lbl, z in ((null, PERM, 'Permuted', 1), (real, REAL, 'Real', 2)):
+    edges = np.linspace(0, 1, CAL_BINS + 1)
+    mids = (edges[:-1] + edges[1:]) / 2
+    strip = ax.inset_axes([0, -0.36, 1, 0.2], sharex=ax)
+    shares = []
+    for (y, probs, g), color, lbl, z in ((null, PERM, 'Permuted', 1), (real, REAL, 'Real', 2)):
         if y is None or probs is None:
             continue
-        xs, ys = _reliability(y, probs)
+        keep, xs, ys, ylo, yhi, tn = _reliability(y, probs, g)
         ece = expected_calibration_error(y, probs)
+        ax.fill_between(xs, ylo, yhi, color=color, alpha=0.2, linewidth=0, zorder=z - 0.5)
         ax.plot(xs, ys, color=color, lw=1.6, marker='o', markersize=3.5,
                 markeredgecolor='white', markeredgewidth=0.5, zorder=z,
                 label=f"{lbl} (ECE {ece:.3f})")
+        shares.append((color, tn / tn.sum()))
+    for k, (color, sh) in enumerate(shares):          # grouped bars: share of samples per bin
+        strip.bar(mids + (k - (len(shares) - 1) / 2) * 0.04, sh * 100, width=0.04,
+                  color=color, alpha=0.85, linewidth=0)
+    strip.set_ylabel('% samples', fontsize=6.5)
+    strip.tick_params(labelsize=6)
+    for sp in ('top', 'right'):
+        strip.spines[sp].set_visible(False)
     ax.set_xlim(lo - 0.02, 1.01)
     ax.set_ylim(0, 1.02)
-    ax.set_xlabel('Confidence (max softmax prob.)')
+    ax.tick_params(labelbottom=False)
+    strip.set_xlabel('Confidence (max softmax prob.)')
     ax.set_ylabel('Observed accuracy')
-    ax.set_title('Calibration (pooled)', loc='left', pad=TITLE_PAD)
+    ax.set_title('Calibration (95% CI over subjects)', loc='left', pad=TITLE_PAD)
     ax.legend(loc='lower right', borderaxespad=0.2)
 
 
@@ -894,8 +978,8 @@ def plot_results(stats, results, tests, class_names, n_perm, output_file):
     metric = PRIMARY_METRIC if PRIMARY_METRIC in tests else 'accuracy'
     chance = chance_level(metric, n_classes)
 
-    y, yhat, probs = _pooled(results, 'real')
-    y0, _, probs0 = _pooled(results, 'perm')
+    y, yhat, probs, g = _pooled(results, 'real')
+    y0, _, probs0, g0 = _pooled(results, 'perm')
 
     # (title, draw(ax, fig)); order = reading order, unavailable panels skipped
     panels = [
@@ -913,7 +997,7 @@ def plot_results(stats, results, tests, class_names, n_perm, output_file):
     if probs is not None and HAS_SKLEARN:
         panels.append(('roc', lambda ax, fig: plot_roc(ax, y, probs, class_names)))
         panels.append(('calibration', lambda ax, fig: plot_calibration(
-            ax, (y, probs), (y0, probs0), n_classes)))
+            ax, (y, probs, g), (y0, probs0, g0), n_classes)))
     skipped = [n for n in ('confusion', 'roc', 'calibration') if n not in [p[0] for p in panels]]
     if skipped:
         print(f"Note: omitted panels with no data: {', '.join(skipped)}")
@@ -978,6 +1062,9 @@ def main():
     class_names = infer_class_names(results)
     n_classes = len(class_names)
     stats = compute_statistics(results, n_classes)
+    n_sig, n_null = add_pooled_subject_pvalues(stats)
+    print(f"Per-subject test vs pooled null (N = {n_null}, BH-FDR 0.05): "
+          f"{n_sig} of {len(stats)} subjects significant")
     agg = aggregate_permutation_test(results)
     tests = metric_tests(stats, n_classes, args.n_bootstrap, args.seed)
 

@@ -1,5 +1,10 @@
 # Changes
 
+## Permutation figure: calibration CIs, per-subject significance
+
+- `scripts/analyze_loocv_permutation_results.py`: calibration panel gets a 95% CI band per bin (bootstrap over subjects, not samples) and a strip under the axis showing % of samples per confidence bin (real vs permuted). Per-p-value labels removed from the summary-metrics panel (with 10 permutations every metric sat at the same floor, 1/(1+n)).
+- New `add_pooled_subject_pvalues`: each subject's real accuracy is tested against the null pooled over all subjects (folds x permutations), BH-FDR across subjects; significant subjects are filled dots in the accuracy-distribution panel, and `p_pooled`/`q_fdr`/`significant_fdr` are added to the per-fold CSV. Interim approach for few permutations per fold (a subject's own null cannot reach p < 0.05 with < 19 permutations); switch to per-subject nulls when more permutations exist. Not yet run on real data.
+
 ## Add classical-decoder benchmark across propofol states
 
 - New `analysis/benchmark_decoders.py` + `sbatch_benchmark_decoders.sh`: leave-one-subject-out GLM template matching, logistic regression, linear SVM, PCA+LDA and random forest on single-trial GLM betas and 32-frame window means (raw / run z-scored / spatial z-scored), trained on imagery run 1 and scored on run 1, pre-LOR, LOR, ROR and recovery blocks with the same block and segment definitions as the NeuroSTORM LOR analysis. Optionally adds NeuroSTORM rows from the LOR prediction files. Not yet run on real data.

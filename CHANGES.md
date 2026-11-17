@@ -1,5 +1,11 @@
 # Changes
 
+## LOR task decoding with the 2-class tennis-vs-navigation model
+
+- `datasets/fmri_datasets.py`, `datasets/data_module.py`: new `MichiganLORTennisNav` (`MICHIGAN_LOR_TENNIS_NAV`). Same LOR/ROR segmenting and run 4 as `MichiganLOR` (the LOR/ROR TRs sit in squeeze blocks, so they stay in the block indexing) but squeeze blocks are not scored. `MichiganLOR` now skips any block whose label is not in `LABEL_MAP` (no change for the 3-way model).
+- `analysis/predict_lor_task_decoding.py`: `--task {3way,tennisnav}` (binary head: one logit, P(navigation)=sigmoid). Outputs go to `FIXED_mich_xcpd_nosmooth_lor_tennisnav_decoding_fold-<N>`.
+- `analysis/sbatch_lor_task_decoding.sh`: `LOR_TASK=tennisnav`. `analysis/plot_lor_task_decoding.py`: `--task tennisnav` (chance 1/2, run-1 baseline from the tennisnav LOOCV folders).
+
 ## Restrict ROR analyses to subjects with enough post-ROR data
 
 - `analysis/plot_lor_task_decoding.py`: new `load_ror_include()`; the "After ROR" column (and the lor-vs-ror test) now uses only subjects listed in `data/lor_ror/ROR_to_include.csv` (`--ror_include` to override, `--no_ror_filter` to disable). Other columns unchanged.

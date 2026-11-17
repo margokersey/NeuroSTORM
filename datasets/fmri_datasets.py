@@ -956,6 +956,8 @@ class MichiganLOR(Michigan):
                     print(f"[MichiganLOR] {subject} run-{run}: {num_frames} frames != {n_tsv} timing rows, scan skipped")
                     continue
                 for k, (start, end, lab) in enumerate(blocks):
+                    if lab not in self.LABEL_MAP:      # e.g. squeeze blocks for the 2-class model: kept in
+                        continue                       # the block indexing (LOR/ROR sit in them) but not scored
                     if start + self.sample_duration > end or start + self.sample_duration > num_frames:
                         continue
                     if run == 4:
@@ -973,6 +975,17 @@ class MichiganLOR(Michigan):
         if self.train:
             self.target_values = np.array([t[6] for t in data]).reshape(-1, 1)
         return data
+
+
+class MichiganLORTennisNav(MichiganLOR):
+    """MichiganLOR for the 2-class tennis-vs-navigation model (MICHIGAN_TENNIS_NAV, trim 0).
+
+    Block indexing, LOR/ROR segment assignment and run 4 are identical to MichiganLOR (they need the
+    squeeze blocks, because the LOR/ROR TRs sit inside squeeze periods), but squeeze blocks are not
+    emitted, so only tennis (0) / navigation (1) blocks are scored.
+    """
+
+    LABEL_MAP = {'tennis': 0, 'navigation': 1}
 
 
 class MichiganSampleSplit(Michigan):

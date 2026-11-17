@@ -19,6 +19,11 @@ predictions use the best checkpoint). Run 1 vs pre_lor is reported in the consol
         --pred_glob "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_lor_task_decoding_fold-*/lor_predictions_fold_*.json" \\
         --output_file output/lor_task_decoding/lor_accuracy_by_segment
 
+2-class model (squeeze not scored, chance 1/2):
+    python analysis/plot_lor_task_decoding.py --task tennisnav \\
+        --pred_glob ".../output/FIXED_mich_xcpd_nosmooth_lor_tennisnav_decoding_fold-*/lor_predictions_fold_*.json" \\
+        --output_file output/lor_task_decoding/lor_tennisnav_accuracy_by_segment
+
 Writes .png (600 dpi), .pdf, .svg and .csv.
 """
 import argparse
@@ -46,7 +51,8 @@ if plt is None:
 SEGMENTS = [('run1', 'Run 1\n(awake baseline)'), ('pre_lor', 'Before LOR\n(propofol started,\nstill responsive)'), ('lor', 'During LOR'), ('ror', 'After ROR\n(responsive again)'),
             ('recovery', 'Run 4\n(recovery)')]
 SEG_COLORS = {'run1': '#8172B3', 'pre_lor': '#4C72B0', 'lor': '#C44E52', 'ror': '#55A868', 'recovery': '#CCB974'}
-CHANCE = 1 / 3
+CHANCE = 1 / 3        # set to 1/2 by --task tennisnav
+TASK_LABEL = '3-way'
 
 
 DEFAULT_ROR_INCLUDE = HERE.parent / 'data' / 'lor_ror' / 'ROR_to_include.csv'
@@ -141,7 +147,9 @@ def main():
     ap.add_argument('--output_file', default='output/lor_task_decoding/lor_accuracy_by_segment')
     ap.add_argument('--output_root', default='/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output',
                     help='parent of the 3-way LOOCV run folders (for the run-1 baseline)')
-    ap.add_argument('--stage_b_prefix', default=STAGE_B_PREFIX, help='3-way run folder prefix (<prefix>_fold-<N>)')
+    ap.add_argument('--task', choices=('3way', 'tennisnav'), default='3way',
+                    help="'tennisnav': 2-class model (chance 1/2, run-1 baseline from the tennisnav LOOCV folders)")
+    ap.add_argument('--stage_b_prefix', default=None, help='run-1 run folder prefix (<prefix>_fold-<N>); default depends on --task')
     ap.add_argument('--run4_glob', default=None,
                     help='run-4 (recovery) prediction files, lor_predictions_run4_fold_*.json (default: derived from '
                          '--pred_glob). The column is dropped if no files exist.')
@@ -153,6 +161,12 @@ def main():
                          '(default: data/lor_ror/ROR_to_include.csv)')
     ap.add_argument('--no_ror_filter', action='store_true', help='use every subject in the ROR column')
     args = ap.parse_args()
+    global CHANCE, TASK_LABEL
+    if args.task == 'tennisnav':
+        CHANCE, TASK_LABEL = 1 / 2, '2-class tennis vs navigation'
+        args.stage_b_prefix = args.stage_b_prefix or 'FIXED_mich_xcpd_nosmooth_tennisnav_tpt_strategy-none_loocv'
+    else:
+        args.stage_b_prefix = args.stage_b_prefix or STAGE_B_PREFIX
 
     run4_glob = args.run4_glob or args.pred_glob.replace('lor_predictions_fold_', 'lor_predictions_run4_fold_')
     rows = load(args.pred_glob, set(args.exclude_subjects), None if args.no_run1 else args.output_root,
@@ -236,7 +250,7 @@ def main():
     ax.set_xlim(-0.5, len(SEGMENTS) - 0.5)
     ax.set_ylim(0, 1.03)   # headroom so dots at 1.0 are not cut off
     ax.set_yticks(np.arange(0, 1.01, 0.2))
-    ax.set_ylabel('Block accuracy (3-way task decoding)')
+    ax.set_ylabel(f'Block accuracy ({TASK_LABEL} task decoding)')
     ax.set_title('Task decoding by responsiveness segment', pad=38)
 
     n_all = len(rows)
@@ -245,10 +259,10 @@ def main():
     fig.text(0.0, -0.04,
              f"{n_all} held-out subjects (one LOOCV fold each); each dot = one subject's block accuracy;\n"
              f"lines join the same subject. Diamond + bar: mean (value above), 95% bootstrap CI. Dashed line: chance.\n"
-             f"Run 1 = the same 3-way model's own held-out test blocks (awake); other columns are\n"
+             f"Run 1 = the same {TASK_LABEL} model's own held-out test blocks (awake); other columns are\n"
              f"runs 2-4 of the same subject. Subjects need >= {args.min_blocks} blocks in a segment to be\n"
              f"included there; boundary blocks excluded. Paired Wilcoxon signed-rank tests.\n"
-             f"During LOR vs chance (1/3): {fmt_p(p_chance)} (n={len(lv)}).\n"
+             f"During LOR vs chance ({'1/2' if CHANCE == 0.5 else '1/3'}): {fmt_p(p_chance)} (n={len(lv)}).\n"
              f"No after-ROR point (ROR N/A, run 3 unusable, < {args.min_blocks} blocks, or not in ROR include list): "
              f"{', '.join(s.replace('sub-', '') for s in no_ror) or 'none'}."
              + ("\nSub-29: run 3 excluded (frame count != timing file)." if 'sub-29' in all_subs else "")

@@ -14,6 +14,8 @@
 #   sbatch --array=101-126%4 analysis/sbatch_lor_task_decoding.sh  # max 4 at once
 #   LOR_RUNS=4 sbatch --array=101 analysis/sbatch_lor_task_decoding.sh   # run 4 (recovery) only; writes
 #                                                                        # lor_predictions_run4_fold_<N>.json
+#   LOR_TASK=tennisnav sbatch --array=101-126 analysis/sbatch_lor_task_decoding.sh   # 2-class tennis-vs-navigation model
+#                                  (add LOR_RUNS=4 for run 4; outputs go to ..._lor_tennisnav_decoding_fold-<N>)
 # Watch:   squeue -u mkersey      tail -f logs/lor_decode_<jobid>_<fold>.log
 # =============================================================================
 #SBATCH --account=huangzu99
@@ -60,6 +62,6 @@ python -c "import torch; assert torch.cuda.is_available(), 'No GPU visible!'; pr
 LOR_CSV="${LOR_CSV:-$DATA_ROOT/FIXED_xcp_nosmooth_task-imagery_run-2/metadata/LOR_ROR_timing.csv}"
 [ -f "$LOR_CSV" ] || { echo "LOR/ROR CSV not found: $LOR_CSV (set LOR_CSV)"; exit 1; }
 
-python analysis/predict_lor_task_decoding.py --fold "$SLURM_ARRAY_TASK_ID" --lor_csv "$LOR_CSV" --runs "${LOR_RUNS:-2,3}"
+python analysis/predict_lor_task_decoding.py --fold "$SLURM_ARRAY_TASK_ID" --lor_csv "$LOR_CSV" --runs "${LOR_RUNS:-2,3}" --task "${LOR_TASK:-3way}"
 
 echo "Fold $SLURM_ARRAY_TASK_ID finished at $(date)"

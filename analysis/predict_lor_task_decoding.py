@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """Test 3: task decoding (tennis / navigation / squeeze) during loss of responsiveness (LOR).
 
+--task tennisnav applies the 2-class tennis-vs-navigation model instead (fair for LOR, where
+nobody is squeezing): same segments, but squeeze blocks are not scored, outputs go to
+FIXED_mich_xcpd_nosmooth_lor_tennisnav_decoding_fold-<N>, and logits[1] / softmax_probs[2].
+
 For ONE LOOCV fold this loads that fold's best 3-way checkpoint (trained on imagery
 run 1 with the held-out subject excluded) and predicts every block of the held-out
 subject's imagery run 2 and run 3. Nothing is trained. Each block is tagged with a
@@ -40,8 +44,17 @@ sys.path.insert(0, str(REPO / 'analysis'))
 from predict_stage_b_on_stage_a_blocks import (  # noqa: E402  (reuse the Stage B helpers)
     STAGE_B_NAMES, STAGE_B_PREFIX, find_checkpoint, read_split_test_subjects)
 
-OUT_PREFIX = "FIXED_mich_xcpd_nosmooth_lor_task_decoding"
-DATASET = "MICHIGAN_LOR"
+# Two models can be applied: the 3-way (tennis / navigation / squeeze) model, or the 2-class
+# tennis-vs-navigation model (--task tennisnav; squeeze blocks are not scored, one sigmoid logit).
+TASKS = {
+    '3way': dict(stage_b_prefix=STAGE_B_PREFIX, out_prefix="FIXED_mich_xcpd_nosmooth_lor_task_decoding",
+                 dataset="MICHIGAN_LOR", task_name='imagery_task_classification', num_classes=3,
+                 names=STAGE_B_NAMES, trims={'MICHIGAN': 2, 'MICHIGAN_FULL_BLOCK': 0, 'MICHIGAN_TASK_VS_REST': 0}),
+    'tennisnav': dict(stage_b_prefix="FIXED_mich_xcpd_nosmooth_tennisnav_tpt_strategy-none_loocv",
+                      out_prefix="FIXED_mich_xcpd_nosmooth_lor_tennisnav_decoding",
+                      dataset="MICHIGAN_LOR_TENNIS_NAV", task_name='tennis_vs_nav_classification', num_classes=2,
+                      names={0: 'tennis', 1: 'navigation'}, trims={'MICHIGAN_TENNIS_NAV': 0}),
+}
 
 
 def main():
@@ -50,12 +63,14 @@ def main():
     ap.add_argument('--lor_csv', default=os.environ.get('NEUROSTORM_LOR_CSV'),
                     help='LOR_ROR_timing.csv (columns: Subject, LOR time (TR in task2), ROR time (TR in task3))')
     ap.add_argument('--output_root', default='/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output')
-    ap.add_argument('--stage_b_prefix', default=STAGE_B_PREFIX,
+    ap.add_argument('--task', choices=sorted(TASKS), default='3way',
+                    help="which model to apply: '3way' (tennis/navigation/squeeze) or 'tennisnav' (2-class, squeeze not scored)")
+    ap.add_argument('--stage_b_prefix', default=None,
                     help='project-name prefix of the 3-way LOOCV runs (<prefix>_fold-<N>)')
     ap.add_argument('--runs', default='2,3',
                     help="comma-separated imagery runs to score, subset of 2,3,4 (default 2,3). '4' writes "
                          "lor_predictions_run4_fold_<N>.json (run-specific name) instead of overwriting the run-2/3 file")
-    ap.add_argument('--ckpt', default=None, help='override the 3-way checkpoint (default: the one in the fold dir)')
+    ap.add_argument('--ckpt', default=None, help='override the checkpoint (default: the one in the fold dir)')
     ap.add_argument('--image_path', default=None,
                     help='override the imagery run-1 data root stored in the checkpoint hparams '
                          '(runs 2/3 are the sibling task-imagery_run-N dirs)')
@@ -63,6 +78,9 @@ def main():
     ap.add_argument('--num_workers', type=int, default=4)
     ap.add_argument('--device', default='cuda')
     args = ap.parse_args()
+    T = TASKS[args.task]
+    args.stage_b_prefix = args.stage_b_prefix or T['stage_b_prefix']
+    names, n_out = T['names'], T['num_classes']
     if not args.lor_csv:
         sys.exit("--lor_csv (or env NEUROSTORM_LOR_CSV) is required")
 
@@ -85,8 +103,8 @@ def main():
     problems = []
     if int(hp.get('dataset_split_num', -1)) != args.fold:
         problems.append(f"checkpoint dataset_split_num={hp.get('dataset_split_num')} != fold {args.fold}")
-    if hp.get('task_name') != 'imagery_task_classification' or int(hp.get('num_classes', 0)) != 3:
-        problems.append(f"checkpoint is not the 3-way model (task_name={hp.get('task_name')}, num_classes={hp.get('num_classes')})")
+    if hp.get('task_name') != T['task_name'] or int(hp.get('num_classes', 0)) != n_out:
+        problems.append(f"checkpoint is not the {args.task} model (task_name={hp.get('task_name')}, num_classes={hp.get('num_classes')})")
     if hp.get('permute_labels'):
         problems.append("checkpoint was trained with permuted labels")
     if hp.get('tpt_strategy', 'none') != 'none':
@@ -96,7 +114,7 @@ def main():
 
     # Use the same onset trim as the dataset the 3-way model was trained on.
     train_ds_name = hp.get('dataset_name')
-    trim = {'MICHIGAN': 2, 'MICHIGAN_FULL_BLOCK': 0, 'MICHIGAN_TASK_VS_REST': 0}.get(train_ds_name)
+    trim = T['trims'].get(train_ds_name)
     if trim is None:
         sys.exit(f"unexpected training dataset_name {train_ds_name!r}; set the block trim explicitly")
     MichiganLOR.TRIM_START = trim
@@ -116,7 +134,7 @@ def main():
     if missing_hp:
         print(f"[lor] hparams missing from the checkpoint, filled with defaults: {sorted(missing_hp)}", flush=True)
     dm_hp = {**missing_hp, **hp}
-    dm_hp['dataset_name'] = DATASET
+    dm_hp['dataset_name'] = T['dataset']
     dm_hp['eval_batch_size'] = args.batch_size
     dm_hp['num_workers'] = args.num_workers
     if args.image_path:
@@ -140,7 +158,7 @@ def main():
         for batch in loader:
             batch = {k: (v.to(dev) if isinstance(v, torch.Tensor) else v) for k, v in batch.items()}
             subj, logits, target, _, _ = model._compute_logits(batch)
-            logits = logits.detach().float().cpu().reshape(-1, 3).numpy()
+            logits = logits.detach().float().cpu().reshape(-1, n_out).numpy()
             target = target.detach().cpu().reshape(-1).numpy()
             for s, lg, t in zip(subj, logits, target):
                 meta = info[len(preds)]
@@ -148,12 +166,18 @@ def main():
                 if str(s) != meta['subject'] or int(t) != test_ds.LABEL_MAP[meta['true_label_name']]:
                     raise RuntimeError(f"sample {len(preds)}: loader order differs from dataset order "
                                        f"({s}/{t} vs {meta['subject']}/{meta['true_label_name']})")
-                e = np.exp(lg - lg.max())
-                pred = int(np.argmax(lg))
+                if n_out == 1:      # binary head: one logit, P(navigation) = sigmoid(logit)
+                    p1 = float(1.0 / (1.0 + np.exp(-lg[0])))
+                    probs = [1.0 - p1, p1]
+                    pred = int(p1 >= 0.5)
+                else:
+                    e = np.exp(lg - lg.max())
+                    probs = (e / e.sum()).tolist()
+                    pred = int(np.argmax(lg))
                 preds.append({'sample_idx': len(preds), **meta,
                               'true_label': int(t),
-                              'predicted_label': pred, 'predicted_label_name': STAGE_B_NAMES[pred],
-                              'logits': lg.tolist(), 'softmax_probs': (e / e.sum()).tolist()})
+                              'predicted_label': pred, 'predicted_label_name': names[pred],
+                              'logits': lg.tolist(), 'softmax_probs': probs})
     if len(preds) != len(info):
         raise RuntimeError(f"{len(preds)} predictions for {len(info)} dataset samples")
 
@@ -172,7 +196,7 @@ def main():
     print(f"[lor] {len(preds)} blocks for {subjects}: {seg_counts}", flush=True)
     print(f"[lor] block accuracy (acc, n) by segment: {acc}", flush=True)
 
-    out_dir = Path(args.output_root) / f"{OUT_PREFIX}_fold-{args.fold}"
+    out_dir = Path(args.output_root) / f"{T['out_prefix']}_fold-{args.fold}"
     out_dir.mkdir(parents=True, exist_ok=True)
     run_tag = '' if runs == (2, 3) else '_run' + ''.join(str(r) for r in runs)
     out = out_dir / f"lor_predictions{run_tag}_fold_{args.fold}.json"
@@ -180,7 +204,7 @@ def main():
         json.dump({'meta': {'fold': args.fold, 'subjects': subjects, 'checkpoint': os.path.abspath(ckpt_path),
                             'split_file': dm.split_file_path, 'trained_on_dataset': train_ds_name,
                             'block_trim': trim, 'runs': list(runs), 'lor_csv': os.path.abspath(args.lor_csv),
-                            'segment_counts': seg_counts, 'class_names': STAGE_B_NAMES},
+                            'segment_counts': seg_counts, 'class_names': names, 'task': args.task},
                    'predictions': preds}, f, indent=2)
     print(f"[lor] wrote {out}", flush=True)
 

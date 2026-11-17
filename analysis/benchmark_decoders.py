@@ -284,13 +284,15 @@ def load_cache(cache_dir):
     return pd.DataFrame(rows), {k: np.concatenate(v) for k, v in mats.items()}
 
 
-def summarise(blocks):
+def summarise(blocks, ror_ok=None):
     from sklearn.metrics import roc_auc_score
     recs = []
     keys = ['feature', 'norm', 'model']
     for key, g in blocks.groupby(keys):
         for st in STATES:
             s = g[g['segment'] == st]
+            if st == 'ror' and ror_ok is not None:
+                s = s[s['subject'].isin(ror_ok)]
             if s.empty:
                 continue
             per_sub = (s['pred'] == s['label']).groupby(s['subject']).mean()
@@ -306,15 +308,19 @@ def summarise(blocks):
     return pd.DataFrame(recs)
 
 
-def neurostorm_rows(args):
+def neurostorm_rows(args, ror_ok=None):
     sys.path.insert(0, str(REPO / 'analysis'))
     from plot_lor_task_decoding import load
     rows = load(args.pred_glob, set(args.exclude_subjects), args.output_root, args.stage_b_prefix,
                 args.pred_glob.replace('lor_predictions_fold_', 'lor_predictions_run4_fold_'))
     recs = []
     for st in STATES:
-        v = np.array([r[f'{st}_acc'] for r in rows], float)
-        n = np.array([r[f'{st}_n'] for r in rows])
+        if st == 'ror' and ror_ok is not None:
+            rows_st = [r for r in rows if r['subject'] in ror_ok]
+        else:
+            rows_st = rows
+        v = np.array([r[f'{st}_acc'] for r in rows_st], float)
+        n = np.array([r[f'{st}_n'] for r in rows_st])
         ok = ~np.isnan(v)
         if ok.any():
             recs.append(dict(feature='voxel', norm='-', model='NeuroSTORM', state=st, n_subjects=int(ok.sum()),
@@ -347,9 +353,14 @@ def stage_eval(args):
     blocks = pd.concat(all_blocks)
     out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
     blocks.to_csv(out / 'blocks.csv', index=False)
-    summ = summarise(blocks)
+    sys.path.insert(0, str(REPO / 'analysis'))
+    from plot_lor_task_decoding import load_ror_include
+    ror_ok = None if args.no_ror_filter else load_ror_include(args.ror_include)
+    if ror_ok is not None:
+        print(f"[eval] ROR state restricted to {len(ror_ok)} subjects from {args.ror_include}")
+    summ = summarise(blocks, ror_ok)
     if args.pred_glob:
-        summ = pd.concat([summ, neurostorm_rows(args)], ignore_index=True)
+        summ = pd.concat([summ, neurostorm_rows(args, ror_ok)], ignore_index=True)
     summ.to_csv(out / 'summary.csv', index=False)
     tab = summ.pivot_table(index=['model', 'feature', 'norm'], columns='state', values='acc_mean')[
         [s for s in STATES if s in summ['state'].unique()]]
@@ -373,6 +384,9 @@ def main():
     ap.add_argument('--n_jobs', type=int, default=int(os.environ.get('SLURM_CPUS_PER_TASK', 4)))
     ap.add_argument('--overwrite', action='store_true')
     ap.add_argument('--exclude_subjects', nargs='*', default=[])
+    ap.add_argument('--ror_include', default=str(REPO / 'data' / 'lor_ror' / 'ROR_to_include.csv'),
+                    help='CSV of subjects with enough post-ROR data; only these enter the ROR state')
+    ap.add_argument('--no_ror_filter', action='store_true', help='use every subject for the ROR state')
     ap.add_argument('--features', nargs='+', default=['beta', 'winmean'])
     ap.add_argument('--norms', nargs='+', default=['raw', 'run_z', 'spatial_z'])
     ap.add_argument('--models', nargs='+', default=['template', 'logreg', 'linsvm', 'lda', 'rf'])

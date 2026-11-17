@@ -1,5 +1,10 @@
 # Changes
 
+## Restrict ROR analyses to subjects with enough post-ROR data
+
+- `analysis/plot_lor_task_decoding.py`: new `load_ror_include()`; the "After ROR" column (and the lor-vs-ror test) now uses only subjects listed in `data/lor_ror/ROR_to_include.csv` (`--ror_include` to override, `--no_ror_filter` to disable). Other columns unchanged.
+- `analysis/benchmark_decoders.py`: the `ror` state in `summary.csv` (all models and NeuroSTORM) uses the same include list, same flags. Re-run `--stage eval` (cached features) and then `plot_benchmark_decoders.py` to refresh the accuracy-by-state plot.
+
 ## Add 2-class tennis-vs-navigation LOOCV (squeeze dropped)
 
 - `datasets/fmri_datasets.py`: new `MichiganTennisNav` (`MICHIGAN_TENNIS_NAV`), `MichiganFullBlock` with squeeze blocks filtered out (10 tennis + 10 navigation per subject; within-subject permutation keeps 10/10). Config `michigan_xcpd_nosmooth_tennisnav.yaml` (`task8`, `tennis_vs_nav_classification`, binary head).

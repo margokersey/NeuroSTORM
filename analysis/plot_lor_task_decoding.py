@@ -49,6 +49,23 @@ SEG_COLORS = {'run1': '#8172B3', 'pre_lor': '#4C72B0', 'lor': '#C44E52', 'ror': 
 CHANCE = 1 / 3
 
 
+DEFAULT_ROR_INCLUDE = HERE.parent / 'data' / 'lor_ror' / 'ROR_to_include.csv'
+
+
+def load_ror_include(path):
+    """Subjects allowed in ROR analyses, as {'sub-02', ...}, from a one-column CSV of IDs (P02 / sub-02 / 2).
+    Returns None (no filtering) if path is falsy. Others woke too close to the end of imagery 3."""
+    if not path:
+        return None
+    ids = set()
+    with open(path, encoding='utf-8-sig') as f:
+        for line in f:
+            t = line.strip().split(',')[0].strip()
+            if t and t.lower() not in ('subject', 'sub', 'id'):
+                ids.add('sub-' + t.lstrip('PpSsUuBb-').zfill(2) if not t.startswith('sub-') else t)
+    return ids
+
+
 def load_run1(output_root, prefix, fold):
     """Per-block predictions of the 3-way run's own test set (imagery run 1), or (None, info)."""
     return latest_saved_predictions(str(Path(output_root) / f"{prefix}_fold-{fold}"))
@@ -131,6 +148,10 @@ def main():
     ap.add_argument('--no_run1', action='store_true', help='omit the run-1 awake baseline column')
     ap.add_argument('--min_blocks', type=int, default=5, help='min blocks in a segment for a subject to count there')
     ap.add_argument('--exclude_subjects', nargs='*', default=[])
+    ap.add_argument('--ror_include', default=str(DEFAULT_ROR_INCLUDE),
+                    help='CSV of subjects with enough post-ROR data; only these are used in the ROR column '
+                         '(default: data/lor_ror/ROR_to_include.csv)')
+    ap.add_argument('--no_ror_filter', action='store_true', help='use every subject in the ROR column')
     args = ap.parse_args()
 
     run4_glob = args.run4_glob or args.pred_glob.replace('lor_predictions_fold_', 'lor_predictions_run4_fold_')
@@ -145,6 +166,12 @@ def main():
     acc = {}
     for seg, _ in SEGMENTS:
         acc[seg] = {r['subject']: r[f'{seg}_acc'] for r in rows if r[f'{seg}_n'] >= args.min_blocks}
+
+    ror_ok = None if args.no_ror_filter else load_ror_include(args.ror_include)
+    if ror_ok is not None and 'ror' in acc:
+        dropped = sorted(set(acc['ror']) - ror_ok)
+        acc['ror'] = {k: v for k, v in acc['ror'].items() if k in ror_ok}
+        print(f"ROR filter ({args.ror_include}): kept {len(acc['ror'])}, dropped {dropped}")
 
     def paired(a, b):
         subs = sorted(set(acc[a]) & set(acc[b]))
@@ -222,7 +249,7 @@ def main():
              f"runs 2-4 of the same subject. Subjects need >= {args.min_blocks} blocks in a segment to be\n"
              f"included there; boundary blocks excluded. Paired Wilcoxon signed-rank tests.\n"
              f"During LOR vs chance (1/3): {fmt_p(p_chance)} (n={len(lv)}).\n"
-             f"No after-ROR point (ROR N/A, run 3 unusable, or < {args.min_blocks} blocks): "
+             f"No after-ROR point (ROR N/A, run 3 unusable, < {args.min_blocks} blocks, or not in ROR include list): "
              f"{', '.join(s.replace('sub-', '') for s in no_ror) or 'none'}."
              + ("\nSub-29: run 3 excluded (frame count != timing file)." if 'sub-29' in all_subs else "")
              + ("\nRun 4: all blocks; open circles = ROR N/A (woken manually before run 4). Lines join run 3\n"

@@ -13,7 +13,7 @@
 # One-time setup:   mkdir -p /scratch/huangzu_root/huangzu0/mkersey/logs
 # Submit (all 26 folds x 20 perms):
 #   sbatch run_finetune_scripts/greatlakes/loocv/sbatch_loocv_tennisnav_permutation.sh
-# Change the cap:     sbatch --array=0-519%20 <this script>   (default %10)
+# Change the cap:     sbatch --array=0-519%20 <this script>   (default %20)
 # Rerun one task:     sbatch --array=<id> <this script>   (id = (fold-101)*20 + perm-1)
 # More perms later (e.g. 21-40; array size = 26 * 20 = 520 again):
 #   sbatch --export=ALL,PERM_START=21,PERM_END=40 <this script>
@@ -24,7 +24,7 @@
 #SBATCH --job-name=tennisnav_loocv_perm
 #SBATCH --chdir=/scratch/huangzu_root/huangzu0/mkersey
 #SBATCH --partition=spgpu              # A40s
-#SBATCH --array=0-519%10               # 26 folds x 20 perms; one task each, max 10 running at once
+#SBATCH --array=0-519%20               # 26 folds x 20 perms; one task each, max 20 running at once
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=1

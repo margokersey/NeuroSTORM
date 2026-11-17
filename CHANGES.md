@@ -1,5 +1,11 @@
 # Changes
 
+## Add 2-class tennis-vs-navigation LOOCV (squeeze dropped)
+
+- `datasets/fmri_datasets.py`: new `MichiganTennisNav` (`MICHIGAN_TENNIS_NAV`), `MichiganFullBlock` with squeeze blocks filtered out (10 tennis + 10 navigation per subject; within-subject permutation keeps 10/10). Config `michigan_xcpd_nosmooth_tennisnav.yaml` (`task8`, `tennis_vs_nav_classification`, binary head).
+- `models/lightning_model.py`, `callbacks/imagery_predictions_callback.py`, `main.py`: block-level binary metrics (acc, balanced acc, per-class recall, AUROC) and per-fold prediction JSONs for the new task.
+- New `run_loocv_tennisnav.sh`, `sbatch_loocv_tennisnav.sh` (26-fold array) and `sbatch_loocv_tennisnav_permutation.sh` (flat array, one task per fold x permutation, 26 x 20). Runs write `FIXED_mich_xcpd_nosmooth_tennisnav_tpt_strategy-none_loocv_fold-<N>[_perm<K>]`. Not yet run on real data.
+
 ## Permutation figure: calibration CIs, per-subject significance
 
 - `scripts/analyze_loocv_permutation_results.py`: calibration panel gets a 95% CI band per bin (bootstrap over subjects, not samples) and a strip under the axis showing % of samples per confidence bin (real vs permuted). Per-p-value labels removed from the summary-metrics panel (with 10 permutations every metric sat at the same floor, 1/(1+n)).

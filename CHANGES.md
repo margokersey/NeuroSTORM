@@ -3,7 +3,7 @@
 ## Permutation figure: calibration CIs, per-subject significance
 
 - `scripts/analyze_loocv_permutation_results.py`: calibration panel gets a 95% CI band per bin (bootstrap over subjects, not samples) and a strip under the axis showing % of samples per confidence bin (real vs permuted). Per-p-value labels removed from the summary-metrics panel (with 10 permutations every metric sat at the same floor, 1/(1+n)).
-- New `add_pooled_subject_pvalues`: each subject's real accuracy is tested against the null pooled over all subjects (folds x permutations), BH-FDR across subjects; significant subjects are filled dots in the accuracy-distribution panel, and `p_pooled`/`q_fdr`/`significant_fdr` are added to the per-fold CSV. Interim approach for few permutations per fold (a subject's own null cannot reach p < 0.05 with < 19 permutations); switch to per-subject nulls when more permutations exist. Not yet run on real data.
+- New `add_pooled_subject_pvalues`: each subject's real accuracy is tested against the null pooled over all subjects (folds x permutations), BH-FDR across subjects; significant subjects are marked with an asterisk in the per-subject panel (with >24 subjects only significant ones get x tick labels), and `p_pooled`/`q_fdr`/`significant_fdr` are added to the per-fold CSV. Interim approach for few permutations per fold (a subject's own null cannot reach p < 0.05 with < 19 permutations); switch to per-subject nulls when more permutations exist. Not yet run on real data.
 
 ## Add classical-decoder benchmark across propofol states
 

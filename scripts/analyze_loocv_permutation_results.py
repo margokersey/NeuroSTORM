@@ -699,7 +699,12 @@ def plot_per_subject(ax, stats, metric, chance):
         lo, hi = np.nanmin(perm[i]), np.nanmax(perm[i])
         ax.plot([xi, xi], [lo, hi], color=PERM, alpha=0.55, lw=2.6, solid_capstyle='round', zorder=1)
         ax.plot([xi - 0.34, xi + 0.34], [np.nanmean(perm[i])] * 2, color=PERM_DARK, lw=1.0, zorder=2)
-    ax.scatter(x, real[order], s=20, color=REAL, edgecolor='white', linewidth=0.6, zorder=3)
+    sig = np.array([stats[f].get('significant_fdr', False) for f in fold_ids])[order]
+    rr = real[order]
+    ax.scatter(x, rr, s=20, color=REAL, edgecolor='white', linewidth=0.6, zorder=3)
+    top = np.array([np.nanmax(perm[i]) for i in order])
+    ax.scatter(x[sig], np.maximum(rr[sig], top[sig]) + 0.04, marker=(6, 2, 0), s=14, color=INK,
+               linewidths=0.7, zorder=5)    # asterisk above significant subjects
     ax.axhline(chance, color=CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0)
     ax.set_xlim(-0.8, len(x) - 0.2)
     ax.set_ylim(0, 1.02)
@@ -708,16 +713,20 @@ def plot_per_subject(ax, stats, metric, chance):
         ax.set_xticklabels([str(fold_ids[i]) for i in order], rotation=90, fontsize=6)
         ax.tick_params(axis='x', length=0, pad=2)
         ax.set_xlabel('Held-out subject (sorted)')
-    else:
-        ax.set_xticks([])
-        ax.set_xlabel(f'Held-out subjects (n = {len(fold_ids)}, sorted)')
+    else:   # too many to label all: label only the significant subjects
+        ax.set_xticks(x[sig])
+        ax.set_xticklabels([str(fold_ids[i]) for i in order[sig]], rotation=90, fontsize=6)
+        ax.tick_params(axis='x', length=0, pad=2)
+        ax.set_xlabel(f'Held-out subjects (n = {len(fold_ids)}, sorted; * = significant)')
     ax.set_ylabel(METRICS[metric][0])
     ax.set_title('Per-subject performance', loc='left', pad=TITLE_PAD)
     _top_legend(ax, [
         Line2D([], [], marker='o', ls='', color=REAL, markersize=4.5, label='Real'),
-        Line2D([], [], color=PERM, alpha=0.7, lw=2.6, label='Permuted (range)'),
+        Line2D([], [], marker=(6, 2, 0), ls='', color=INK, markersize=5,
+               label=f'FDR < 0.05 ({int(sig.sum())}/{len(sig)})'),
+        Line2D([], [], color=PERM, alpha=0.7, lw=2.6, label='Permuted'),
         Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (3, 2)), label='Chance'),
-    ])
+    ], fontsize=6)
 
 
 def plot_kde(ax, stats, n_classes):
@@ -745,12 +754,8 @@ def plot_kde(ax, stats, n_classes):
         for box in bp['boxes']:
             box.set_facecolor('white')
         if color == REAL:
-            ypos = y0 - 0.2 + rng.uniform(-0.06, 0.06, len(vals))
-            sig = np.array([stats[f].get('significant_fdr', False) for f in folds])
-            ax.scatter(vals[~sig], ypos[~sig], s=8, facecolor='white', edgecolor=REAL,
-                       linewidth=0.7, zorder=3)
-            ax.scatter(vals[sig], ypos[sig], s=9, color=REAL, edgecolor='white',
-                       linewidth=0.3, zorder=3)
+            ax.scatter(vals, y0 - 0.2 + rng.uniform(-0.06, 0.06, len(vals)), s=8, color=REAL,
+                       edgecolor='white', linewidth=0.3, zorder=3)
         else:   # many points: small, translucent, no outline
             ax.scatter(vals, y0 - 0.2 + rng.uniform(-0.08, 0.08, len(vals)), s=2, color=color,
                        alpha=min(0.5, 60.0 / len(vals) + 0.08), linewidth=0, rasterized=True, zorder=3)
@@ -766,9 +771,6 @@ def plot_kde(ax, stats, n_classes):
     ax.set_xlabel('Test accuracy per held-out subject')
     ax.set_title('Accuracy distributions', loc='left', pad=TITLE_PAD)
     _top_legend(ax, [
-        Line2D([], [], marker='o', ls='', color=REAL, markersize=4, label='Subject, FDR < 0.05'),
-        Line2D([], [], marker='o', ls='', markerfacecolor='white', markeredgecolor=REAL,
-               markersize=4, label='n.s.'),
         Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (1, 2)), label='Chance'),
     ], fontsize=6)
 
@@ -820,6 +822,8 @@ def plot_metric_forest(ax, tests, n_perm):
                     ls=(0, (2, 1.5)), zorder=0)
         ax.plot(t['real_ci95'], [yi, yi], color=REAL, lw=1.2, zorder=3)
         ax.scatter([t['real_mean']], [yi], s=22, color=REAL, edgecolor='white', linewidth=0.6, zorder=4)
+        ax.text(t['real_mean'], yi + 0.14, f"{t['real_mean']:.2f}", ha='center', va='bottom',
+                fontsize=6.5, color='#34568c', zorder=5)
     ax.set_yticks(y)
     ax.set_yticklabels([tests[k]['label'] for k in keys])
     ax.tick_params(axis='y', length=0)

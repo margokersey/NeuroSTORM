@@ -341,14 +341,13 @@ def plot_branching(per_fold, out):
     fig = plt.figure(figsize=(W, H))
     bg = fig.add_axes([0, 0, 1, 1]); bg.set_xlim(0, 1); bg.set_ylim(0, 1); bg.axis('off')
 
-    def head(x, w, text, sub):
+    def head(x, w, text):
         bg.text(x, Y(H - 0.55), text, fontsize=16, fontweight='bold', color=S.INK, ha='left', va='center')
-        bg.text(x, Y(H - 0.95), sub, fontsize=11.5, color=S.INK_2, ha='left', va='center')
         bg.plot([x, x + w], [Y(H - 1.2)] * 2, color=S.INK, lw=1.2)
 
-    head(0.012, 0.12, 'All blocks', 'every held-out block')
-    head(0.17, 0.30, 'Stage A: Task vs. No task', 'Is the person following the command?')
-    head(0.60, 0.375, 'Stage B: which task?', 'Task blocks only (real imagery)')
+    head(0.012, 0.12, 'All blocks')
+    head(0.17, 0.30, 'Stage A: Task vs. No task')
+    head(0.60, 0.375, 'Stage B: which task?')
 
     # Stage A (column labels on top so the bottom edge is free for the "missed" connector)
     a_top, a_h = 9.2, 3.3
@@ -357,7 +356,7 @@ def plot_branching(per_fold, out):
                  [f"called No task\nn = {n_rej + n_missed} ({pct(n_rej + n_missed, n_all)})",
                   f"called Task\nn = {len(called)} ({pct(len(called), n_all)})"],
                  '', S.SEQ_BLUE, highlight=[(1, 1), (1, 0, (0, (4, 2)))],
-                 tags={(0, 0): 'specificity', (1, 1): 'sensitivity'}, xtop=True)
+                 xtop=True)
     ax_a.set_xlabel('Stage A prediction', fontsize=11.5, color=S.INK_2, labelpad=8)
     mid_a = a_top - a_h / 2
     bg.add_patch(FancyBboxPatch((0.012, Y(mid_a - 0.8)), 0.12, Y(1.6), boxstyle='round,pad=0.003,rounding_size=0.008',
@@ -377,12 +376,10 @@ def plot_branching(per_fold, out):
     ax_b.set_xlabel('Stage B prediction', fontsize=11.5, color=S.INK_2, labelpad=4)
     ax_x = fig.add_axes([xb, Y(5.75 - 2.7), wb, Y(2.7)])
     _flow_matrix(ax_x, cm_miss, names, names,
-                 "Task blocks Stage A missed", ['#ffffff', S.PERM])
-    ax_x.set_xlabel(f"Stage B prediction, had it been run (not part of the pipeline)\n"
-                    f"accuracy = {miss_acc:.2f}  (chance = {1 / nb:.2f})",
-                    fontsize=11, color=S.INK_2, labelpad=4, linespacing=1.4)
+                 f"Missed Task blocks (acc. = {miss_acc:.2f})", S.SEQ_BLUE)
+    ax_x.set_xlabel('Stage B prediction', fontsize=11.5, color=S.INK_2, labelpad=4)
     ax_sb = fig.add_axes([xb, Y(1.0), wb, Y(0.6)])
-    _subject_strip(ax_sb, b_by_sub, 1 / nb, 'Per subject: Stage B accuracy (blocks called Task)')
+    _subject_strip(ax_sb, b_by_sub, 1 / nb, 'Per subject: Stage B accuracy')
 
     # connectors from Stage A cells to the Stage B matrices
     fig.canvas.draw()
@@ -409,16 +406,9 @@ def plot_branching(per_fold, out):
     bg.annotate('', xy=(x2, y2), xytext=(xm, y2),
                 arrowprops=dict(arrowstyle='-|>', color=S.INK, lw=2.2, mutation_scale=18, shrinkA=0, shrinkB=0,
                                 ls=(0, (4, 2))), zorder=1)
-    bg.text((xm + x2) / 2, y2 + 0.012, f"{n_missed} of {len(real)} ({pct(n_missed, len(real))})\nstopped at Stage A",
+    bg.text((xm + x2) / 2, y2 + 0.012, f"{n_missed} of {len(real)}\n({pct(n_missed, len(real))})",
             fontsize=11.5, color=S.INK, ha='center', va='bottom', linespacing=1.3, zorder=4)
 
-    n_sub = len({fr['subject'] for fr in per_fold})
-    fig.text(0.012, Y(0.1),
-             f"{n_sub} held-out subjects (leave-one-subject-out), blocks pooled in the matrices. Cells: % of the row's true class (count). "
-             f"Solid outline: passed to Stage B; dashed: stopped at Stage A.\n"
-             f"Per-subject plots: one dot per held-out subject, bar and number = mean, dashed line = chance. "
-             f"No-task blocks wrongly called Task ({len(mock_called)} of {len(mock)}) are also passed to Stage B but not shown.",
-             fontsize=10, color=S.INK_2, va='bottom', linespacing=1.5)
     for ext in ('.png', '.pdf', '.svg'):
         fig.savefig(out.with_suffix(ext), bbox_inches='tight', facecolor='white', dpi=300)
     plt.close(fig)

@@ -224,159 +224,121 @@ def plot_confidence(ax, per_fold, measure='logit_margin'):
     _top_legend(ax, [Line2D([], [], color=S.INK, lw=1.2, label='Mean over subjects')])
 
 
-def _flow_matrix(ax, cm, row_labels, col_labels, title, colors, highlight=(), fs=8.5):
-    """Confusion matrix for the branching figure: cell = % of its row (count); row labels carry
-    the row total; cells in `highlight` get a heavy outline (the cells that feed the next stage)."""
-    cm = np.asarray(cm, float)
-    cmn = cm / np.maximum(cm.sum(1, keepdims=True), 1)
-    cmap = S.LinearSegmentedColormap.from_list('flow', colors)
-    ax.pcolormesh(cmn, cmap=cmap, vmin=0, vmax=1, edgecolors='white', linewidth=2)
-    for i in range(cm.shape[0]):
-        for j in range(cm.shape[1]):
-            v = cmn[i, j]
-            ax.text(j + 0.5, i + 0.5, f"{100 * v:.0f}%\n({int(cm[i, j])})", ha='center', va='center',
-                    fontsize=fs, color='white' if v > 0.55 else S.INK,
-                    fontweight='bold' if i == j else 'normal', linespacing=1.2)
-    for (i, j) in highlight:
-        ax.add_patch(plt.Rectangle((j, i), 1, 1, fill=False, ec=S.INK, lw=2.4, zorder=5, clip_on=False))
-    ax.set_xlim(0, cm.shape[1]); ax.set_ylim(cm.shape[0], 0)
-    ax.set_aspect('equal'); ax.set_anchor('NW')
-    ax.set_xticks(np.arange(cm.shape[1]) + 0.5); ax.set_xticklabels(col_labels, fontsize=7.5)
-    ax.set_yticks(np.arange(cm.shape[0]) + 0.5)
-    ax.set_yticklabels([f"{r}\nn = {int(t)}" for r, t in zip(row_labels, cm.sum(1))], fontsize=7.5, va='center')
-    ax.tick_params(length=0)
-    for sp in ax.spines.values():
-        sp.set_visible(False)
-    ax.set_title(title, loc='left', fontsize=9, fontweight='bold', pad=8)
-
-
 def plot_branching(per_fold, out):
-    """Branching-logic figure. Reads left to right:
-         all blocks -> Stage A confusion matrix -> (cells 'called Task') -> Stage B matrices
-    plus a strip showing where each kind of block ends up end-to-end.
+    """Branching-logic figure: all blocks -> Stage A -> (called Task -> Stage B | called No Task).
 
-    The two outlined cells of the Stage A matrix (real/mock blocks called Task) are exactly the
-    blocks handed to Stage B; arrows run from those cells to their Stage B matrices. Built from
-    the per-block records of folds that have Stage B, so all numbers agree across the figure.
+    Built from the per-block records of the folds that have Stage B, so every number is
+    consistent across the figure (panel b of the main figure uses all Stage A folds).
     """
-    from matplotlib.patches import FancyBboxPatch, Rectangle
+    from matplotlib.patches import FancyBboxPatch
     nb = tsd.N_B
-    names = list(tsd.STAGE_B_NAMES)
     recs = [r for fr in per_fold for r in fr['records']]
     n_all = len(recs)
     real = [r for r in recs if r['block_type'] == 'task']
     mock = [r for r in recs if r['block_type'] == 'mock']
     called = [r for r in recs if r['stage_a_called_task']]
-    real_called = [r for r in real if r['stage_a_called_task']]
-    mock_called = [r for r in mock if r['stage_a_called_task']]
-    n_missed = len(real) - len(real_called)
-    n_rej = len(mock) - len(mock_called)
+    not_called = [r for r in recs if not r['stage_a_called_task']]
+    real_called = [r for r in called if r['block_type'] == 'task']
+    mock_called = [r for r in called if r['block_type'] == 'mock']
+    real_missed = [r for r in not_called if r['block_type'] == 'task']
+    mock_rej = [r for r in not_called if r['block_type'] == 'mock']
 
     def pct(k, n):
         return f"{100 * k / n:.0f}%" if n else "n/a"
 
-    cm_a = np.array([[n_rej, len(mock_called)], [n_missed, len(real_called)]])
+    cm_a = np.array([[sum(1 for r in mock if not r['stage_a_called_task']),
+                      sum(1 for r in mock if r['stage_a_called_task'])],
+                     [sum(1 for r in real if not r['stage_a_called_task']),
+                      sum(1 for r in real if r['stage_a_called_task'])]])
     cm_b = np.zeros((nb, nb), int)
     for r in real_called:
         cm_b[r['stage_b_true'], r['stage_b_pred']] += 1
-    mock_mix = np.array([[sum(r['stage_b_pred'] == c for r in mock_called) for c in range(nb)]])
-    b_correct = int(np.trace(cm_b))
-    b_acc = b_correct / cm_b.sum() if cm_b.sum() else float('nan')
-    bal = np.nanmean([cm_a[1, 1] / max(cm_a[1].sum(), 1), cm_a[0, 0] / max(cm_a[0].sum(), 1)])
-    mock_cmap = ['#ffffff', S.PERM]
+    b_acc = np.trace(cm_b) / cm_b.sum() if cm_b.sum() else float('nan')
 
-    fig = plt.figure(figsize=(13.5, 7.8))
+    fig = plt.figure(figsize=(11.5, 6.4))
     bg = fig.add_axes([0, 0, 1, 1]); bg.set_xlim(0, 1); bg.set_ylim(0, 1); bg.axis('off')
 
-    def head(x, text, sub):
-        bg.text(x, 0.955, text, fontsize=11, fontweight='bold', color=S.INK, ha='left', va='center')
-        bg.text(x, 0.925, sub, fontsize=7.5, color=S.INK_2, ha='left', va='center')
-        bg.plot([x, x + 0.27], [0.905, 0.905], color=S.INK_2, lw=0.8)
+    def box(cx, cy, w, h, text, fc='white', ec=None, bold_first=True):
+        bg.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h, boxstyle='round,pad=0.004,rounding_size=0.01',
+                                    fc=fc, ec=ec or S.INK_2, lw=0.9, zorder=2))
+        lines = text.split('\n')
+        bg.text(cx, cy + (0.0 if len(lines) == 1 else 0.0), text, ha='center', va='center', fontsize=8,
+                color=S.INK, linespacing=1.45, zorder=3)
 
-    head(0.02, 'All blocks', 'every held-out block')
-    head(0.215, 'Stage A: Task vs. No task', 'run on every block')
-    head(0.60, 'Stage B: which task?', 'only blocks Stage A called Task')
+    def arrow(x0, y0, x1, y1, label=None, dy=0.0):
+        bg.annotate('', xy=(x1, y1), xytext=(x0, y0),
+                    arrowprops=dict(arrowstyle='-|>', color=S.INK_2, lw=1.1, shrinkA=0, shrinkB=0), zorder=1)
+        if label:
+            bg.text((x0 + x1) / 2, (y0 + y1) / 2 + dy, label, ha='center', va='bottom', fontsize=6.5,
+                    color=S.INK_2, linespacing=1.3, zorder=3,
+                    bbox=dict(fc='white', ec='none', pad=1.0))
 
-    # root
-    bg.add_patch(FancyBboxPatch((0.02, 0.50), 0.12, 0.18, boxstyle='round,pad=0.003,rounding_size=0.008',
-                                fc='white', ec=S.INK_2, lw=1.0))
-    bg.text(0.08, 0.59, f"n = {n_all}\n\nreal task  {len(real)} ({pct(len(real), n_all)})\n"
-            f"mock  {len(mock)} ({pct(len(mock), n_all)})", ha='center', va='center', fontsize=8.5,
-            color=S.INK, linespacing=1.5)
+    # 1. root
+    box(0.085, 0.5, 0.14, 0.20,
+        f"All blocks\nn = {n_all}\n\nreal task: {len(real)} ({pct(len(real), n_all)})\n"
+        f"mock (No task): {len(mock)} ({pct(len(mock), n_all)})")
+    arrow(0.157, 0.5, 0.225, 0.5)
 
-    # Stage A matrix
-    ax_a = fig.add_axes([0.235, 0.34, 0.25, 0.50])
-    _flow_matrix(ax_a, cm_a, ['No task\n(mock)', 'Task\n(real)'],
-                 [f"called No task\nn = {n_rej + n_missed} ({pct(n_rej + n_missed, n_all)})",
-                  f"called Task\nn = {len(called)} ({pct(len(called), n_all)})"],
-                 f"balanced acc. = {bal:.3f}", S.SEQ_BLUE, highlight=[(0, 1), (1, 1)])
-    ax_a.set_xlabel('Stage A prediction  (outlined cells go on to Stage B;\n"called No task" blocks stop here)',
-                    fontsize=7.5, color=S.INK_2)
+    # 2. Stage A matrix
+    ax_a = fig.add_axes([0.235, 0.27, 0.19, 0.46])
+    _single_confusion(ax_a, fig, cm_a, ['No task\n(mock)', 'Task\n(real)'], ['No task', 'Task'],
+                      'Stage A: Task vs. No task', colorbar=False)
+    ax_a.set_ylabel('')
+    bal = np.nanmean([cm_a[1, 1] / max(cm_a[1].sum(), 1), cm_a[0, 0] / max(cm_a[0].sum(), 1)])
+    ax_a.text(0.5, -0.50, f"balanced acc. = {bal:.3f}", transform=ax_a.transAxes, ha='center', fontsize=7, color=S.INK_2)
 
-    # Stage B matrices
-    ax_m = fig.add_axes([0.68, 0.68, 0.27, 0.15])
-    _flow_matrix(ax_m, mock_mix, ['Mock blocks\ncalled Task'], names,
-                 "Mock blocks called Task", mock_cmap)
-    ax_m.set_xticks([])
-    ax_m.set_xlabel("what Stage B called them: a prediction mix (no true class exists, so not an accuracy)",
-                    fontsize=7, color=S.INK_2, labelpad=3)
-    ax_b = fig.add_axes([0.68, 0.24, 0.27, 0.34])
-    _flow_matrix(ax_b, cm_b, names, names,
-                 f"Real task blocks called Task: acc. = {b_acc:.3f}  (chance = {1 / nb:.2f})", S.SEQ_BLUE)
-    ax_b.set_xlabel('Stage B prediction', fontsize=8, color=S.INK_2)
-    ax_b.set_ylabel('True task', fontsize=8)
+    # 3. outcome boxes
+    ytask, yno = 0.80, 0.14
+    box(0.555, ytask, 0.165, 0.16,
+        f"Stage A called TASK\nn = {len(called)} ({pct(len(called), n_all)} of all blocks)\n"
+        f"real task: {len(real_called)} ({pct(len(real_called), len(called))})\n"
+        f"mock: {len(mock_called)} ({pct(len(mock_called), len(called))})  [false alarms]",
+        fc=S.SEQ_BLUE[0] if hasattr(S, 'SEQ_BLUE') else 'white')
+    box(0.555, yno, 0.165, 0.16,
+        f"Stage A called NO TASK  (stop)\nn = {len(not_called)} ({pct(len(not_called), n_all)} of all blocks)\n"
+        f"mock: {len(mock_rej)} ({pct(len(mock_rej), len(not_called))})  [correct rejects]\n"
+        f"real task: {len(real_missed)} ({pct(len(real_missed), len(not_called))})  [misses]")
+    arrow(0.43, 0.60, 0.472, ytask - 0.02, f"{len(called)} ({pct(len(called), n_all)})", 0.01)
+    arrow(0.43, 0.40, 0.472, yno + 0.02, f"{len(not_called)} ({pct(len(not_called), n_all)})", -0.045)
 
-    # arrows from the outlined Stage A cells to the Stage B matrices
-    fig.canvas.draw()
-    inv = fig.transFigure.inverted()
+    # 4. Stage B on blocks called Task: real -> matrix, mock -> class mix
+    names = list(tsd.STAGE_B_NAMES)
+    ax_b = fig.add_axes([0.775, 0.44, 0.19, 0.40])
+    _single_confusion(ax_b, fig, cm_b, names, names,
+                      f"Stage B on REAL task blocks called Task\n(acc. = {b_acc:.3f}, chance = {1 / nb:.2f})",
+                      colorbar=False)
+    ax_b.set_ylabel('')
+    arrow(0.64, ytask, 0.715, 0.72, f"real: {len(real_called)}\n({pct(len(real_called), len(called))})", 0.0)
 
-    def cell_edge(ax, col_edge, row_center):
-        return inv.transform(ax.transData.transform((col_edge, row_center)))
-
-    def left_mid(ax):
-        ax.apply_aspect()
-        bb = ax.get_position()
-        return bb.x0 - 0.075, bb.y0 + bb.height / 2
-
-    for (ci, cj), ax_t, lab in [((0, 1), ax_m, f"mock called Task\n{len(mock_called)} ({pct(len(mock_called), len(mock))} of mock)"),
-                                ((1, 1), ax_b, f"real called Task\n{len(real_called)} ({pct(len(real_called), len(real))} of real)")]:
-        x0, y0 = cell_edge(ax_a, 2.0, ci + 0.5)
-        x1, y1 = left_mid(ax_t)
-        bg.annotate('', xy=(x1, y1), xytext=(x0 + 0.004, y0),
-                    arrowprops=dict(arrowstyle='-|>', color=S.INK, lw=1.6, shrinkA=0, shrinkB=0,
-                                    connectionstyle='arc3,rad=0'), zorder=1)
-        bg.text((x0 + x1) / 2, (y0 + y1) / 2 + (0.018 if ci == 0 else 0.018), lab, fontsize=7.5, color=S.INK,
-                ha='center', va='bottom', linespacing=1.3,
-                bbox=dict(fc='white', ec='none', pad=1.5), zorder=4)
-    bg.annotate('', xy=(0.19, 0.59), xytext=(0.145, 0.59),
-                arrowprops=dict(arrowstyle='-|>', color=S.INK, lw=1.6, shrinkA=0, shrinkB=0))
-
-    # bottom strip: end-to-end outcome of each kind of block
-    ax_o = fig.add_axes([0.235, 0.045, 0.72, 0.115])
-    segs_real = [('Correct end-to-end\n(passed A, right task)', b_correct, S.SEQ_BLUE[6], 'white'),
-                 ('Passed A, wrong task\n(Stage B error)', int(cm_b.sum() - b_correct), S.SEQ_BLUE[3], S.INK),
-                 ('Missed by Stage A\n(called No task)', n_missed, '#cfd4da', S.INK)]
-    segs_mock = [('Correctly rejected', n_rej, S.SEQ_BLUE[6], 'white'),
-                 ('False alarm (passed to Stage B)', len(mock_called), '#cfd4da', S.INK)]
-    for yi, (lab, n_tot, segs) in enumerate([(f"Real task blocks (n = {len(real)})", len(real), segs_real),
-                                              (f"Mock blocks (n = {len(mock)})", len(mock), segs_mock)][::-1]):
-        left = 0.0
-        for sl, k, col, tc in segs:
-            frac = k / max(n_tot, 1)
-            ax_o.barh(yi, frac, left=left, color=col, edgecolor='white', linewidth=1.5, height=0.8)
-            if frac > 0.07:
-                ax_o.text(left + frac / 2, yi, f"{sl}\n{100 * frac:.0f}% ({k})", ha='center', va='center',
-                          fontsize=7, color=tc, linespacing=1.25)
-            left += frac
-        ax_o.text(-0.01, yi, lab, ha='right', va='center', fontsize=8, color=S.INK)
-    ax_o.set_xlim(0, 1); ax_o.set_ylim(-0.5, 1.5); ax_o.axis('off')
-    ax_o.set_title('Where each kind of block ends up (end-to-end)', loc='left', fontsize=9, fontweight='bold', pad=6)
+    ax_m = fig.add_axes([0.775, 0.17, 0.19, 0.06])
+    colors = [S.SEQ_BLUE[2], S.SEQ_BLUE[4], S.SEQ_BLUE[6]] if nb == 3 else [S.SEQ_BLUE[2], S.SEQ_BLUE[5]]
+    tot = max(len(mock_called), 1)
+    left = 0.0
+    for c in range(nb):
+        k = sum(r['stage_b_pred'] == c for r in mock_called)
+        frac = k / tot
+        ax_m.barh(0, frac, left=left, color=colors[c], edgecolor='white', linewidth=0.8, height=0.7)
+        if frac > 0.1:
+            ax_m.text(left + frac / 2, 0, f"{100 * frac:.0f}%\n({k})", ha='center', va='center', fontsize=6.5,
+                      color='white' if c >= 1 else S.INK, linespacing=1.15)
+        left += frac
+    ax_m.set_xlim(0, 1); ax_m.set_ylim(-0.5, 0.5); ax_m.set_yticks([])
+    ax_m.set_xticks([0, 0.5, 1]); ax_m.set_xticklabels(['0%', '50%', '100%'], fontsize=6.5)
+    for sp in ('left', 'right', 'top'):
+        ax_m.spines[sp].set_visible(False)
+    ax_m.set_title(f"Stage B on MOCK blocks called Task (n = {len(mock_called)})\npredicted-class mix; no true class, not an accuracy",
+                   loc='left', fontsize=7.5, pad=6)
+    ax_m.legend(handles=[Line2D([], [], marker='s', ls='', color=colors[c], markersize=5, label=names[c])
+                         for c in range(nb)], loc='upper center', bbox_to_anchor=(0.5, -0.75), ncol=nb,
+                frameon=False, fontsize=6.5, handletextpad=0.2, columnspacing=1.0)
+    arrow(0.64, ytask - 0.05, 0.765, 0.20, f"mock: {len(mock_called)}\n({pct(len(mock_called), len(called))})", 0.02)
 
     n_sub = len({fr['subject'] for fr in per_fold})
-    fig.text(0.02, 0.005,
-             f"{n_sub} held-out subjects (LOOCV), blocks pooled. Matrix cells: % of the row's true class (count); "
-             f"darker = higher %. Stage B is run on every block, but only blocks Stage A called Task are passed on.",
-             fontsize=6.8, color=S.INK_2, va='bottom')
+    fig.text(0.02, 0.02,
+             f"{n_sub} held-out subjects (LOOCV), blocks pooled over subjects. Matrices: rows = true class, "
+             f"cells = % of row (count); color = row %.\nPercentages on boxes/arrows are of the parent node unless "
+             f"stated. Stage B was run on every block, but only blocks Stage A called Task are passed on.",
+             fontsize=6.5, color=S.INK_2, va='bottom', linespacing=1.4)
     for ext in ('.png', '.pdf', '.svg'):
         fig.savefig(out.with_suffix(ext), bbox_inches='tight', facecolor='white')
     plt.close(fig)

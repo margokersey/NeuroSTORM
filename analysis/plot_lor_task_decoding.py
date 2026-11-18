@@ -54,7 +54,7 @@ SEG_COLORS = {'run1': '#8172B3', 'pre_lor': '#4C72B0', 'lor': '#C44E52', 'ror': 
 CHANCE = 1 / 3        # set to 1/2 by --task tennisnav
 TASK_LABEL = '3-way'
 CLASS_NAMES = ['tennis', 'navigation', 'squeeze']   # label ids 0..; first two for --task tennisnav
-DOT_OFFSET = 0.2   # subject dots sit just left of each x-tick; the group means sit on the tick
+DOT_OFFSET = 0.16   # subject dots sit this far left of each x-tick and the group means this far right, so the tick is centred between them
 DOT_COLOR = '#8c8c8c'   # all subject dots share one colour so the coloured lines read as classes
 CLASS_LINE_COLORS = {'tennis': '#4C72B0', 'navigation': '#DD8452', 'squeeze': '#55A868'}
 
@@ -232,13 +232,13 @@ def main():
             ax.scatter(px[na], v[na], s=24, facecolor='white', edgecolor=DOT_COLOR,
                        linewidth=1.0, zorder=3, clip_on=False)
         lo, hi = boot_ci(v)
-        ax.plot([xs[seg]] * 2, [lo, hi], color=S.INK, lw=1.5, zorder=6, solid_capstyle='butt')
-        ax.text(xs[seg] + 0.09, v.mean(), f'{v.mean():.2f}', ha='left', va='center', fontsize=9.5,
+        ax.plot([xs[seg] + DOT_OFFSET] * 2, [lo, hi], color=S.INK, lw=1.5, zorder=6, solid_capstyle='butt')
+        ax.text(xs[seg] + DOT_OFFSET + 0.08, v.mean(), f'{v.mean():.2f}', ha='left', va='center', fontsize=9.5,
                 fontweight='bold', color='black', zorder=7, clip_on=False,
                 bbox=dict(boxstyle='round,pad=0.15', fc='white', ec='none', alpha=0.85))
     # group-mean lines: overall (black) and per class (coloured), same subjects as the overall mean
     segs = [seg for seg, _ in SEGMENTS if acc[seg]]
-    xm = [xs[seg] for seg in segs]
+    xm = [xs[seg] + DOT_OFFSET for seg in segs]
     for name in CLASS_NAMES:
         ym = [np.nanmean([row_by_sub[x][f'{seg}_{name}_acc'] for x in acc[seg]]) for seg in segs]
         ax.plot(xm, ym, color=CLASS_LINE_COLORS[name], lw=1.8, marker='o', ms=5, mec='white', mew=0.5,

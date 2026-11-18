@@ -741,10 +741,9 @@ def plot_per_subject(ax, stats, metric, chance):
         ax.plot([xi - 0.34, xi + 0.34], [np.nanmean(perm[i])] * 2, color=PERM_DARK, lw=1.0, zorder=2)
     sig = np.array([stats[f].get('significant_fdr', False) for f in fold_ids])[order]
     rr = real[order]
-    ax.scatter(x, rr, s=20, color=REAL, edgecolor='white', linewidth=0.6, zorder=3)
-    top = np.array([np.nanmax(perm[i]) if len(perm[i]) else -np.inf for i in order])
-    ax.scatter(x[sig], np.maximum(rr[sig], top[sig]) + 0.04, marker=(6, 2, 0), s=14, color=INK,
-               linewidths=0.7, zorder=5)    # asterisk above significant subjects
+    # filled = FDR-significant vs. the pooled null, open = not significant
+    ax.scatter(x[~sig], rr[~sig], s=20, facecolor='white', edgecolor=REAL, linewidth=0.9, zorder=3)
+    ax.scatter(x[sig], rr[sig], s=20, color=REAL, edgecolor='white', linewidth=0.6, zorder=3)
     ax.axhline(chance, color=CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0)
     ax.set_xlim(-0.8, len(x) - 0.2)
     ax.set_ylim(0, 1.02)
@@ -753,17 +752,16 @@ def plot_per_subject(ax, stats, metric, chance):
         ax.set_xticklabels([str(fold_ids[i]) for i in order], rotation=90, fontsize=6)
         ax.tick_params(axis='x', length=0, pad=2)
         ax.set_xlabel('Held-out subject (sorted)')
-    else:   # too many to label all: label only the significant subjects
-        ax.set_xticks(x[sig])
-        ax.set_xticklabels([str(fold_ids[i]) for i in order[sig]], rotation=90, fontsize=6)
-        ax.tick_params(axis='x', length=0, pad=2)
-        ax.set_xlabel(f'Held-out subjects (n = {len(fold_ids)}, sorted; * = significant)')
+    else:
+        ax.set_xticks([])
+        ax.set_xlabel(f'Held-out subjects (n = {len(fold_ids)}, sorted)')
     ax.set_ylabel(METRICS[metric][0])
     ax.set_title('Per-subject performance', loc='left', pad=TITLE_PAD)
     _top_legend(ax, [
-        Line2D([], [], marker='o', ls='', color=REAL, markersize=4.5, label='Real'),
-        Line2D([], [], marker=(6, 2, 0), ls='', color=INK, markersize=5,
+        Line2D([], [], marker='o', ls='', color=REAL, markersize=4.5,
                label=f'FDR < 0.05 ({int(sig.sum())}/{len(sig)})'),
+        Line2D([], [], marker='o', ls='', markerfacecolor='white', markeredgecolor=REAL,
+               markersize=4.5, label='n.s.'),
         Line2D([], [], color=PERM, alpha=0.7, lw=2.6, label='Permuted'),
         Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (3, 2)), label='Chance'),
     ], fontsize=6)

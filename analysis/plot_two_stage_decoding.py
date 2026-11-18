@@ -375,11 +375,9 @@ def plot_branching(per_fold, out):
     xb, wb = 0.59, 0.17
     ax_b = fig.add_axes([xb, Y(7.5 - 2.7), wb, Y(2.7)])
     _flow_matrix(ax_b, cm_b, names, names, 'Task blocks called Task', S.SEQ_BLUE)
-    ax_b.set_xlabel('Stage B prediction', fontsize=11.5, color=S.INK_2, labelpad=4)
     ax_x = fig.add_axes([xb, Y(3.75 - 2.7), wb, Y(2.7)])
     _flow_matrix(ax_x, cm_miss, names, names,
                  f"Missed Task blocks (acc. = {miss_acc:.2f})", S.SEQ_BLUE)
-    ax_x.set_xlabel('Stage B prediction', fontsize=11.5, color=S.INK_2, labelpad=4)
     xs, ws = 0.80, 0.185                                         # one strip to the right of each Stage B matrix
     ax_s1 = fig.add_axes([xs, Y(7.5 - 1.35 - 0.3), ws, Y(0.6)])
     _subject_strip(ax_s1, b_by_sub, 1 / nb, 'Per subject: accuracy')

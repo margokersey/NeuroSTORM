@@ -53,6 +53,9 @@ SEGMENTS = [('run1', 'Run 1\n(awake baseline)'), ('pre_lor', 'Before LOR\n(propo
 SEG_COLORS = {'run1': '#8172B3', 'pre_lor': '#4C72B0', 'lor': '#C44E52', 'ror': '#55A868', 'recovery': '#CCB974'}
 CHANCE = 1 / 3        # set to 1/2 by --task tennisnav
 TASK_LABEL = '3-way'
+CLASS_NAMES = ['tennis', 'navigation', 'squeeze']   # label ids 0..; first two for --task tennisnav
+DOT_COLOR = '#8c8c8c'   # all subject dots share one colour so the coloured lines read as classes
+CLASS_LINE_COLORS = {'tennis': '#4C72B0', 'navigation': '#DD8452', 'squeeze': '#55A868'}
 
 
 DEFAULT_ROR_INCLUDE = HERE.parent / 'data' / 'lor_ror' / 'ROR_to_include.csv'
@@ -116,6 +119,10 @@ def load(pred_glob, exclude, output_root=None, prefix=None, run4_glob=None):
                 ps = [p for p in d['predictions'] if p['segment'] == seg]
             rec[f'{seg}_n'] = len(ps)
             rec[f'{seg}_acc'] = float(np.mean([p['predicted_label'] == p['true_label'] for p in ps])) if ps else np.nan
+            for k in range(len(CLASS_NAMES)):   # per-class accuracy (recall); nan if no blocks of that class
+                pk = [p for p in ps if int(p['true_label']) == k]
+                rec[f'{seg}_{CLASS_NAMES[k]}_acc'] = (float(np.mean([p['predicted_label'] == p['true_label'] for p in pk]))
+                                                     if pk else np.nan)
         rows[sub] = rec
     return [rows[k] for k in sorted(rows)]
 
@@ -164,6 +171,7 @@ def main():
     global CHANCE, TASK_LABEL
     if args.task == 'tennisnav':
         CHANCE, TASK_LABEL = 1 / 2, '2-class tennis vs navigation'
+        CLASS_NAMES[:] = CLASS_NAMES[:2]
         args.stage_b_prefix = args.stage_b_prefix or 'FIXED_mich_xcpd_nosmooth_tennisnav_tpt_strategy-none_loocv'
     else:
         args.stage_b_prefix = args.stage_b_prefix or STAGE_B_PREFIX
@@ -180,6 +188,7 @@ def main():
     acc = {}
     for seg, _ in SEGMENTS:
         acc[seg] = {r['subject']: r[f'{seg}_acc'] for r in rows if r[f'{seg}_n'] >= args.min_blocks}
+    row_by_sub = {r['subject']: r for r in rows}
 
     ror_ok = None if args.no_ror_filter else load_ror_include(args.ror_include)
     if ror_ok is not None and 'ror' in acc:
@@ -203,8 +212,8 @@ def main():
         if a not in xs or b not in xs:
             continue
         for sub in sorted(set(acc[a]) & set(acc[b])):
-            ax.plot([xpos[a][sub], xpos[b][sub]], [acc[a][sub], acc[b][sub]], color=S.CHANCE, lw=0.5,
-                    alpha=0.5, zorder=1)
+            ax.plot([xpos[a][sub], xpos[b][sub]], [acc[a][sub], acc[b][sub]], color=DOT_COLOR, lw=0.5,
+                    alpha=0.35, zorder=1)
     for seg, _ in SEGMENTS:
         if not acc[seg]:
             print(f"  {seg}: no subject has >= {args.min_blocks} blocks; column left empty")
@@ -213,16 +222,27 @@ def main():
         v = np.array([acc[seg][x] for x in subs_seg])
         px = np.array([xpos[seg][x] for x in subs_seg])
         na = np.array([seg == 'recovery' and ror_na[x] for x in subs_seg], bool)
-        ax.scatter(px[~na], v[~na], s=14, color=SEG_COLORS[seg], alpha=0.75,
+        ax.scatter(px[~na], v[~na], s=14, color=DOT_COLOR, alpha=0.6,
                    edgecolor='white', linewidth=0.4, zorder=3, clip_on=False)
         if na.any():   # open circles: ROR = N/A (woken manually before run 4)
-            ax.scatter(px[na], v[na], s=16, facecolor='white', edgecolor=SEG_COLORS[seg],
+            ax.scatter(px[na], v[na], s=16, facecolor='white', edgecolor=DOT_COLOR,
                        linewidth=1.0, zorder=3, clip_on=False)
         lo, hi = boot_ci(v)
-        ax.plot([xs[seg] + 0.22] * 2, [lo, hi], color=S.INK, lw=1.2, zorder=4)
-        ax.scatter([xs[seg] + 0.22], [v.mean()], marker='D', s=22, color=S.INK, zorder=5)
-        ax.text(xs[seg] + 0.22, hi + 0.02, f'{v.mean():.2f}', ha='center', va='bottom', fontsize=7.5,
-                fontweight='bold', color='black', zorder=6, clip_on=False)
+        ax.plot([xs[seg] + 0.22] * 2, [lo, hi], color=S.INK, lw=1.2, zorder=6, solid_capstyle='butt')
+        ax.text(xs[seg] + 0.29, v.mean(), f'{v.mean():.2f}', ha='left', va='center', fontsize=7.5,
+                fontweight='bold', color='black', zorder=7, clip_on=False,
+                bbox=dict(boxstyle='round,pad=0.15', fc='white', ec='none', alpha=0.85))
+    # group-mean lines: overall (black) and per class (coloured), same subjects as the overall mean
+    segs = [seg for seg, _ in SEGMENTS if acc[seg]]
+    xm = [xs[seg] + 0.22 for seg in segs]
+    for name in CLASS_NAMES:
+        ym = [np.nanmean([row_by_sub[x][f'{seg}_{name}_acc'] for x in acc[seg]]) for seg in segs]
+        ax.plot(xm, ym, color=CLASS_LINE_COLORS[name], lw=1.4, marker='o', ms=3.5, mec='white', mew=0.5,
+                zorder=4, label=name.capitalize(), clip_on=False)
+    ax.plot(xm, [np.mean(list(acc[seg].values())) for seg in segs], color=S.INK, lw=1.8, marker='D', ms=4.5,
+            mec='white', mew=0.5, zorder=6, label='Average', clip_on=False)
+    ax.legend(loc='center left', bbox_to_anchor=(1.01, 0.5), frameon=False, fontsize=7.5, title='Group mean',
+              title_fontsize=7.5, handlelength=1.6)
     ax.axhline(CHANCE, color=S.CHANCE, ls='--', lw=0.8, zorder=0)
     ax.text(len(SEGMENTS) - 0.55, CHANCE + 0.01, 'chance', fontsize=6.5, color=S.INK_2, ha='right', va='bottom')
 
@@ -257,8 +277,9 @@ def main():
     all_subs = [r['subject'] for r in rows]
     no_ror = [x for x in all_subs if x not in acc['ror']] if 'ror' in acc else []
     fig.text(0.0, -0.04,
-             f"{n_all} held-out subjects (one LOOCV fold each); each dot = one subject's block accuracy;\n"
-             f"lines join the same subject. Diamond + bar: mean (value above), 95% bootstrap CI. Dashed line: chance.\n"
+             f"{n_all} held-out subjects (one LOOCV fold each); each grey dot = one subject's block accuracy;\n"
+             f"thin lines join the same subject. Black line + bar: mean accuracy (value at right), 95% bootstrap CI; coloured\n"
+             f"lines: mean per-class accuracy (recall) over the same subjects. Dashed line: chance.\n"
              f"Run 1 = the same {TASK_LABEL} model's own held-out test blocks (awake); other columns are\n"
              f"runs 2-4 of the same subject. Subjects need >= {args.min_blocks} blocks in a segment to be\n"
              f"included there; boundary blocks excluded. Paired Wilcoxon signed-rank tests.\n"

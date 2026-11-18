@@ -236,7 +236,7 @@ def _load_run(run_dir, label):
     return acc, preds
 
 
-def aggregate_results(real_pattern, perm_pattern, n_permutations):
+def aggregate_results(real_pattern, perm_pattern, n_permutations, include_incomplete=False):
     """
     Load results for real and permuted models.
 
@@ -279,10 +279,15 @@ def aggregate_results(real_pattern, perm_pattern, n_permutations):
         n = len(preds['y']) if preds else 0
         print(f"  fold {fold_id}, perm{perm_id}: {acc:.3f} ({n} samples)")
 
+    if include_incomplete:
+        print(f"\n--include_incomplete: keeping every fold with a real run; "
+              f"{sum(len(d['perm_acc_by_id']) == n_permutations for d in results.values())} of "
+              f"{len(results)} folds have all {n_permutations} permutations "
+              f"(only those enter the null / p-values).")
     valid = {}
     for fold_id, data in results.items():
         n = len(data['perm_acc_by_id'])
-        if n != n_permutations:
+        if n != n_permutations and not include_incomplete:
             print(f"  Warning: fold {fold_id} has {n} permutations "
                   f"(expected {n_permutations}), skipping")
             continue
@@ -378,6 +383,15 @@ def compute_statistics(results, n_classes):
 
         real_acc = data['real_accuracy']
         perm_accs = np.array([data['perm_acc_by_id'][k] for k in sorted(data['perm_acc_by_id'])])
+        if len(perm_accs) == 0:   # --include_incomplete: real run only, no null for this fold yet
+            stats[fold_id] = {
+                'real_accuracy': real_acc, 'perm_mean': np.nan, 'perm_std': np.nan,
+                'perm_min': np.nan, 'perm_max': np.nan, 'effect_size': np.nan,
+                'effect_size_std': np.nan, 'p_value': np.nan, 'significant_p05': False,
+                'n_samples': int(len(data['real_preds']['y'])) if data['real_preds'] else None,
+                'real_metrics': real_m, 'perm_metrics': {},
+            }
+            continue
         # Descriptive per-fold p-value (one held-out subject, so coarse; use
         # the aggregate test for inference). Add-one correction: never 0.
         p_value = (1 + (perm_accs >= real_acc).sum()) / (1 + len(perm_accs))
@@ -414,6 +428,8 @@ def add_pooled_subject_pvalues(stats, alpha=0.05):
     perm = {f: np.array([m['accuracy'] for m in stats[f]['perm_metrics'].values()]) for f in folds}
     pooled = np.concatenate([perm[f] for f in folds])
     N = len(pooled)
+    if N == 0:
+        return 0, 0
     p = np.array([(1 + (pooled >= stats[f]['real_accuracy']).sum()) / (1 + N) for f in folds])
     order = np.argsort(p)
     m = len(p)
@@ -424,9 +440,10 @@ def add_pooled_subject_pvalues(stats, alpha=0.05):
         stats[f]['p_value_pooled'] = float(pi)
         stats[f]['q_value_fdr'] = float(qi)
         stats[f]['significant_fdr'] = bool(qi < alpha)
-    means = np.array([perm[f].mean() for f in folds])
+    with_perm = [f for f in folds if len(perm[f])]
+    means = np.array([perm[f].mean() for f in with_perm])
     sd_pooled = pooled.std()
-    if sd_pooled > 0 and means.std() > 2 * sd_pooled / np.sqrt(max(len(perm[folds[0]]), 1)):
+    if sd_pooled > 0 and means.std() > 2 * sd_pooled / np.sqrt(max(len(perm[with_perm[0]]), 1)):
         print("WARNING: per-subject null means differ more than expected from sampling "
               "noise; the pooled-null per-subject test may be miscalibrated.")
     return int(sum(stats[f]['significant_fdr'] for f in folds)), N
@@ -439,14 +456,21 @@ def aggregate_permutation_test(results):
     permutation index k, the mean over folds of the permutation-k accuracy.
     p = (1 + #{null >= real}) / (1 + n_perms).
     """
-    fold_ids = sorted(results)
+    all_folds = sorted(results)
+    fold_ids = [f for f in all_folds if results[f]['perm_acc_by_id']]   # folds that have a null
+    if not fold_ids:
+        return {'n_folds': len(all_folds), 'n_null_folds': 0, 'n_permutations': 0,
+                'real_mean_accuracy': float(np.mean([results[f]['real_accuracy'] for f in all_folds])),
+                'null_mean_accuracies': [], 'null_mean': float('nan'), 'null_std': None,
+                'p_value': float('nan'), 'min_attainable_p': 1.0, 'significant_p05': False}
     perm_ids = sorted(set.intersection(*[set(results[f]['perm_acc_by_id']) for f in fold_ids]))
     real = float(np.mean([results[f]['real_accuracy'] for f in fold_ids]))
     null = np.array([np.mean([results[f]['perm_acc_by_id'][k] for f in fold_ids]) for k in perm_ids])
     n = len(null)
     p = (1 + int((null >= real).sum())) / (1 + n)
     return {
-        'n_folds': len(fold_ids),
+        'n_folds': len(all_folds),
+        'n_null_folds': len(fold_ids),
         'n_permutations': n,
         'real_mean_accuracy': real,
         'null_mean_accuracies': [float(x) for x in null],
@@ -462,27 +486,33 @@ def metric_tests(stats, n_classes, n_bootstrap=10000, seed=0):
     """Subject-level summary, bootstrap CI and permutation test for every metric."""
     rng = np.random.default_rng(seed)
     fold_ids = sorted(stats)
-    perm_ids = sorted(set.intersection(*[set(stats[f]['perm_metrics']) for f in fold_ids]))
+    null_folds = [f for f in fold_ids if stats[f]['perm_metrics']]   # folds with >=1 permutation
+    perm_ids = (sorted(set.intersection(*[set(stats[f]['perm_metrics']) for f in null_folds]))
+                if null_folds else [])
     boot_idx = rng.integers(0, len(fold_ids), size=(n_bootstrap, len(fold_ids)))
     out = {}
     for m, (label, higher, _) in METRICS.items():
         real_f = np.array([stats[f]['real_metrics'][m] for f in fold_ids])
         if np.all(np.isnan(real_f)):
             continue
-        perm_fk = np.array([[stats[f]['perm_metrics'][k][m] for k in perm_ids] for f in fold_ids])
         real = float(np.nanmean(real_f))
-        null = np.nanmean(perm_fk, axis=0)            # one subject-mean per permutation
+        # Null comparison uses only folds that have permutations (real restricted to the
+        # same folds), so with incomplete data it is not biased by missing nulls.
+        real_nf = np.array([stats[f]['real_metrics'][m] for f in null_folds])
+        perm_fk = np.array([[stats[f]['perm_metrics'][k][m] for k in perm_ids] for f in null_folds])
+        real_cmp = float(np.nanmean(real_nf)) if len(null_folds) else real
+        null = np.nanmean(perm_fk, axis=0) if len(null_folds) else np.array([])  # one subject-mean per permutation
         null = null[~np.isnan(null)]
         boot = np.nanmean(real_f[boot_idx], axis=1)
         ci = np.nanpercentile(boot, [2.5, 97.5])
         n = len(null)
         if n:
-            hits = (null >= real) if higher else (null <= real)
+            hits = (null >= real_cmp) if higher else (null <= real_cmp)
             p = (1 + int(hits.sum())) / (1 + n)
         else:
             p = np.nan
         # subject-level paired test: real vs. mean over that subject's permutations
-        diff = real_f - np.nanmean(perm_fk, axis=1)
+        diff = (real_nf - np.nanmean(perm_fk, axis=1)) if len(null_folds) else np.array([])
         diff = diff[~np.isnan(diff)]
         w_p = None
         if HAS_SCIPY and len(diff) >= 6 and np.any(diff != 0):
@@ -501,7 +531,9 @@ def metric_tests(stats, n_classes, n_bootstrap=10000, seed=0):
             'null_sd': float(null.std(ddof=1)) if n > 1 else None,
             'null_ci95': [float(x) for x in np.percentile(null, [2.5, 97.5])] if n else None,
             'null_means': [float(x) for x in null],
-            'delta_vs_null': float(real - null.mean()) if n else None,
+            'delta_vs_null': float(real_cmp - null.mean()) if n else None,
+            'real_mean_null_folds': real_cmp,
+            'n_null_folds': len(null_folds),
             'perm_p_value': float(p),
             'wilcoxon_p_value': w_p,
             'n_subjects_better_than_null': int((diff > 0).sum() if higher else (diff < 0).sum()),
@@ -519,6 +551,9 @@ def print_aggregate(agg):
     print("AGGREGATE PERMUTATION TEST (mean accuracy over all folds)")
     print("=" * 80)
     print(f"  Folds: {agg['n_folds']}   Permutations: {agg['n_permutations']}")
+    if agg.get('n_null_folds', agg['n_folds']) != agg['n_folds']:
+        print(f"  PRELIMINARY: null / p use only the {agg['n_null_folds']} folds that have permutations "
+              f"(real mean below is over those folds).")
     print(f"  Real mean accuracy:  {agg['real_mean_accuracy']:.3f}")
     sd = f" ± {agg['null_std']:.3f}" if agg['null_std'] is not None else ""
     print(f"  Null mean accuracy:  {agg['null_mean']:.3f}{sd}")
@@ -699,13 +734,15 @@ def plot_per_subject(ax, stats, metric, chance):
     order = np.argsort(real)
     x = np.arange(len(fold_ids))
     for xi, i in zip(x, order):
+        if len(perm[i]) == 0:     # no permutations yet for this subject
+            continue
         lo, hi = np.nanmin(perm[i]), np.nanmax(perm[i])
         ax.plot([xi, xi], [lo, hi], color=PERM, alpha=0.55, lw=2.6, solid_capstyle='round', zorder=1)
         ax.plot([xi - 0.34, xi + 0.34], [np.nanmean(perm[i])] * 2, color=PERM_DARK, lw=1.0, zorder=2)
     sig = np.array([stats[f].get('significant_fdr', False) for f in fold_ids])[order]
     rr = real[order]
     ax.scatter(x, rr, s=20, color=REAL, edgecolor='white', linewidth=0.6, zorder=3)
-    top = np.array([np.nanmax(perm[i]) for i in order])
+    top = np.array([np.nanmax(perm[i]) if len(perm[i]) else -np.inf for i in order])
     ax.scatter(x[sig], np.maximum(rr[sig], top[sig]) + 0.04, marker=(6, 2, 0), s=14, color=INK,
                linewidths=0.7, zorder=5)    # asterisk above significant subjects
     ax.axhline(chance, color=CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0)
@@ -743,6 +780,8 @@ def plot_kde(ax, stats, n_classes):
     rng = np.random.default_rng(0)
     rows = ((1.0, perm, PERM, PERM_DARK, 'Permuted'), (0.0, real, REAL, '#34568c', 'Real'))
     for y0, vals, color, dark, _ in rows:
+        if len(vals) == 0:
+            continue
         if HAS_SCIPY and len(vals) > 2 and np.std(vals) > 0:
             kde = gaussian_kde(vals)
             dens = kde(grid) + kde(-grid) + kde(2 - grid)   # reflect at the 0/1 bounds
@@ -973,7 +1012,7 @@ def _grid_shape(n):
     return int(np.ceil(n / 3)), 3
 
 
-def plot_results(stats, results, tests, class_names, n_perm, output_file):
+def plot_results(stats, results, tests, class_names, n_perm, output_file, note=None):
     """Publication figure (183 mm wide). Only panels whose data exist are drawn:
     per-sample probabilities enable ROC/calibration; the confusion matrix and
     label-based metrics only need predicted labels (or the saved summary)."""
@@ -1018,6 +1057,8 @@ def plot_results(stats, results, tests, class_names, n_perm, output_file):
         draw(ax, fig)
         _panel_letter(ax, 'abcdefgh'[i])
 
+    if note:
+        fig.text(0.5, 0.995, note, ha='center', va='top', fontsize=7, color='#B35F2D', fontweight='bold')
     out = Path(output_file)
     out.parent.mkdir(parents=True, exist_ok=True)
     for ext in ('.png', '.pdf', '.svg'):
@@ -1046,11 +1087,17 @@ def main():
                         help='Subject-level bootstrap resamples for 95%% CIs')
     parser.add_argument('--seed', type=int, default=0, help='Seed for the bootstrap')
     parser.add_argument('--no_plot', action='store_true', help='Skip plot generation')
+    parser.add_argument('--include_incomplete', action='store_true',
+                        help='Keep every fold with a real run even if it has fewer than '
+                             '--n_permutations permutations (default: such folds are skipped). '
+                             'Real results use all folds; the null and p-values use only folds that '
+                             'have permutations. For previewing before permutations finish.')
     args = parser.parse_args()
 
     print("Aggregating LOOCV permutation test results...")
     try:
-        results = aggregate_results(args.real_dir, args.perm_dir, args.n_permutations)
+        results = aggregate_results(args.real_dir, args.perm_dir, args.n_permutations,
+                                    args.include_incomplete)
     except Exception as e:
         print(f"Error loading results: {e}")
         return 1
@@ -1083,7 +1130,11 @@ def main():
     save_per_fold_csv(stats, args.output_file)
 
     if not args.no_plot:
-        plot_results(stats, results, tests, class_names, agg['n_permutations'], args.plot_file)
+        note = None
+        if args.include_incomplete and agg.get('n_null_folds', 0) != len(results):
+            note = (f"PRELIMINARY: {len(results)} subjects; permutation null from "
+                    f"{agg.get('n_null_folds', 0)} subjects with permutations")
+        plot_results(stats, results, tests, class_names, agg['n_permutations'], args.plot_file, note)
     return 0
 
 

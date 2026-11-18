@@ -54,6 +54,7 @@ SEG_COLORS = {'run1': '#8172B3', 'pre_lor': '#4C72B0', 'lor': '#C44E52', 'ror': 
 CHANCE = 1 / 3        # set to 1/2 by --task tennisnav
 TASK_LABEL = '3-way'
 CLASS_NAMES = ['tennis', 'navigation', 'squeeze']   # label ids 0..; first two for --task tennisnav
+DOT_OFFSET = 0.2   # subject dots sit just left of each x-tick; the group means sit on the tick
 DOT_COLOR = '#8c8c8c'   # all subject dots share one colour so the coloured lines read as classes
 CLASS_LINE_COLORS = {'tennis': '#4C72B0', 'navigation': '#DD8452', 'squeeze': '#55A868'}
 
@@ -201,12 +202,15 @@ def main():
         return subs, np.array([acc[a][s] for s in subs]), np.array([acc[b][s] for s in subs])
 
     S._style()
-    fig, ax = plt.subplots(figsize=(5.6 + 1.1 * ('recovery' in [x[0] for x in SEGMENTS]), 3.6))
+    plt.rcParams.update({'font.size': 10, 'axes.labelsize': 10.5, 'axes.titlesize': 11.5, 'xtick.labelsize': 9.5,
+                         'ytick.labelsize': 9.5, 'legend.fontsize': 9.5, 'axes.linewidth': 0.9,
+                         'xtick.major.width': 0.9, 'ytick.major.width': 0.9})
+    fig, ax = plt.subplots(figsize=(1.55 * len(SEGMENTS) + 2.2, 4.3))
     xs = {seg: i for i, (seg, _) in enumerate(SEGMENTS)}
     # One fixed x-position per (segment, subject): the dot AND the end of every line that joins that
     # subject use the same value, so lines always meet their dots.
     rng = np.random.RandomState(1)
-    xpos = {seg: {sub: xs[seg] + rng.uniform(-0.06, 0.06) for sub in sorted(acc[seg])} for seg, _ in SEGMENTS}
+    xpos = {seg: {sub: xs[seg] - DOT_OFFSET + rng.uniform(-0.07, 0.07) for sub in sorted(acc[seg])} for seg, _ in SEGMENTS}
     # paired lines between adjacent segments
     for a, b in (('run1', 'pre_lor'), ('pre_lor', 'lor'), ('lor', 'ror'), ('ror', 'recovery')):
         if a not in xs or b not in xs:
@@ -222,29 +226,29 @@ def main():
         v = np.array([acc[seg][x] for x in subs_seg])
         px = np.array([xpos[seg][x] for x in subs_seg])
         na = np.array([seg == 'recovery' and ror_na[x] for x in subs_seg], bool)
-        ax.scatter(px[~na], v[~na], s=14, color=DOT_COLOR, alpha=0.6,
+        ax.scatter(px[~na], v[~na], s=22, color=DOT_COLOR, alpha=0.6,
                    edgecolor='white', linewidth=0.4, zorder=3, clip_on=False)
         if na.any():   # open circles: ROR = N/A (woken manually before run 4)
-            ax.scatter(px[na], v[na], s=16, facecolor='white', edgecolor=DOT_COLOR,
+            ax.scatter(px[na], v[na], s=24, facecolor='white', edgecolor=DOT_COLOR,
                        linewidth=1.0, zorder=3, clip_on=False)
         lo, hi = boot_ci(v)
-        ax.plot([xs[seg] + 0.22] * 2, [lo, hi], color=S.INK, lw=1.2, zorder=6, solid_capstyle='butt')
-        ax.text(xs[seg] + 0.29, v.mean(), f'{v.mean():.2f}', ha='left', va='center', fontsize=7.5,
+        ax.plot([xs[seg]] * 2, [lo, hi], color=S.INK, lw=1.5, zorder=6, solid_capstyle='butt')
+        ax.text(xs[seg] + 0.09, v.mean(), f'{v.mean():.2f}', ha='left', va='center', fontsize=9.5,
                 fontweight='bold', color='black', zorder=7, clip_on=False,
                 bbox=dict(boxstyle='round,pad=0.15', fc='white', ec='none', alpha=0.85))
     # group-mean lines: overall (black) and per class (coloured), same subjects as the overall mean
     segs = [seg for seg, _ in SEGMENTS if acc[seg]]
-    xm = [xs[seg] + 0.22 for seg in segs]
+    xm = [xs[seg] for seg in segs]
     for name in CLASS_NAMES:
         ym = [np.nanmean([row_by_sub[x][f'{seg}_{name}_acc'] for x in acc[seg]]) for seg in segs]
-        ax.plot(xm, ym, color=CLASS_LINE_COLORS[name], lw=1.4, marker='o', ms=3.5, mec='white', mew=0.5,
+        ax.plot(xm, ym, color=CLASS_LINE_COLORS[name], lw=1.8, marker='o', ms=5, mec='white', mew=0.5,
                 zorder=4, label=name.capitalize(), clip_on=False)
-    ax.plot(xm, [np.mean(list(acc[seg].values())) for seg in segs], color=S.INK, lw=1.8, marker='D', ms=4.5,
+    ax.plot(xm, [np.mean(list(acc[seg].values())) for seg in segs], color=S.INK, lw=2.2, marker='D', ms=6.5,
             mec='white', mew=0.5, zorder=6, label='Average', clip_on=False)
-    ax.legend(loc='center left', bbox_to_anchor=(1.01, 0.5), frameon=False, fontsize=7.5, title='Group mean',
-              title_fontsize=7.5, handlelength=1.6)
+    ax.legend(loc='center left', bbox_to_anchor=(1.01, 0.5), frameon=False, fontsize=9.5, title='Group mean',
+              title_fontsize=9.5, handlelength=1.6)
     ax.axhline(CHANCE, color=S.CHANCE, ls='--', lw=0.8, zorder=0)
-    ax.text(len(SEGMENTS) - 0.55, CHANCE + 0.01, 'chance', fontsize=6.5, color=S.INK_2, ha='right', va='bottom')
+    ax.text(len(SEGMENTS) - 0.55, CHANCE + 0.01, 'chance', fontsize=9, color=S.INK_2, ha='right', va='bottom')
 
     stats = []
     if 'run1' in xs:
@@ -255,7 +259,7 @@ def main():
         p = wilcoxon(va, vb)
         stats.append((f'{a} vs {b}', len(subs), p))
         ax.plot([xs[a], xs[a], xs[b], xs[b]], [y - 0.02, y, y, y - 0.02], color=S.INK_2, lw=0.7, clip_on=False)
-        ax.text((xs[a] + xs[b]) / 2, y + 0.005, f'{fmt_p(p)} (n={len(subs)})', ha='center', va='bottom', fontsize=6.5,
+        ax.text((xs[a] + xs[b]) / 2, y + 0.005, f'{fmt_p(p)} (n={len(subs)})', ha='center', va='bottom', fontsize=9,
                 color=S.INK_2)
     if 'recovery' in xs:
         for a in ('pre_lor', 'lor'):
@@ -271,25 +275,13 @@ def main():
     ax.set_ylim(0, 1.03)   # headroom so dots at 1.0 are not cut off
     ax.set_yticks(np.arange(0, 1.01, 0.2))
     ax.set_ylabel(f'Block accuracy ({TASK_LABEL} task decoding)')
-    ax.set_title('Task decoding by responsiveness segment', pad=38)
+    ax.set_title('Task decoding by responsiveness segment', pad=46)
 
     n_all = len(rows)
-    all_subs = [r['subject'] for r in rows]
-    no_ror = [x for x in all_subs if x not in acc['ror']] if 'ror' in acc else []
-    fig.text(0.0, -0.04,
-             f"{n_all} held-out subjects (one LOOCV fold each); each grey dot = one subject's block accuracy;\n"
-             f"thin lines join the same subject. Black line + bar: mean accuracy (value at right), 95% bootstrap CI; coloured\n"
-             f"lines: mean per-class accuracy (recall) over the same subjects. Dashed line: chance.\n"
-             f"Run 1 = the same {TASK_LABEL} model's own held-out test blocks (awake); other columns are\n"
-             f"runs 2-4 of the same subject. Subjects need >= {args.min_blocks} blocks in a segment to be\n"
-             f"included there; boundary blocks excluded. Paired Wilcoxon signed-rank tests.\n"
-             f"During LOR vs chance ({'1/2' if CHANCE == 0.5 else '1/3'}): {fmt_p(p_chance)} (n={len(lv)}).\n"
-             f"No after-ROR point (ROR N/A, run 3 unusable, < {args.min_blocks} blocks, or not in ROR include list): "
-             f"{', '.join(s.replace('sub-', '') for s in no_ror) or 'none'}."
-             + ("\nSub-29: run 3 excluded (frame count != timing file)." if 'sub-29' in all_subs else "")
-             + ("\nRun 4: all blocks; open circles = ROR N/A (woken manually before run 4). Lines join run 3\n"
-                "(after ROR) to run 4 only for subjects with both." if 'recovery' in xs else ""),
-             fontsize=6.5, color=S.INK_2, va='top', linespacing=1.4)
+    note = (f"Grey dots: individual held-out subjects (thin lines join the same subject). Black: mean, 95% bootstrap CI.\n"
+            f"Coloured: mean per-class accuracy. Dashed: chance. Paired Wilcoxon signed-rank tests."
+            + ("\nOpen circles (run 4): subjects woken manually before run 4." if 'recovery' in xs else ""))
+    fig.text(0.0, -0.03, note, fontsize=9, color=S.INK_2, va='top', linespacing=1.4)
 
     out = Path(args.output_file)
     out.parent.mkdir(parents=True, exist_ok=True)

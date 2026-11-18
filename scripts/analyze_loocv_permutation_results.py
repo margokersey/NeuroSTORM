@@ -344,8 +344,11 @@ def compute_metrics(preds, n_classes, fallback_accuracy=None):
         p = p / p.sum(1, keepdims=True)
         if len(present) == n_classes:
             try:
-                out['macro_auroc'] = float(roc_auc_score(y, p, multi_class='ovr',
-                                                         average='macro', labels=labels))
+                if n_classes == 2:   # sklearn's binary path wants the positive-class score only
+                    out['macro_auroc'] = float(roc_auc_score(y, p[:, 1]))
+                else:
+                    out['macro_auroc'] = float(roc_auc_score(y, p, multi_class='ovr',
+                                                             average='macro', labels=labels))
             except ValueError:
                 pass
         out['log_loss'] = float(log_loss(y, p, labels=labels))

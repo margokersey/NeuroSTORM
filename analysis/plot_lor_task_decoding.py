@@ -54,7 +54,7 @@ SEG_COLORS = {'run1': '#8172B3', 'pre_lor': '#4C72B0', 'lor': '#C44E52', 'ror': 
 CHANCE = 1 / 3        # set to 1/2 by --task tennisnav
 TASK_LABEL = '3-way'
 CLASS_NAMES = ['tennis', 'navigation', 'squeeze']   # label ids 0..; first two for --task tennisnav
-DOT_OFFSET = 0.16   # subject dots sit this far left of each x-tick and the group means this far right, so the tick is centred between them
+DOT_OFFSET = 0.0   # subject dots at -DOT_OFFSET and group means at +DOT_OFFSET from each x-tick (0 = both centred on the tick)
 DOT_COLOR = '#8c8c8c'   # all subject dots share one colour so the coloured lines read as classes
 CLASS_LINE_COLORS = {'tennis': '#4C72B0', 'navigation': '#DD8452', 'squeeze': '#55A868'}
 
@@ -205,7 +205,7 @@ def main():
     plt.rcParams.update({'font.size': 10, 'axes.labelsize': 10.5, 'axes.titlesize': 11.5, 'xtick.labelsize': 9.5,
                          'ytick.labelsize': 9.5, 'legend.fontsize': 9.5, 'axes.linewidth': 0.9,
                          'xtick.major.width': 0.9, 'ytick.major.width': 0.9})
-    fig, ax = plt.subplots(figsize=(1.55 * len(SEGMENTS) + 2.2, 4.3))
+    fig, ax = plt.subplots(figsize=(1.25 * len(SEGMENTS) + 2.1, 4.3))
     xs = {seg: i for i, (seg, _) in enumerate(SEGMENTS)}
     # One fixed x-position per (segment, subject): the dot AND the end of every line that joins that
     # subject use the same value, so lines always meet their dots.
@@ -233,7 +233,7 @@ def main():
                        linewidth=1.0, zorder=3, clip_on=False)
         lo, hi = boot_ci(v)
         ax.plot([xs[seg] + DOT_OFFSET] * 2, [lo, hi], color=S.INK, lw=1.5, zorder=6, solid_capstyle='butt')
-        ax.text(xs[seg] + DOT_OFFSET + 0.08, v.mean(), f'{v.mean():.2f}', ha='left', va='center', fontsize=9.5,
+        ax.text(xs[seg] + DOT_OFFSET + 0.1, v.mean(), f'{v.mean():.2f}', ha='left', va='center', fontsize=9.5,
                 fontweight='bold', color='black', zorder=7, clip_on=False,
                 bbox=dict(boxstyle='round,pad=0.15', fc='white', ec='none', alpha=0.85))
     # group-mean lines: overall (black) and per class (coloured), same subjects as the overall mean

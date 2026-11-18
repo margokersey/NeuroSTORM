@@ -52,6 +52,9 @@ VARIANTS = {
                       stage_a_dataset="MICHIGAN_TENNISNAV_VS_REST",
                       out_prefix="FIXED_mich_xcpd_nosmooth_tennisnav_stageB_allblocks"),
 }
+# Backwards-compatible names for the 3-way model, imported by the LOR task-decoding scripts.
+STAGE_B_PREFIX = VARIANTS['threeway']['prefix']
+STAGE_B_NAMES = [VARIANTS['threeway']['names'][i] for i in range(3)]
 
 
 def read_split_test_subjects(split_file):

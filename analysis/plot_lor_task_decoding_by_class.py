@@ -13,6 +13,8 @@ that class there. Per-class values rest on only a few blocks per subject, so the
         --pred_glob "/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output/FIXED_mich_xcpd_nosmooth_lor_task_decoding_fold-*/lor_predictions_fold_*.json" \\
         --output_file output/lor_task_decoding/lor_accuracy_by_segment_per_class
 
+Add --label_subjects to write each subject's ID next to its dots.
+
 2-class model: add --task tennisnav and the tennisnav --pred_glob (see plot_lor_task_decoding.py).
 Writes .png (600 dpi), .pdf, .svg and a long-format .csv (subject, segment, class, accuracy).
 """
@@ -44,6 +46,8 @@ def main():
     ap.add_argument('--run4_glob', default=None)
     ap.add_argument('--no_run1', action='store_true', help='omit the run-1 awake baseline column')
     ap.add_argument('--min_blocks', type=int, default=5, help='min blocks in a segment for a subject to count there')
+    ap.add_argument('--label_subjects', action='store_true',
+                    help='write each subject\'s ID (e.g. 04) next to its dots; crowded where values coincide')
     ap.add_argument('--exclude_subjects', nargs='*', default=[])
     ap.add_argument('--ror_include', default=str(L.DEFAULT_ROR_INCLUDE))
     ap.add_argument('--no_ror_filter', action='store_true')
@@ -87,7 +91,16 @@ def main():
         color = L.CLASS_LINE_COLORS[name]
         val = {seg: {s: by_sub[s][f'{seg}_{name}_acc'] for s in in_seg[seg]
                      if not np.isnan(by_sub[s][f'{seg}_{name}_acc'])} for seg in segs}
-        xpos = {seg: {s: xs[seg] + rng.uniform(-0.08, 0.08) for s in val[seg]} for seg in segs}
+        if args.label_subjects:   # dots with the same value sit in an even row so each ID label has its own slot
+            xpos = {}
+            for seg in segs:
+                groups = {}
+                for s_ in sorted(val[seg]):
+                    groups.setdefault(round(val[seg][s_], 4), []).append(s_)
+                xpos[seg] = {s_: xs[seg] + (i - (len(g) - 1) / 2) * 0.085
+                             for g in groups.values() for i, s_ in enumerate(g)}
+        else:
+            xpos = {seg: {s: xs[seg] + rng.uniform(-0.08, 0.08) for s in val[seg]} for seg in segs}
         for a, b in zip(segs[:-1], segs[1:]):
             for s in sorted(set(val[a]) & set(val[b])):
                 ax.plot([xpos[a][s], xpos[b][s]], [val[a][s], val[b][s]], color=color, lw=0.6, alpha=0.4, zorder=1)
@@ -103,6 +116,12 @@ def main():
             if na.any():   # open circles: ROR N/A (woken manually before run 4)
                 ax.scatter(px[na], v[na], s=24, facecolor='white', edgecolor=color, linewidth=1.0, zorder=3,
                            clip_on=False)
+            if args.label_subjects:
+                for s, x0, y in zip(subs, px, v):   # vertical IDs above each dot (below it at the top edge)
+                    top = y > 0.95
+                    ax.annotate(s.replace('sub-', ''), (x0, y), xytext=(0, -4 if top else 4), textcoords='offset points',
+                                fontsize=5.5, color=color, rotation=90, ha='center', va='top' if top else 'bottom',
+                                zorder=4, clip_on=False)
             for s, y in zip(subs, v):
                 long_rows.append(dict(subject=s, segment=seg, cls=name, accuracy=y))
         ms = [seg for seg in segs if val[seg]]

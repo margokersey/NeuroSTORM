@@ -325,7 +325,7 @@ def plot_branching(per_fold, out):
 
     # per-subject summaries
     subs = sorted({r['subject'] for r in recs})
-    a_by_sub, b_by_sub = [], []
+    a_by_sub, b_by_sub, x_by_sub = [], [], []
     for sub in subs:
         rs = [r for r in recs if r['subject'] == sub]
         rr = [r for r in rs if r['block_type'] == 'task']
@@ -335,23 +335,25 @@ def plot_branching(per_fold, out):
                                      np.mean([not r['stage_a_called_task'] for r in mm])]))
         rc = [r for r in rr if r['stage_a_called_task']]
         b_by_sub.append(np.mean([r['stage_b_correct'] for r in rc]) if rc else np.nan)
+        rx = [r for r in rr if not r['stage_a_called_task']]
+        x_by_sub.append(np.mean([r['stage_b_correct'] for r in rx]) if rx else np.nan)
 
-    W, H = 14.0, 11.5
+    W, H = 16.0, 9.1
     Y = lambda inches: inches / H                          # place things in inches from the bottom
     fig = plt.figure(figsize=(W, H))
     bg = fig.add_axes([0, 0, 1, 1]); bg.set_xlim(0, 1); bg.set_ylim(0, 1); bg.axis('off')
 
     def head(x, w, text):
-        bg.text(x, Y(H - 0.55), text, fontsize=16, fontweight='bold', color=S.INK, ha='left', va='center')
-        bg.plot([x, x + w], [Y(H - 1.2)] * 2, color=S.INK, lw=1.2)
+        bg.text(x, Y(H - 0.5), text, fontsize=20, fontweight='bold', color=S.INK, ha='left', va='center')
+        bg.plot([x, x + w], [Y(H - 0.88)] * 2, color=S.INK, lw=1.2)
 
-    head(0.012, 0.12, 'All blocks')
-    head(0.17, 0.30, 'Stage A: Task vs. No task')
-    head(0.60, 0.375, 'Stage B: which task?')
+    head(0.012, 0.098, 'All blocks')
+    head(0.145, 0.27, 'Stage A: Task vs. No task')
+    head(0.50, 0.485, 'Stage B: which task?')
 
     # Stage A (column labels on top so the bottom edge is free for the "missed" connector)
-    a_top, a_h = 9.2, 3.3
-    ax_a = fig.add_axes([0.25, Y(a_top - a_h), 0.22, Y(a_h)])
+    a_top, a_h = 7.2, 3.3
+    ax_a = fig.add_axes([0.225, Y(a_top - a_h), 0.19, Y(a_h)])
     _flow_matrix(ax_a, cm_a, ['No task\n(rest)', 'Task\n(imagery)'],
                  [f"called No task\nn = {n_rej + n_missed} ({pct(n_rej + n_missed, n_all)})",
                   f"called Task\nn = {len(called)} ({pct(len(called), n_all)})"],
@@ -359,27 +361,30 @@ def plot_branching(per_fold, out):
                  xtop=True)
     ax_a.set_xlabel('Stage A prediction', fontsize=11.5, color=S.INK_2, labelpad=8)
     mid_a = a_top - a_h / 2
-    bg.add_patch(FancyBboxPatch((0.012, Y(mid_a - 0.8)), 0.12, Y(1.6), boxstyle='round,pad=0.003,rounding_size=0.008',
+    bg.add_patch(FancyBboxPatch((0.012, Y(mid_a - 0.8)), 0.098, Y(1.6), boxstyle='round,pad=0.003,rounding_size=0.008',
                                 fc='white', ec=S.INK, lw=1.4))
-    bg.text(0.072, Y(mid_a), f"n = {n_all}\n\nTask  {len(real)} ({pct(len(real), n_all)})\n"
+    bg.text(0.061, Y(mid_a), f"n = {n_all}\n\nTask  {len(real)} ({pct(len(real), n_all)})\n"
             f"No task  {len(mock)} ({pct(len(mock), n_all)})", ha='center', va='center', fontsize=11.5,
             color=S.INK, linespacing=1.5)
-    bg.annotate('', xy=(0.168, Y(mid_a)), xytext=(0.138, Y(mid_a)),
+    bg.annotate('', xy=(0.146, Y(mid_a)), xytext=(0.116, Y(mid_a)),
                 arrowprops=dict(arrowstyle='-|>', color=S.INK, lw=2.2, mutation_scale=18, shrinkA=0, shrinkB=0))
-    ax_sa = fig.add_axes([0.25, Y(1.0), 0.22, Y(0.6)])
-    _subject_strip(ax_sa, a_by_sub, 0.5, 'Per subject: Stage A balanced accuracy')
+    ax_sa = fig.add_axes([0.225, Y(0.75), 0.19, Y(0.6)])          # under the Stage A column, clear of the connectors
+    _subject_strip(ax_sa, a_by_sub, 0.5, 'Per subject: balanced accuracy')
 
     # Stage B: called Task (top) and missed (bottom)
-    xb, wb = 0.685, 0.29
-    ax_b = fig.add_axes([xb, Y(9.5 - 2.7), wb, Y(2.7)])
+    xb, wb = 0.59, 0.17
+    ax_b = fig.add_axes([xb, Y(7.5 - 2.7), wb, Y(2.7)])
     _flow_matrix(ax_b, cm_b, names, names, 'Task blocks called Task', S.SEQ_BLUE)
     ax_b.set_xlabel('Stage B prediction', fontsize=11.5, color=S.INK_2, labelpad=4)
-    ax_x = fig.add_axes([xb, Y(5.75 - 2.7), wb, Y(2.7)])
+    ax_x = fig.add_axes([xb, Y(3.75 - 2.7), wb, Y(2.7)])
     _flow_matrix(ax_x, cm_miss, names, names,
                  f"Missed Task blocks (acc. = {miss_acc:.2f})", S.SEQ_BLUE)
     ax_x.set_xlabel('Stage B prediction', fontsize=11.5, color=S.INK_2, labelpad=4)
-    ax_sb = fig.add_axes([xb, Y(1.0), wb, Y(0.6)])
-    _subject_strip(ax_sb, b_by_sub, 1 / nb, 'Per subject: Stage B accuracy')
+    xs, ws = 0.80, 0.185                                         # one strip to the right of each Stage B matrix
+    ax_s1 = fig.add_axes([xs, Y(7.5 - 1.35 - 0.3), ws, Y(0.6)])
+    _subject_strip(ax_s1, b_by_sub, 1 / nb, 'Per subject: accuracy')
+    ax_s2 = fig.add_axes([xs, Y(3.75 - 1.35 - 0.3), ws, Y(0.6)])
+    _subject_strip(ax_s2, x_by_sub, 1 / nb, 'Per subject: accuracy')
 
     # connectors from Stage A cells to the Stage B matrices
     fig.canvas.draw()

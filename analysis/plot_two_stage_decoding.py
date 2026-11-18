@@ -224,7 +224,7 @@ def plot_confidence(ax, per_fold, measure='logit_margin'):
     _top_legend(ax, [Line2D([], [], color=S.INK, lw=1.2, label='Mean over subjects')])
 
 
-def _flow_matrix(ax, cm, row_labels, col_labels, title, colors, highlight=(), fs=8.5):
+def _flow_matrix(ax, cm, row_labels, col_labels, title, colors, highlight=(), fs=8.5, bold_diag=True):
     """Confusion matrix for the branching figure: cell = % of its row (count); row labels carry
     the row total; cells in `highlight` get a heavy outline (the cells that feed the next stage)."""
     cm = np.asarray(cm, float)
@@ -236,7 +236,7 @@ def _flow_matrix(ax, cm, row_labels, col_labels, title, colors, highlight=(), fs
             v = cmn[i, j]
             ax.text(j + 0.5, i + 0.5, f"{100 * v:.0f}%\n({int(cm[i, j])})", ha='center', va='center',
                     fontsize=fs, color='white' if v > 0.55 else S.INK,
-                    fontweight='bold' if i == j else 'normal', linespacing=1.2)
+                    fontweight='bold' if (bold_diag and i == j) else 'normal', linespacing=1.2)
     for (i, j) in highlight:
         ax.add_patch(plt.Rectangle((j, i), 1, 1, fill=False, ec=S.INK, lw=2.4, zorder=5, clip_on=False))
     ax.set_xlim(0, cm.shape[1]); ax.set_ylim(cm.shape[0], 0)
@@ -315,7 +315,7 @@ def plot_branching(per_fold, out):
     # Stage B matrices
     ax_m = fig.add_axes([0.68, 0.68, 0.27, 0.15])
     _flow_matrix(ax_m, mock_mix, ['Mock blocks\ncalled Task'], names,
-                 "Mock blocks called Task", mock_cmap)
+                 "Mock blocks called Task", mock_cmap, bold_diag=False)
     ax_m.set_xlabel('Stage B prediction  (what Stage B called these mock blocks)', fontsize=8, color=S.INK_2, labelpad=3)
     ax_m.text(0.0, -0.62, 'A prediction mix: mock blocks have no true class, so this is not an accuracy.', fontsize=7,
               color=S.INK_2, ha='left', va='top', transform=ax_m.transAxes)

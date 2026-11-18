@@ -10,7 +10,7 @@
 # One-time setup:  mkdir -p /scratch/huangzu_root/huangzu0/mkersey/logs
 # Submit:
 #   sbatch --array=101 analysis/sbatch_lor_task_decoding.sh        # just fold 101 (check this first)
-#   sbatch analysis/sbatch_lor_task_decoding.sh                    # all 26 folds
+#   sbatch analysis/sbatch_lor_task_decoding.sh                    # all 26 folds, runs 2-3 AND run 4
 #   sbatch --array=101-126%4 analysis/sbatch_lor_task_decoding.sh  # max 4 at once
 #   LOR_RUNS=4 sbatch --array=101 analysis/sbatch_lor_task_decoding.sh   # run 4 (recovery) only; writes
 #                                                                        # lor_predictions_run4_fold_<N>.json
@@ -28,7 +28,7 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=24G
-#SBATCH --time=01:00:00                # run 4 alone (~30 blocks) fit well inside 30 min; runs 2-3 (~120 blocks) get 1 h. Raise if the data load is slow
+#SBATCH --time=01:30:00                # run 4 alone (~30 blocks) fit well inside 30 min; runs 2-3 (~120 blocks) get 1 h. Raise if the data load is slow
 #SBATCH --output=logs/lor_decode_%A_%a.log
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=mkersey@umich.edu
@@ -62,6 +62,11 @@ python -c "import torch; assert torch.cuda.is_available(), 'No GPU visible!'; pr
 LOR_CSV="${LOR_CSV:-$DATA_ROOT/FIXED_xcp_nosmooth_task-imagery_run-2/metadata/LOR_ROR_timing.csv}"
 [ -f "$LOR_CSV" ] || { echo "LOR/ROR CSV not found: $LOR_CSV (set LOR_CSV)"; exit 1; }
 
-python analysis/predict_lor_task_decoding.py --fold "$SLURM_ARRAY_TASK_ID" --lor_csv "$LOR_CSV" --runs "${LOR_RUNS:-2,3}" --task "${LOR_TASK:-3way}"
+# Default: runs 2-3 and then run 4 in the same job (two output files per fold). LOR_RUNS overrides,
+# e.g. LOR_RUNS=4 for recovery only, or LOR_RUNS="2,3 4" (space-separated groups, one invocation each).
+for RUNS in ${LOR_RUNS:-2,3 4}; do
+    echo "== fold $SLURM_ARRAY_TASK_ID, runs $RUNS =="
+    python analysis/predict_lor_task_decoding.py --fold "$SLURM_ARRAY_TASK_ID" --lor_csv "$LOR_CSV" --runs "$RUNS" --task "${LOR_TASK:-3way}"
+done
 
 echo "Fold $SLURM_ARRAY_TASK_ID finished at $(date)"

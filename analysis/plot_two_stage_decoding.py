@@ -359,7 +359,6 @@ def plot_branching(per_fold, out):
                   f"called Task\nn = {len(called)} ({pct(len(called), n_all)})"],
                  '', S.SEQ_BLUE, highlight=[(1, 1), (1, 0, (0, (4, 2)))],
                  xtop=True)
-    ax_a.set_xlabel('Stage A prediction', fontsize=11.5, color=S.INK_2, labelpad=8)
     mid_a = a_top - a_h / 2
     bg.add_patch(FancyBboxPatch((0.012, Y(mid_a - 0.8)), 0.098, Y(1.6), boxstyle='round,pad=0.003,rounding_size=0.008',
                                 fc='white', ec=S.INK, lw=1.4))

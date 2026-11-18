@@ -654,7 +654,7 @@ PERM_DARK = '#B35F2D'
 CHANCE = '#8c8c8c'
 CLASS_COLORS = ['#8172B3', '#55A868', '#937860']
 SEQ_BLUE = ['#f6f9fc', '#d6e2f1', '#a9c1e0', '#7b9ccc', '#4C72B0', '#34568c', '#1f3a66']
-TITLE_PAD = 17   # points; leaves room for a one-row legend between title and axes
+TITLE_PAD = 27   # points; leaves room for a two-row legend between title and axes
 
 
 def _style():
@@ -697,8 +697,8 @@ def _panel_letter(ax, letter):
                 va='baseline', ha='left', color=INK)
 
 
-def _top_legend(ax, handles, fontsize=6.5):
-    ax.legend(handles=handles, loc='lower left', bbox_to_anchor=(0, 1.0), ncol=len(handles),
+def _top_legend(ax, handles, fontsize=6.5, ncol=None):
+    ax.legend(handles=handles, loc='lower left', bbox_to_anchor=(0, 1.0), ncol=ncol or len(handles),
               borderaxespad=0.25, borderpad=0, columnspacing=1.0, handletextpad=0.4,
               fontsize=fontsize)
 
@@ -764,7 +764,7 @@ def plot_per_subject(ax, stats, metric, chance):
                markersize=4.5, label='n.s.'),
         Line2D([], [], color=PERM, alpha=0.7, lw=2.6, label='Permuted'),
         Line2D([], [], color=CHANCE, lw=0.8, ls=(0, (3, 2)), label='Chance'),
-    ], fontsize=6)
+    ], fontsize=6, ncol=2)    # two rows so the legend stays within this panel's width
 
 
 def plot_kde(ax, stats, n_classes):
@@ -1048,7 +1048,7 @@ def plot_results(stats, results, tests, class_names, n_perm, output_file, note=N
 
     nrows, ncols = _grid_shape(len(panels))
     fig = plt.figure(figsize=(7.2, 2.55 * nrows + 0.3))
-    gs = fig.add_gridspec(nrows, ncols, hspace=0.7, wspace=0.7,
+    gs = fig.add_gridspec(nrows, ncols, hspace=0.85, wspace=0.7,
                           left=0.08, right=0.97, top=0.93, bottom=0.08)
     for i, (name, draw) in enumerate(panels):
         ax = fig.add_subplot(gs[i // ncols, i % ncols])

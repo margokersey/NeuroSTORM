@@ -12,7 +12,7 @@
 #
 # Optional env: DEEP=1 (also load BOLD NIfTIs: tSNR/DVARS; slower, more RAM), FD_THR=0.5,
 #   SKIP_SCAN=1 (serve existing cache only), FORCE=1 (rescan everything),
-#   DATAPT_SUBJECT_REGEX='...', CACHE_ROOT=..., PORT=...
+#   DATAPT_SUBJECT_REGEX='...', CACHE_ROOT=..., PORT=..., QC_ENV=qc_dashboard (conda env name)
 # Any of FMRIPREP / XCPD / DATAPT may be left unset to skip that stage.
 # Stop the dashboard with `scancel <jobid>` (it also ends at the time limit).
 # =============================================================================
@@ -37,10 +37,10 @@ NAME="${NAME:?set NAME=<dataset label>}"
 module load mamba
 set +u
 eval "$('/sw/pkgs/arc/mamba/py3.12/bin/conda' 'shell.bash' 'hook')"
-conda activate neurostorm
+conda activate "${QC_ENV:-qc_dashboard}"
 set -u
 
-python - <<'PY' || { echo "Missing packages. On the login node run: pip install -r $REPO_DIR/analysis/qc_dashboard/requirements.txt"; exit 1; }
+python - <<'PY' || { echo "Missing packages in env ${QC_ENV:-qc_dashboard}. On the login node: module load mamba && mamba env create -f $REPO_DIR/analysis/qc_dashboard/environment.yml"; exit 1; }
 import streamlit, plotly, torch, nibabel, scipy
 PY
 

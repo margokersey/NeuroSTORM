@@ -1,0 +1,15 @@
+# Dedicated env for the QC dashboard (CPU only; torch is just used to read data.pt).
+# Create once on the Great Lakes login node (compute nodes have no internet):
+#   module load mamba && mamba env create -f analysis/qc_dashboard/environment.yml
+name: qc_dashboard
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pytorch-cpu>=2.1   # mmap loading of data.pt needs torch >= 2.1
+  - numpy
+  - pandas
+  - scipy
+  - nibabel
+  - streamlit>=1.37
+  - plotly>=5.20

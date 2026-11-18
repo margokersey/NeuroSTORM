@@ -18,8 +18,10 @@ your laptop browser through an SSH tunnel. Nothing is exposed on the network; on
 ## One-time setup (login node)
 
 ```bash
-conda activate neurostorm && pip install -r analysis/qc_dashboard/requirements.txt
+module load mamba && mamba env create -f analysis/qc_dashboard/environment.yml   # env "qc_dashboard", Python 3.11, CPU torch
 ```
+
+The launcher activates `qc_dashboard`; set `QC_ENV=<name>` to use a different env.
 
 ## Run on a dataset
 

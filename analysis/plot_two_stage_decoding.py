@@ -253,8 +253,7 @@ def _flow_matrix(ax, cm, row_labels, col_labels, title, colors, highlight=(), fs
 def plot_branching(per_fold, out):
     """Branching-logic figure. Reads left to right:
          all blocks -> Stage A confusion matrix -> (cells 'called Task') -> Stage B matrices
-    plus a strip showing where each kind of block ends up end-to-end.
-
+    
     The two outlined cells of the Stage A matrix (real/mock blocks called Task) are exactly the
     blocks handed to Stage B; arrows run from those cells to their Stage B matrices. Built from
     the per-block records of folds that have Stage B, so all numbers agree across the figure.
@@ -285,7 +284,7 @@ def plot_branching(per_fold, out):
     bal = np.nanmean([cm_a[1, 1] / max(cm_a[1].sum(), 1), cm_a[0, 0] / max(cm_a[0].sum(), 1)])
     mock_cmap = ['#ffffff', S.PERM]
 
-    fig = plt.figure(figsize=(13.5, 7.8))
+    fig = plt.figure(figsize=(13.5, 6.6))
     bg = fig.add_axes([0, 0, 1, 1]); bg.set_xlim(0, 1); bg.set_ylim(0, 1); bg.axis('off')
 
     def head(x, text, sub):
@@ -298,14 +297,14 @@ def plot_branching(per_fold, out):
     head(0.60, 'Stage B: which task?', 'only blocks Stage A called Task')
 
     # root
-    bg.add_patch(FancyBboxPatch((0.02, 0.50), 0.12, 0.18, boxstyle='round,pad=0.003,rounding_size=0.008',
+    bg.add_patch(FancyBboxPatch((0.02, 0.41), 0.12, 0.18, boxstyle='round,pad=0.003,rounding_size=0.008',
                                 fc='white', ec=S.INK_2, lw=1.0))
-    bg.text(0.08, 0.59, f"n = {n_all}\n\nreal task  {len(real)} ({pct(len(real), n_all)})\n"
+    bg.text(0.08, 0.50, f"n = {n_all}\n\nreal task  {len(real)} ({pct(len(real), n_all)})\n"
             f"mock  {len(mock)} ({pct(len(mock), n_all)})", ha='center', va='center', fontsize=8.5,
             color=S.INK, linespacing=1.5)
 
     # Stage A matrix
-    ax_a = fig.add_axes([0.235, 0.34, 0.25, 0.50])
+    ax_a = fig.add_axes([0.235, 0.17, 0.25, 0.65])
     _flow_matrix(ax_a, cm_a, ['No task\n(mock)', 'Task\n(real)'],
                  [f"called No task\nn = {n_rej + n_missed} ({pct(n_rej + n_missed, n_all)})",
                   f"called Task\nn = {len(called)} ({pct(len(called), n_all)})"],
@@ -317,10 +316,10 @@ def plot_branching(per_fold, out):
     ax_m = fig.add_axes([0.68, 0.68, 0.27, 0.15])
     _flow_matrix(ax_m, mock_mix, ['Mock blocks\ncalled Task'], names,
                  "Mock blocks called Task", mock_cmap)
-    ax_m.set_xticks([])
-    ax_m.set_xlabel("what Stage B called them: a prediction mix (no true class exists, so not an accuracy)",
-                    fontsize=7, color=S.INK_2, labelpad=3)
-    ax_b = fig.add_axes([0.68, 0.24, 0.27, 0.34])
+    ax_m.set_xlabel('Stage B prediction  (what Stage B called these mock blocks)', fontsize=8, color=S.INK_2, labelpad=3)
+    ax_m.text(0.0, -0.62, 'A prediction mix: mock blocks have no true class, so this is not an accuracy.', fontsize=7,
+              color=S.INK_2, ha='left', va='top', transform=ax_m.transAxes)
+    ax_b = fig.add_axes([0.68, 0.10, 0.27, 0.36])
     _flow_matrix(ax_b, cm_b, names, names,
                  f"Real task blocks called Task: acc. = {b_acc:.3f}  (chance = {1 / nb:.2f})", S.SEQ_BLUE)
     ax_b.set_xlabel('Stage B prediction', fontsize=8, color=S.INK_2)
@@ -348,29 +347,8 @@ def plot_branching(per_fold, out):
         bg.text((x0 + x1) / 2, (y0 + y1) / 2 + (0.018 if ci == 0 else 0.018), lab, fontsize=7.5, color=S.INK,
                 ha='center', va='bottom', linespacing=1.3,
                 bbox=dict(fc='white', ec='none', pad=1.5), zorder=4)
-    bg.annotate('', xy=(0.19, 0.59), xytext=(0.145, 0.59),
+    bg.annotate('', xy=(0.19, 0.50), xytext=(0.145, 0.50),
                 arrowprops=dict(arrowstyle='-|>', color=S.INK, lw=1.6, shrinkA=0, shrinkB=0))
-
-    # bottom strip: end-to-end outcome of each kind of block
-    ax_o = fig.add_axes([0.235, 0.045, 0.72, 0.115])
-    segs_real = [('Correct end-to-end\n(passed A, right task)', b_correct, S.SEQ_BLUE[6], 'white'),
-                 ('Passed A, wrong task\n(Stage B error)', int(cm_b.sum() - b_correct), S.SEQ_BLUE[3], S.INK),
-                 ('Missed by Stage A\n(called No task)', n_missed, '#cfd4da', S.INK)]
-    segs_mock = [('Correctly rejected', n_rej, S.SEQ_BLUE[6], 'white'),
-                 ('False alarm (passed to Stage B)', len(mock_called), '#cfd4da', S.INK)]
-    for yi, (lab, n_tot, segs) in enumerate([(f"Real task blocks (n = {len(real)})", len(real), segs_real),
-                                              (f"Mock blocks (n = {len(mock)})", len(mock), segs_mock)][::-1]):
-        left = 0.0
-        for sl, k, col, tc in segs:
-            frac = k / max(n_tot, 1)
-            ax_o.barh(yi, frac, left=left, color=col, edgecolor='white', linewidth=1.5, height=0.8)
-            if frac > 0.07:
-                ax_o.text(left + frac / 2, yi, f"{sl}\n{100 * frac:.0f}% ({k})", ha='center', va='center',
-                          fontsize=7, color=tc, linespacing=1.25)
-            left += frac
-        ax_o.text(-0.01, yi, lab, ha='right', va='center', fontsize=8, color=S.INK)
-    ax_o.set_xlim(0, 1); ax_o.set_ylim(-0.5, 1.5); ax_o.axis('off')
-    ax_o.set_title('Where each kind of block ends up (end-to-end)', loc='left', fontsize=9, fontweight='bold', pad=6)
 
     n_sub = len({fr['subject'] for fr in per_fold})
     fig.text(0.02, 0.005,

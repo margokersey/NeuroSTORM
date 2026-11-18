@@ -9,4 +9,6 @@ Our own scripts (not part of upstream NeuroSTORM) for evaluating fine-tuning run
 - `benchmark_decoders.py`, `sbatch_benchmark_decoders.sh` — benchmark GLM template matching, logistic regression, linear SVM, PCA+LDA and random forest against NeuroSTORM on the 3-way task, trained on run 1 and scored per propofol state (run 1, pre-LOR, LOR, ROR, recovery). CPU only; features are cached, so re-evaluation is cheap.
 - `plot_benchmark_decoders.py` — accuracy-by-state line plot of every benchmark model vs. NeuroSTORM, from the benchmark's `summary.csv`.
 
+- `qc_dashboard/` — interactive QC dashboard (Streamlit) for fMRIPrep, XCP-D and `data.pt`: `scan.py` builds a cache, `app.py` serves it, `sbatch_qc_dashboard.sh` runs both on a compute node behind an SSH tunnel. See `../notes/QC_DASHBOARD.md`.
+
 Default outputs go to `output/` (gitignored). Workflow notes live in `../notes/`.

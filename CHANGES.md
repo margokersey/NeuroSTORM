@@ -1,5 +1,9 @@
 # Changes
 
+## QC dashboard for fMRIPrep, XCP-D and data.pt
+
+- New `analysis/qc_dashboard/` (`scan.py`, `app.py`, `qc_lib.py`, `sbatch_qc_dashboard.sh`): point it at the three folders and browse per-run/per-subject QC, group summaries, cross-stage comparisons and a `data.pt` slice viewer. Runs on a compute node bound to 127.0.0.1 with a random access token; reached through an SSH tunnel. Docs: `notes/QC_DASHBOARD.md`. Tested on synthetic data only; not yet run on the real turbo folders.
+
 ## Two-stage figure: branching flow figure replaces the end-to-end confusion matrix
 
 - `analysis/plot_two_stage_decoding.py`: removed the pooled 4x4 (3x3 for tennis/nav) end-to-end confusion panel, which mixed Stage A and Stage B errors in one grid. With `--stage_b_pred_glob` it now also writes `<output_file>_branching.{png,pdf,svg}` (16x9.1 in, 300 dpi PNG, editable text in PDF/SVG): all blocks -> Stage A 2x2 confusion -> Stage B matrices for real Task blocks that Stage A called Task (solid arrow) and for real Task blocks Stage A missed (dashed arrow; Stage B run for reference only, shows whether Stage A is too conservative). Each Stage B matrix has a per-subject strip to its right and the Stage A strip sits under its column (one dot per held-out subject, mean above the bar, number of subjects above chance). No-task blocks wrongly called Task are passed on but not shown. Cells show % of row and count; row labels carry n. Minimal text, no footnotes. The main figure's remaining panels are re-lettered; the End-to-end row in panel a is unchanged. The old `--stage_b_glob` lookup mode gets no end-to-end panel. Checked on synthetic data only; not yet re-rendered on real data.

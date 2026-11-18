@@ -1,0 +1,4 @@
+# On top of the neurostorm env (torch, numpy, pandas, nibabel, scipy). Install once on the login node:
+#   pip install -r analysis/qc_dashboard/requirements.txt
+streamlit>=1.37
+plotly>=5.20

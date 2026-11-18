@@ -80,7 +80,8 @@ def main():
     args = ap.parse_args()
     T = TASKS[args.task]
     args.stage_b_prefix = args.stage_b_prefix or T['stage_b_prefix']
-    names, n_out = T['names'], T['num_classes']
+    names, n_classes = T['names'], T['num_classes']
+    n_out = 1 if n_classes == 2 else n_classes   # binary head emits ONE logit per block
     if not args.lor_csv:
         sys.exit("--lor_csv (or env NEUROSTORM_LOR_CSV) is required")
 
@@ -103,7 +104,7 @@ def main():
     problems = []
     if int(hp.get('dataset_split_num', -1)) != args.fold:
         problems.append(f"checkpoint dataset_split_num={hp.get('dataset_split_num')} != fold {args.fold}")
-    if hp.get('task_name') != T['task_name'] or int(hp.get('num_classes', 0)) != n_out:
+    if hp.get('task_name') != T['task_name'] or int(hp.get('num_classes', 0)) != n_classes:
         problems.append(f"checkpoint is not the {args.task} model (task_name={hp.get('task_name')}, num_classes={hp.get('num_classes')})")
     if hp.get('permute_labels'):
         problems.append("checkpoint was trained with permuted labels")

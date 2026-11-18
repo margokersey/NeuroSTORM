@@ -197,6 +197,10 @@ def main():
         acc['ror'] = {k: v for k, v in acc['ror'].items() if k in ror_ok}
         print(f"ROR filter ({args.ror_include}): kept {len(acc['ror'])}, dropped {dropped}")
 
+    # open dots in the run-4 column: no usable ROR data (ROR N/A / woken manually before run 4, or not enough
+    # data after ROR = not in the include list)
+    open_dot = {sub for sub, na in ror_na.items() if na or (ror_ok is not None and sub not in ror_ok)}
+
     def paired(a, b):
         subs = sorted(set(acc[a]) & set(acc[b]))
         return subs, np.array([acc[a][s] for s in subs]), np.array([acc[b][s] for s in subs])
@@ -225,10 +229,10 @@ def main():
         subs_seg = sorted(acc[seg])
         v = np.array([acc[seg][x] for x in subs_seg])
         px = np.array([xpos[seg][x] for x in subs_seg])
-        na = np.array([seg == 'recovery' and ror_na[x] for x in subs_seg], bool)
+        na = np.array([seg == 'recovery' and x in open_dot for x in subs_seg], bool)
         ax.scatter(px[~na], v[~na], s=22, color=DOT_COLOR, alpha=0.6,
                    edgecolor='white', linewidth=0.4, zorder=3, clip_on=False)
-        if na.any():   # open circles: ROR = N/A (woken manually before run 4)
+        if na.any():   # open circles: no usable ROR (see open_dot)
             ax.scatter(px[na], v[na], s=24, facecolor='white', edgecolor=DOT_COLOR,
                        linewidth=1.0, zorder=3, clip_on=False)
         lo, hi = boot_ci(v)
@@ -245,8 +249,15 @@ def main():
                 zorder=4, label=name.capitalize(), clip_on=False)
     ax.plot(xm, [np.mean(list(acc[seg].values())) for seg in segs], color=S.INK, lw=2.2, marker='D', ms=6.5,
             mec='white', mew=0.5, zorder=6, label='Average', clip_on=False)
-    ax.legend(loc='center left', bbox_to_anchor=(1.01, 0.5), frameon=False, fontsize=9.5, title='Group mean',
-              title_fontsize=9.5, handlelength=1.6)
+    leg_mean = ax.legend(loc='center left', bbox_to_anchor=(1.01, 0.5), frameon=False, fontsize=9.5,
+                         title='Group mean', title_fontsize=9.5, handlelength=1.6)
+    if 'recovery' in xs and any(x in open_dot for x in acc['recovery']):
+        from matplotlib.lines import Line2D
+        ax.add_artist(leg_mean)   # keep the group-mean legend; add a second one for the open dot
+        ax.legend([Line2D([], [], marker='o', ls='', mfc='white', mec=DOT_COLOR, mew=1.0, ms=6)],
+                  ['Open dot: not enough data during ROR, or no ROR\n(manually awakened before run 4)'],
+                  loc='upper left', bbox_to_anchor=(1.01, 0.3), frameon=False, fontsize=8.5,
+                  handletextpad=0.4, borderaxespad=0.0)
     ax.axhline(CHANCE, color=S.CHANCE, ls='--', lw=0.8, zorder=0)
     ax.text(len(SEGMENTS) - 0.55, CHANCE + 0.01, 'chance', fontsize=9, color=S.INK_2, ha='right', va='bottom')
 
@@ -280,7 +291,7 @@ def main():
     n_all = len(rows)
     note = (f"Grey dots: individual held-out subjects (thin lines join the same subject). Black: mean, 95% bootstrap CI.\n"
             f"Coloured: mean per-class accuracy. Dashed: chance. Paired Wilcoxon signed-rank tests."
-            + ("\nOpen circles (run 4): subjects woken manually before run 4." if 'recovery' in xs else ""))
+            + ("\nOpen circles (run 4): not enough data during ROR, or woken manually before run 4." if 'recovery' in xs else ""))
     fig.text(0.0, -0.03, note, fontsize=9, color=S.INK_2, va='top', linespacing=1.4)
 
     out = Path(args.output_file)

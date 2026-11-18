@@ -224,7 +224,7 @@ def plot_confidence(ax, per_fold, measure='logit_margin'):
     _top_legend(ax, [Line2D([], [], color=S.INK, lw=1.2, label='Mean over subjects')])
 
 
-def _flow_matrix(ax, cm, row_labels, col_labels, title, colors, highlight=(), bold_diag=True, tags=None):
+def _flow_matrix(ax, cm, row_labels, col_labels, title, colors, highlight=(), bold_diag=True, tags=None, xtop=False):
     """Confusion matrix for the branching figure: cell = % of its row (count); row labels carry
     the row total; cells in `highlight` get a heavy outline (the cells that feed the next stage);
     `tags` {(i, j): text} adds a small italic caption inside a cell."""
@@ -242,32 +242,40 @@ def _flow_matrix(ax, cm, row_labels, col_labels, title, colors, highlight=(), bo
                     fontweight='bold' if (bold_diag and i == j) else 'normal')
             if tag:
                 ax.text(j + 0.5, i + 0.86, tag, ha='center', va='center', fontsize=10.5, color=fg, style='italic')
-    for (i, j) in highlight:
-        ax.add_patch(plt.Rectangle((j, i), 1, 1, fill=False, ec=S.INK, lw=3, zorder=5, clip_on=False))
+    for h in highlight:                                    # (row, col) or (row, col, linestyle)
+        i, j = h[0], h[1]
+        ax.add_patch(plt.Rectangle((j, i), 1, 1, fill=False, ec=S.INK, lw=3, zorder=5, clip_on=False,
+                                   ls=h[2] if len(h) > 2 else '-'))
     ax.set_xlim(0, cm.shape[1]); ax.set_ylim(cm.shape[0], 0)
     ax.set_aspect('equal'); ax.set_anchor('NW')
     ax.set_xticks(np.arange(cm.shape[1]) + 0.5); ax.set_xticklabels(col_labels, fontsize=11.5)
     ax.set_yticks(np.arange(cm.shape[0]) + 0.5)
     ax.set_yticklabels([f"{r}\nn = {int(t)}" for r, t in zip(row_labels, cm.sum(1))], fontsize=11.5, va='center')
     ax.tick_params(length=0, pad=5)
+    if xtop:
+        ax.xaxis.tick_top(); ax.xaxis.set_label_position('top')
     for sp in ax.spines.values():
         sp.set_visible(False)
-    ax.set_title(title, loc='left', fontsize=13, fontweight='bold', pad=10)
+    if title:
+        ax.set_title(title, loc='left', fontsize=13, fontweight='bold', pad=10)
 
 
 def _subject_strip(ax, vals, chance, title):
-    """One dot per held-out subject on a 0-1 axis, dashed chance line, mean as a bar."""
+    """One dot per held-out subject on a 0-1 axis, dashed chance line, mean as a bar with its value above."""
     vals = np.asarray([v for v in vals if not np.isnan(v)], float)
     rng = np.random.default_rng(0)
     ax.axvline(chance, color=S.CHANCE, lw=1.6, ls=(0, (3, 2)), zorder=0)
-    ax.scatter(vals, rng.uniform(-0.28, 0.28, len(vals)), s=46, color=S.REAL, alpha=0.8,
-               edgecolor='white', linewidth=0.8, zorder=3)
+    ax.scatter(vals, rng.uniform(-0.28, 0.28, len(vals)), s=46, color=S.REAL, alpha=0.85,
+               edgecolor='white', linewidth=0.8, zorder=3, clip_on=False)   # dots at 0 or 1 stay fully visible
     if len(vals):
-        ax.plot([vals.mean()] * 2, [-0.45, 0.45], color=S.INK, lw=2.6, zorder=4)
-    ax.set_xlim(0, 1); ax.set_ylim(-0.6, 0.6); ax.set_yticks([])
+        m = vals.mean()
+        ax.plot([m, m], [-0.45, 0.45], color=S.INK, lw=2.6, zorder=4)
+        ax.text(m, 0.52, f"{m:.2f}", ha='center', va='bottom', fontsize=13, fontweight='bold', color=S.INK)
+    ax.set_xlim(-0.03, 1.03); ax.set_ylim(-0.6, 1.0); ax.set_yticks([])
     ax.set_xticks([0, 0.5, 1]); ax.set_xticklabels(['0', '0.5', '1'], fontsize=11)
     for sp in ('left', 'right', 'top'):
         ax.spines[sp].set_visible(False)
+    ax.spines['bottom'].set_bounds(0, 1)
     ax.tick_params(length=3)
     ax.set_title(title, loc='left', fontsize=11.5, pad=6)
     k = int((vals > chance).sum())
@@ -276,13 +284,15 @@ def _subject_strip(ax, vals, chance, title):
 
 def plot_branching(per_fold, out):
     """Branching-logic figure, read left to right:
-         all blocks -> Stage A (Task vs. No task) -> blocks called Task -> Stage B (which task)
+         all blocks -> Stage A (Task vs. No task) -> Stage B (which task?)
 
     Stage A asks the covert-consciousness question (is the person following the imagery command?);
-    Stage B asks whether the imagery is content-specific (which command?). The two outlined cells
-    of the Stage A matrix are exactly the blocks handed to Stage B; arrows run from those cells to
-    their Stage B matrices. Under each matrix, one dot per held-out subject shows how consistent the
-    result is across individuals (a clinical decision is about one person, not a pooled block count).
+    Stage B asks whether the imagery is content-specific (which command?). Real Task blocks that
+    Stage A called Task (solid outline) go on to Stage B. Real Task blocks Stage A missed (dashed
+    outline) stop there in the pipeline; Stage B was run on them anyway, so a second matrix shows
+    what it would have said (is Stage A too conservative, or are the missed blocks genuinely weak?).
+    Under each stage, one dot per held-out subject shows how consistent the result is across
+    individuals; the bar and number are the mean of the subject values.
     Built from the per-block records of folds that have Stage B, so all numbers agree.
     """
     from matplotlib.patches import FancyBboxPatch
@@ -295,20 +305,23 @@ def plot_branching(per_fold, out):
     mock = [r for r in recs if r['block_type'] == 'mock']
     called = [r for r in recs if r['stage_a_called_task']]
     real_called = [r for r in real if r['stage_a_called_task']]
+    real_missed = [r for r in real if not r['stage_a_called_task']]
     mock_called = [r for r in mock if r['stage_a_called_task']]
-    n_missed = len(real) - len(real_called)
+    n_missed = len(real_missed)
     n_rej = len(mock) - len(mock_called)
 
     def pct(k, n):
         return f"{100 * k / n:.0f}%" if n else "n/a"
 
+    def b_matrix(rs):
+        m = np.zeros((nb, nb), int)
+        for r in rs:
+            m[r['stage_b_true'], r['stage_b_pred']] += 1
+        return m
+
     cm_a = np.array([[n_rej, len(mock_called)], [n_missed, len(real_called)]])
-    cm_b = np.zeros((nb, nb), int)
-    for r in real_called:
-        cm_b[r['stage_b_true'], r['stage_b_pred']] += 1
-    mock_mix = np.array([[sum(r['stage_b_pred'] == c for r in mock_called) for c in range(nb)]])
-    b_acc = np.trace(cm_b) / cm_b.sum() if cm_b.sum() else float('nan')
-    bal = np.nanmean([cm_a[1, 1] / max(cm_a[1].sum(), 1), cm_a[0, 0] / max(cm_a[0].sum(), 1)])
+    cm_b, cm_miss = b_matrix(real_called), b_matrix(real_missed)
+    miss_acc = np.trace(cm_miss) / cm_miss.sum() if cm_miss.sum() else float('nan')
 
     # per-subject summaries
     subs = sorted({r['subject'] for r in recs})
@@ -323,85 +336,88 @@ def plot_branching(per_fold, out):
         rc = [r for r in rr if r['stage_a_called_task']]
         b_by_sub.append(np.mean([r['stage_b_correct'] for r in rc]) if rc else np.nan)
 
-    fig = plt.figure(figsize=(14, 9.6))
+    W, H = 14.0, 11.5
+    Y = lambda inches: inches / H                          # place things in inches from the bottom
+    fig = plt.figure(figsize=(W, H))
     bg = fig.add_axes([0, 0, 1, 1]); bg.set_xlim(0, 1); bg.set_ylim(0, 1); bg.axis('off')
 
     def head(x, w, text, sub):
-        bg.text(x, 0.955, text, fontsize=16, fontweight='bold', color=S.INK, ha='left', va='center')
-        bg.text(x, 0.915, sub, fontsize=11.5, color=S.INK_2, ha='left', va='center')
-        bg.plot([x, x + w], [0.893, 0.893], color=S.INK, lw=1.2)
+        bg.text(x, Y(H - 0.55), text, fontsize=16, fontweight='bold', color=S.INK, ha='left', va='center')
+        bg.text(x, Y(H - 0.95), sub, fontsize=11.5, color=S.INK_2, ha='left', va='center')
+        bg.plot([x, x + w], [Y(H - 1.2)] * 2, color=S.INK, lw=1.2)
 
     head(0.012, 0.12, 'All blocks', 'every held-out block')
     head(0.17, 0.30, 'Stage A: Task vs. No task', 'Is the person following the command?')
-    head(0.60, 0.375, 'Stage B: which task?', 'Only blocks Stage A called Task')
+    head(0.60, 0.375, 'Stage B: which task?', 'Task blocks only (real imagery)')
 
-    bg.add_patch(FancyBboxPatch((0.012, 0.50), 0.12, 0.15, boxstyle='round,pad=0.003,rounding_size=0.008',
-                                fc='white', ec=S.INK, lw=1.4))
-    bg.text(0.072, 0.575, f"n = {n_all}\n\nTask  {len(real)} ({pct(len(real), n_all)})\n"
-            f"No task  {len(mock)} ({pct(len(mock), n_all)})", ha='center', va='center', fontsize=11.5,
-            color=S.INK, linespacing=1.5)
-
-    # Stage A
-    ax_a = fig.add_axes([0.25, 0.30, 0.22, 0.50])
+    # Stage A (column labels on top so the bottom edge is free for the "missed" connector)
+    a_top, a_h = 9.2, 3.3
+    ax_a = fig.add_axes([0.25, Y(a_top - a_h), 0.22, Y(a_h)])
     _flow_matrix(ax_a, cm_a, ['No task\n(rest)', 'Task\n(imagery)'],
                  [f"called No task\nn = {n_rej + n_missed} ({pct(n_rej + n_missed, n_all)})",
                   f"called Task\nn = {len(called)} ({pct(len(called), n_all)})"],
-                 f"Balanced accuracy = {bal:.2f}", S.SEQ_BLUE, highlight=[(0, 1), (1, 1)],
-                 tags={(0, 0): 'specificity', (1, 1): 'sensitivity'})
-    ax_a.set_xlabel('Stage A prediction', fontsize=11.5, color=S.INK_2, labelpad=4)
-    ax_sa = fig.add_axes([0.25, 0.10, 0.22, 0.0625])
+                 '', S.SEQ_BLUE, highlight=[(1, 1), (1, 0, (0, (4, 2)))],
+                 tags={(0, 0): 'specificity', (1, 1): 'sensitivity'}, xtop=True)
+    ax_a.set_xlabel('Stage A prediction', fontsize=11.5, color=S.INK_2, labelpad=8)
+    mid_a = a_top - a_h / 2
+    bg.add_patch(FancyBboxPatch((0.012, Y(mid_a - 0.8)), 0.12, Y(1.6), boxstyle='round,pad=0.003,rounding_size=0.008',
+                                fc='white', ec=S.INK, lw=1.4))
+    bg.text(0.072, Y(mid_a), f"n = {n_all}\n\nTask  {len(real)} ({pct(len(real), n_all)})\n"
+            f"No task  {len(mock)} ({pct(len(mock), n_all)})", ha='center', va='center', fontsize=11.5,
+            color=S.INK, linespacing=1.5)
+    bg.annotate('', xy=(0.168, Y(mid_a)), xytext=(0.138, Y(mid_a)),
+                arrowprops=dict(arrowstyle='-|>', color=S.INK, lw=2.2, mutation_scale=18, shrinkA=0, shrinkB=0))
+    ax_sa = fig.add_axes([0.25, Y(1.0), 0.22, Y(0.6)])
     _subject_strip(ax_sa, a_by_sub, 0.5, 'Per subject: Stage A balanced accuracy')
 
-    # Stage B
-    ax_m = fig.add_axes([0.685, 0.72, 0.29, 0.104])
-    _flow_matrix(ax_m, mock_mix, ['No-task\nblocks'], names, 'No-task blocks wrongly called Task',
-                 ['#ffffff', S.PERM], bold_diag=False)
-    ax_m.set_xlabel('Stage B prediction (no true task exists, so this is not an accuracy)',
-                    fontsize=10.5, color=S.INK_2, labelpad=4)
-    ax_b = fig.add_axes([0.685, 0.27, 0.29, 0.313])
-    _flow_matrix(ax_b, cm_b, names, names,
-                 "Task blocks called Task", S.SEQ_BLUE)
+    # Stage B: called Task (top) and missed (bottom)
+    xb, wb = 0.685, 0.29
+    ax_b = fig.add_axes([xb, Y(9.5 - 2.7), wb, Y(2.7)])
+    _flow_matrix(ax_b, cm_b, names, names, 'Task blocks called Task', S.SEQ_BLUE)
     ax_b.set_xlabel('Stage B prediction', fontsize=11.5, color=S.INK_2, labelpad=4)
-    ax_sb = fig.add_axes([0.685, 0.10, 0.29, 0.0625])
-    _subject_strip(ax_sb, b_by_sub, 1 / nb, 'Per subject: Stage B accuracy')
+    ax_x = fig.add_axes([xb, Y(5.75 - 2.7), wb, Y(2.7)])
+    _flow_matrix(ax_x, cm_miss, names, names,
+                 "Task blocks Stage A missed", ['#ffffff', S.PERM])
+    ax_x.set_xlabel(f"Stage B prediction, had it been run (not part of the pipeline)\n"
+                    f"accuracy = {miss_acc:.2f}  (chance = {1 / nb:.2f})",
+                    fontsize=11, color=S.INK_2, labelpad=4, linespacing=1.4)
+    ax_sb = fig.add_axes([xb, Y(1.0), wb, Y(0.6)])
+    _subject_strip(ax_sb, b_by_sub, 1 / nb, 'Per subject: Stage B accuracy (blocks called Task)')
 
-    # arrows from the outlined Stage A cells to the Stage B matrices
+    # connectors from Stage A cells to the Stage B matrices
     fig.canvas.draw()
     inv = fig.transFigure.inverted()
-
-    def cell_edge(ax, col_edge, row_center):
-        return inv.transform(ax.transData.transform((col_edge, row_center)))
+    pt = lambda ax, x, y: inv.transform(ax.transData.transform((x, y)))
 
     def left_mid(ax):
         ax.apply_aspect()
         bb = ax.get_position()
         return bb.x0 - 0.09, bb.y0 + bb.height / 2
 
-    for (ci, cj), ax_t, lab in [((0, 1), ax_m, f"{len(mock_called)} of {len(mock)}\n({pct(len(mock_called), len(mock))})"),
-                                ((1, 1), ax_b, f"{len(real_called)} of {len(real)}\n({pct(len(real_called), len(real))})")]:
-        x0, y0 = cell_edge(ax_a, 2.0, ci + 0.5)
-        x1, y1 = left_mid(ax_t)
-        bg.annotate('', xy=(x1, y1), xytext=(x0 + 0.004, y0),
-                    arrowprops=dict(arrowstyle='-|>', color=S.INK, lw=2.2, mutation_scale=18,
-                                    shrinkA=0, shrinkB=0), zorder=1)
-        t = 0.62                                   # label sits 62% along the arrow, on the side away from the line
-        up = ci == 0                               # upper arrow rises -> label below it; lower arrow falls -> above it
-        bg.text(x0 + t * (x1 - x0), y0 + t * (y1 - y0) + (-0.022 if up else 0.022), lab, fontsize=11.5,
-                color=S.INK, ha='center', va='top' if up else 'bottom', linespacing=1.3, zorder=4)
-    ax_b.apply_aspect()
-    bb = ax_b.get_position()
-    cx, cy = bb.x1 + 0.065, bb.y0 + bb.height / 2     # callout sits just right of the matrix, whatever its width
-    bg.text(cx, cy + 0.045, "Accuracy", fontsize=13, color=S.INK_2, ha='center', va='bottom')
-    bg.text(cx, cy + 0.015, f"{b_acc:.2f}", fontsize=30, fontweight='bold', color=S.INK, ha='center', va='center')
-    bg.text(cx, cy - 0.02, f"chance = {1 / nb:.2f}", fontsize=12, color=S.INK_2, ha='center', va='top')
-    bg.annotate('', xy=(0.168, 0.575), xytext=(0.138, 0.575),
-                arrowprops=dict(arrowstyle='-|>', color=S.INK, lw=2.2, mutation_scale=18, shrinkA=0, shrinkB=0))
+    # solid: called-Task cell -> Stage B matrix
+    x0, y0 = pt(ax_a, 2.0, 1.5)
+    x1, y1 = left_mid(ax_b)
+    bg.annotate('', xy=(x1, y1), xytext=(x0 + 0.004, y0),
+                arrowprops=dict(arrowstyle='-|>', color=S.INK, lw=2.2, mutation_scale=18, shrinkA=0, shrinkB=0), zorder=1)
+    t = 0.5                                        # label sits below-right of the rising arrow, clear of the line
+    bg.text(x0 + t * (x1 - x0) + 0.035, y0 + t * (y1 - y0) - 0.012, f"{len(real_called)} of {len(real)}\n({pct(len(real_called), len(real))})",
+            fontsize=11.5, color=S.INK, ha='center', va='top', linespacing=1.3, zorder=4)
+    # dashed: missed cell -> down, then right to the "missed" matrix
+    xm, ym = pt(ax_a, 0.5, 2.0)
+    x2, y2 = left_mid(ax_x)
+    bg.plot([xm, xm], [ym - 0.004, y2], color=S.INK, lw=2.2, ls=(0, (4, 2)), zorder=1)
+    bg.annotate('', xy=(x2, y2), xytext=(xm, y2),
+                arrowprops=dict(arrowstyle='-|>', color=S.INK, lw=2.2, mutation_scale=18, shrinkA=0, shrinkB=0,
+                                ls=(0, (4, 2))), zorder=1)
+    bg.text((xm + x2) / 2, y2 + 0.012, f"{n_missed} of {len(real)} ({pct(n_missed, len(real))})\nstopped at Stage A",
+            fontsize=11.5, color=S.INK, ha='center', va='bottom', linespacing=1.3, zorder=4)
 
     n_sub = len({fr['subject'] for fr in per_fold})
-    fig.text(0.012, 0.008,
-             f"{n_sub} held-out subjects (leave-one-subject-out), blocks pooled. Cells: % of the row's true class (count). "
-             f"Outlined cells are the blocks passed from Stage A to Stage B.\n"
-             f"Per-subject plots: one dot per held-out subject, bar = mean, dashed line = chance.",
+    fig.text(0.012, Y(0.1),
+             f"{n_sub} held-out subjects (leave-one-subject-out), blocks pooled in the matrices. Cells: % of the row's true class (count). "
+             f"Solid outline: passed to Stage B; dashed: stopped at Stage A.\n"
+             f"Per-subject plots: one dot per held-out subject, bar and number = mean, dashed line = chance. "
+             f"No-task blocks wrongly called Task ({len(mock_called)} of {len(mock)}) are also passed to Stage B but not shown.",
              fontsize=10, color=S.INK_2, va='bottom', linespacing=1.5)
     for ext in ('.png', '.pdf', '.svg'):
         fig.savefig(out.with_suffix(ext), bbox_inches='tight', facecolor='white', dpi=300)

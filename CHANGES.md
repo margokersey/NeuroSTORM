@@ -1,5 +1,9 @@
 # Changes
 
+## Two-stage figure: branching flow figure replaces the end-to-end confusion matrix
+
+- `analysis/plot_two_stage_decoding.py`: removed the pooled 4x4 (3x3 for tennis/nav) end-to-end confusion panel, which mixed Stage A and Stage B errors in one grid. With `--stage_b_pred_glob` it now also writes `<output_file>_branching.{png,pdf,svg}`: all blocks -> Stage A 2x2 confusion -> blocks called Task split into real task blocks (Stage B confusion matrix) and mock blocks (Stage B predicted-class mix) -> blocks called No Task (correct rejects / misses). Every box, arrow and matrix cell shows count and %. The main figure's remaining panels are re-lettered; the End-to-end row in panel a is unchanged. The old `--stage_b_glob` lookup mode no longer gets an end-to-end panel (no mock predictions to branch on). Checked on synthetic data only; not yet re-rendered on real data.
+
 ## Two-stage test, tennis/navigation version (squeeze dropped)
 
 - `datasets/fmri_datasets.py`, `datasets/data_module.py`: new `MichiganTennisNavVsRest` (`MICHIGAN_TENNISNAV_VS_REST`), Stage A where "Task" = the 10 tennis + 10 navigation blocks (no squeeze) and "No Task" = 10 mock blocks from rest-1 + 10 from rest-2 (onsets of the first 10 tennis/nav blocks; 20 vs 20, balanced). Config `michigan_xcpd_nosmooth_tennisnav_vs_rest.yaml` (`task9`, same `taskvsrest_classification` head and metrics).

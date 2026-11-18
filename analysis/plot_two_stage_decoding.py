@@ -10,12 +10,16 @@ still gives a figure; re-run with the same command later to fill in the rest.
      mean +/- SEM)
   b  Stage A confusion matrix (pooled over subjects)
   c  Stage A permutation null (needs --stage_a_perm_glob)
-  d  Pooled end-to-end confusion matrix (needs Stage B folds)
-  e  With --stage_b_pred_glob (Stage B run on all Stage A blocks, incl. mock):
+  d  With --stage_b_pred_glob (Stage B run on all Stage A blocks, incl. mock):
      Stage B predicted-class mix for real vs mock blocks, and
-  f  Stage B confidence per block and per held-out subject, by block type x
+  e  Stage B confidence per block and per held-out subject, by block type x
      Stage A call (real/mock x called Task / No Task)
 (Letters shift if optional panels are absent.)
+
+With --stage_b_pred_glob a second, branching figure (<output_file>_branching.*) is also
+written: all blocks -> Stage A (Task vs. No Task, 2x2 confusion) -> blocks called Task
+split into real task blocks (Stage B confusion matrix) and mock blocks (Stage B
+predicted-class mix) -> blocks called No Task. Every arrow/box shows count and %.
 
 Styling is imported from scripts/analyze_loocv_permutation_results.py so the
 figure matches the 3-way one.
@@ -58,7 +62,7 @@ def _top_legend(ax, handles):
     S._top_legend(ax, handles, fontsize=6.5)
 
 
-def _single_confusion(ax, fig, cm, rows, cols, title):
+def _single_confusion(ax, fig, cm, rows, cols, title, colorbar=True):
     cm = np.asarray(cm, float)
     cmn = cm / np.maximum(cm.sum(1, keepdims=True), 1)
     cmap = S.LinearSegmentedColormap.from_list('seq_blue', S.SEQ_BLUE)
@@ -81,6 +85,8 @@ def _single_confusion(ax, fig, cm, rows, cols, title):
     ax.set_xlabel('Predicted class'); ax.set_ylabel('True class')
     ax.set_title(title, loc='left', pad=S.TITLE_PAD)
     ax.set_anchor('N')
+    if not colorbar:
+        return
     cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, ticks=[0, 0.5, 1], panchor=False)
     cb.ax.set_yticklabels(['0%', '50%', '100%'])
     cb.ax.tick_params(labelsize=7, length=2, width=0.5)
@@ -218,6 +224,127 @@ def plot_confidence(ax, per_fold, measure='logit_margin'):
     _top_legend(ax, [Line2D([], [], color=S.INK, lw=1.2, label='Mean over subjects')])
 
 
+def plot_branching(per_fold, out):
+    """Branching-logic figure: all blocks -> Stage A -> (called Task -> Stage B | called No Task).
+
+    Built from the per-block records of the folds that have Stage B, so every number is
+    consistent across the figure (panel b of the main figure uses all Stage A folds).
+    """
+    from matplotlib.patches import FancyBboxPatch
+    nb = tsd.N_B
+    recs = [r for fr in per_fold for r in fr['records']]
+    n_all = len(recs)
+    real = [r for r in recs if r['block_type'] == 'task']
+    mock = [r for r in recs if r['block_type'] == 'mock']
+    called = [r for r in recs if r['stage_a_called_task']]
+    not_called = [r for r in recs if not r['stage_a_called_task']]
+    real_called = [r for r in called if r['block_type'] == 'task']
+    mock_called = [r for r in called if r['block_type'] == 'mock']
+    real_missed = [r for r in not_called if r['block_type'] == 'task']
+    mock_rej = [r for r in not_called if r['block_type'] == 'mock']
+
+    def pct(k, n):
+        return f"{100 * k / n:.0f}%" if n else "n/a"
+
+    cm_a = np.array([[sum(1 for r in mock if not r['stage_a_called_task']),
+                      sum(1 for r in mock if r['stage_a_called_task'])],
+                     [sum(1 for r in real if not r['stage_a_called_task']),
+                      sum(1 for r in real if r['stage_a_called_task'])]])
+    cm_b = np.zeros((nb, nb), int)
+    for r in real_called:
+        cm_b[r['stage_b_true'], r['stage_b_pred']] += 1
+    b_acc = np.trace(cm_b) / cm_b.sum() if cm_b.sum() else float('nan')
+
+    fig = plt.figure(figsize=(11.5, 6.4))
+    bg = fig.add_axes([0, 0, 1, 1]); bg.set_xlim(0, 1); bg.set_ylim(0, 1); bg.axis('off')
+
+    def box(cx, cy, w, h, text, fc='white', ec=None, bold_first=True):
+        bg.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h, boxstyle='round,pad=0.004,rounding_size=0.01',
+                                    fc=fc, ec=ec or S.INK_2, lw=0.9, zorder=2))
+        lines = text.split('\n')
+        bg.text(cx, cy + (0.0 if len(lines) == 1 else 0.0), text, ha='center', va='center', fontsize=8,
+                color=S.INK, linespacing=1.45, zorder=3)
+
+    def arrow(x0, y0, x1, y1, label=None, dy=0.0):
+        bg.annotate('', xy=(x1, y1), xytext=(x0, y0),
+                    arrowprops=dict(arrowstyle='-|>', color=S.INK_2, lw=1.1, shrinkA=0, shrinkB=0), zorder=1)
+        if label:
+            bg.text((x0 + x1) / 2, (y0 + y1) / 2 + dy, label, ha='center', va='bottom', fontsize=6.5,
+                    color=S.INK_2, linespacing=1.3, zorder=3,
+                    bbox=dict(fc='white', ec='none', pad=1.0))
+
+    # 1. root
+    box(0.085, 0.5, 0.14, 0.20,
+        f"All blocks\nn = {n_all}\n\nreal task: {len(real)} ({pct(len(real), n_all)})\n"
+        f"mock (No task): {len(mock)} ({pct(len(mock), n_all)})")
+    arrow(0.157, 0.5, 0.225, 0.5)
+
+    # 2. Stage A matrix
+    ax_a = fig.add_axes([0.235, 0.27, 0.19, 0.46])
+    _single_confusion(ax_a, fig, cm_a, ['No task\n(mock)', 'Task\n(real)'], ['No task', 'Task'],
+                      'Stage A: Task vs. No task', colorbar=False)
+    ax_a.set_ylabel('')
+    bal = np.nanmean([cm_a[1, 1] / max(cm_a[1].sum(), 1), cm_a[0, 0] / max(cm_a[0].sum(), 1)])
+    ax_a.text(0.5, -0.50, f"balanced acc. = {bal:.3f}", transform=ax_a.transAxes, ha='center', fontsize=7, color=S.INK_2)
+
+    # 3. outcome boxes
+    ytask, yno = 0.80, 0.14
+    box(0.555, ytask, 0.165, 0.16,
+        f"Stage A called TASK\nn = {len(called)} ({pct(len(called), n_all)} of all blocks)\n"
+        f"real task: {len(real_called)} ({pct(len(real_called), len(called))})\n"
+        f"mock: {len(mock_called)} ({pct(len(mock_called), len(called))})  [false alarms]",
+        fc=S.SEQ_BLUE[0] if hasattr(S, 'SEQ_BLUE') else 'white')
+    box(0.555, yno, 0.165, 0.16,
+        f"Stage A called NO TASK  (stop)\nn = {len(not_called)} ({pct(len(not_called), n_all)} of all blocks)\n"
+        f"mock: {len(mock_rej)} ({pct(len(mock_rej), len(not_called))})  [correct rejects]\n"
+        f"real task: {len(real_missed)} ({pct(len(real_missed), len(not_called))})  [misses]")
+    arrow(0.43, 0.60, 0.472, ytask - 0.02, f"{len(called)} ({pct(len(called), n_all)})", 0.01)
+    arrow(0.43, 0.40, 0.472, yno + 0.02, f"{len(not_called)} ({pct(len(not_called), n_all)})", -0.045)
+
+    # 4. Stage B on blocks called Task: real -> matrix, mock -> class mix
+    names = list(tsd.STAGE_B_NAMES)
+    ax_b = fig.add_axes([0.775, 0.44, 0.19, 0.40])
+    _single_confusion(ax_b, fig, cm_b, names, names,
+                      f"Stage B on REAL task blocks called Task\n(acc. = {b_acc:.3f}, chance = {1 / nb:.2f})",
+                      colorbar=False)
+    ax_b.set_ylabel('')
+    arrow(0.64, ytask, 0.715, 0.72, f"real: {len(real_called)}\n({pct(len(real_called), len(called))})", 0.0)
+
+    ax_m = fig.add_axes([0.775, 0.17, 0.19, 0.06])
+    colors = [S.SEQ_BLUE[2], S.SEQ_BLUE[4], S.SEQ_BLUE[6]] if nb == 3 else [S.SEQ_BLUE[2], S.SEQ_BLUE[5]]
+    tot = max(len(mock_called), 1)
+    left = 0.0
+    for c in range(nb):
+        k = sum(r['stage_b_pred'] == c for r in mock_called)
+        frac = k / tot
+        ax_m.barh(0, frac, left=left, color=colors[c], edgecolor='white', linewidth=0.8, height=0.7)
+        if frac > 0.1:
+            ax_m.text(left + frac / 2, 0, f"{100 * frac:.0f}%\n({k})", ha='center', va='center', fontsize=6.5,
+                      color='white' if c >= 1 else S.INK, linespacing=1.15)
+        left += frac
+    ax_m.set_xlim(0, 1); ax_m.set_ylim(-0.5, 0.5); ax_m.set_yticks([])
+    ax_m.set_xticks([0, 0.5, 1]); ax_m.set_xticklabels(['0%', '50%', '100%'], fontsize=6.5)
+    for sp in ('left', 'right', 'top'):
+        ax_m.spines[sp].set_visible(False)
+    ax_m.set_title(f"Stage B on MOCK blocks called Task (n = {len(mock_called)})\npredicted-class mix; no true class, not an accuracy",
+                   loc='left', fontsize=7.5, pad=6)
+    ax_m.legend(handles=[Line2D([], [], marker='s', ls='', color=colors[c], markersize=5, label=names[c])
+                         for c in range(nb)], loc='upper center', bbox_to_anchor=(0.5, -0.75), ncol=nb,
+                frameon=False, fontsize=6.5, handletextpad=0.2, columnspacing=1.0)
+    arrow(0.64, ytask - 0.05, 0.765, 0.20, f"mock: {len(mock_called)}\n({pct(len(mock_called), len(called))})", 0.02)
+
+    n_sub = len({fr['subject'] for fr in per_fold})
+    fig.text(0.02, 0.02,
+             f"{n_sub} held-out subjects (LOOCV), blocks pooled over subjects. Matrices: rows = true class, "
+             f"cells = % of row (count); color = row %.\nPercentages on boxes/arrows are of the parent node unless "
+             f"stated. Stage B was run on every block, but only blocks Stage A called Task are passed on.",
+             fontsize=6.5, color=S.INK_2, va='bottom', linespacing=1.4)
+    for ext in ('.png', '.pdf', '.svg'):
+        fig.savefig(out.with_suffix(ext), bbox_inches='tight', facecolor='white')
+    plt.close(fig)
+    print(f"Saved {out.with_suffix('.png')} (+ .pdf, .svg)")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--stage_a_glob', required=True)
@@ -306,12 +433,6 @@ def main():
     if null_means is not None:
         real_acc = float(np.mean([tsd.stage_a_metrics(a_preds[f])['accuracy'] for f in folds]))
         panels.append(lambda ax, fig: plot_null(ax, real_acc, null_means))
-    if composed:
-        pooled = np.sum([np.array(c['end_to_end_confusion']) for c in composed], axis=0)
-        e2e_rows = ['No task'] + list(tsd.STAGE_B_NAMES)
-        e2e_cols = e2e_rows if all_blocks else e2e_rows + ['Task\n(unclassified)']
-        panels.append(lambda ax, fig: _single_confusion(ax, fig, pooled, e2e_rows, e2e_cols,
-                                                         'End-to-end confusion (pooled)'))
     if composed and all_blocks:
         panels.append(lambda ax, fig: plot_class_mix(ax, composed))
         panels.append(lambda ax, fig: plot_confidence(ax, composed))
@@ -338,6 +459,10 @@ def main():
         fig.savefig(out.with_suffix(ext), bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print(f"Saved {out.with_suffix('.png')} (+ .pdf, .svg): {len(folds)} Stage A folds, {n_b} with Stage B")
+    if composed and all_blocks:
+        plot_branching(composed, out.with_name(out.name + '_branching'))
+    elif composed:
+        print("  [note] branching figure needs --stage_b_pred_glob (Stage B predictions on mock blocks); skipped", file=sys.stderr)
 
 
 def tsd_cm(preds):

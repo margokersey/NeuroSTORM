@@ -502,15 +502,17 @@ with tabs[6]:
             lbl = c[0].radio("Stage", [a[0] for a in avail], horizontal=True, key="rep_stage")
             mode = c[1].radio("View", ["Figures", "Full HTML report"], horizontal=True, key="rep_mode")
             key = dict(avail)[lbl]
+            extra = st.text_input("Extra report folder to search (optional; auto-search covers the data folder and its parent)",
+                                  "", key="rep_extra")
             try:
-                rep = Q.find_reports(Q.resolve_bids_root(man["paths"][key]), focus)
+                rep = Q.find_reports(Q.resolve_bids_root(man["paths"][key]), focus, [extra] if extra else [])
             except FileNotFoundError as e:
                 rep = None
                 st.error(str(e))
             if rep is not None:
                 if mode == "Full HTML report":
                     if not rep["html"]:
-                        st.warning(f"No report HTML found for sub-{focus}. Looked for: " + ", ".join(rep["searched"][:1]))
+                        st.warning(f"No report HTML found for sub-{focus}. Looked for: " + ", ".join(rep["searched"]))
                     else:
                         hp = st.selectbox("Report file", rep["html"], key="rep_html") if len(rep["html"]) > 1 else rep["html"][0]
                         st.caption(hp)
@@ -518,7 +520,7 @@ with tabs[6]:
                 else:
                     figs = rep["figures"]
                     if not figs:
-                        st.warning(f"No figures found for sub-{focus}. Looked in: " + ", ".join(rep["searched"][1:]))
+                        st.warning(f"No figures found for sub-{focus}. Looked in: " + ", ".join(rep["searched"]))
                     else:
                         cats = sorted({Q.figure_category(f) for f in figs})
                         pick = st.multiselect("Figure type", cats, default=cats[:3], key="rep_cats")

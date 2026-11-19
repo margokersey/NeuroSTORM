@@ -355,14 +355,39 @@ _MIME = {".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".j
 MAX_EMBED_MB = 25
 
 
-def find_reports(root: Path, subject: str) -> dict:
-    """{'html': [paths], 'figures': [paths], 'searched': [str]} for one subject (BIDS report layout)."""
+def find_reports(root: Path, subject: str, extra_roots=()) -> dict:
+    """{'html': [paths], 'figures': [paths], 'searched': [str]} for one subject.
+
+    Looks in `root`, its parent, sibling folders whose name is a prefix of root's (XCP-D keeps reports in a folder
+    shared by the smoothing variants: reports in .../noGSR_highpass_fd-0.8/, data in .../noGSR_highpass_fd-0.8_nosmooth/),
+    and any extra roots.
+    In each base: sub-X.html, sub-X/*.html, sub-X/ses-*/*.html, and sub-X/[ses-*/]figures/*.
+    """
     sub = f"sub-{subject}"
-    html = sorted(root.glob(f"{sub}.html")) + sorted(root.glob(f"{sub}_ses-*.html"))
-    fig_dirs = [root / sub / "figures"] + sorted(root.glob(f"{sub}/ses-*/figures"))
-    figs = [f for d in fig_dirs if d.is_dir() for f in sorted(d.iterdir()) if f.suffix.lower() in IMG_EXT]
-    return {"html": [str(p) for p in html], "figures": [str(p) for p in figs],
-            "searched": [str(root / f"{sub}.html")] + [str(d) for d in fig_dirs]}
+    siblings = []
+    try:
+        siblings = sorted(d for d in root.parent.iterdir()
+                          if d.is_dir() and d != root and len(d.name) < len(root.name) and root.name.startswith(d.name))
+    except OSError:
+        pass
+    bases = []
+    for b in (root, *siblings, root.parent, *map(Path, extra_roots)):
+        if b not in bases:
+            bases.append(b)
+    html, figs, searched = [], [], []
+    for b in bases:
+        cand_html = [*b.glob(f"{sub}.html"), *b.glob(f"{sub}_ses-*.html"), *b.glob(f"{sub}/*.html"), *b.glob(f"{sub}/ses-*/*.html")]
+        fig_dirs = [b / sub / "figures", *b.glob(f"{sub}/ses-*/figures")]
+        searched += [str(b / f"{sub}.html"), str(b / sub / "*.html"), str(b / sub / "figures")]
+        for h in sorted(cand_html):
+            if str(h) not in html:
+                html.append(str(h))
+        for d in fig_dirs:
+            if d.is_dir():
+                for f in sorted(d.iterdir()):
+                    if f.suffix.lower() in IMG_EXT and str(f) not in figs:
+                        figs.append(str(f))
+    return {"html": html, "figures": figs, "searched": searched}
 
 
 def figure_category(path: str) -> str:

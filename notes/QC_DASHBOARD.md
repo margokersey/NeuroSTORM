@@ -65,7 +65,7 @@ per-subject series; rescans only recompute files whose mtime changed).
 
 "Reports (images)" shows, for the focus subject, either the **figures** (`sub-XX/figures/*.svg|png`, filterable by type and by file
 name such as `run-1`) or the **full HTML report** (`sub-XX.html` at the derivatives root, with its relative images inlined). Files are
-read live from turbo; HTML runs in an iframe with JavaScript enabled, so only point it at your own derivatives. If nothing is
+searched in the data folder, its parent, and sibling folders whose name is a prefix of it (XCP-D keeps reports in e.g. `noGSR_highpass_fd-0.8/`, shared by the `noGSR_highpass_fd-0.8_nosmooth` data folder), both as `sub-XX.html` and inside `sub-XX/`; an extra folder can be typed in. Files are read live from turbo; HTML runs in an iframe with JavaScript enabled, so only point it at your own derivatives. If nothing is
 found it lists the exact paths it looked in.
 
 ## Caveats

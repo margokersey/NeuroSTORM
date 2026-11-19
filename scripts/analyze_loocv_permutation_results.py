@@ -727,7 +727,7 @@ def _pooled(results, which='real'):
     return y, yhat, probs, np.concatenate(gs)
 
 
-def plot_per_subject(ax, stats, metric, chance):
+def plot_per_subject(ax, stats, metric, chance, label_all=False):
     fold_ids = sorted(stats)
     real = np.array([stats[f]['real_metrics'][metric] for f in fold_ids])
     perm = [np.array([v[metric] for v in stats[f]['perm_metrics'].values()]) for f in fold_ids]
@@ -747,7 +747,7 @@ def plot_per_subject(ax, stats, metric, chance):
     ax.axhline(chance, color=CHANCE, lw=0.8, ls=(0, (3, 2)), zorder=0)
     ax.set_xlim(-0.8, len(x) - 0.2)
     ax.set_ylim(0, 1.02)
-    if len(fold_ids) <= 24:
+    if len(fold_ids) <= 24 or label_all:
         ax.set_xticks(x)
         ax.set_xticklabels([str(fold_ids[i]) for i in order], rotation=90, fontsize=6)
         ax.tick_params(axis='x', length=0, pad=2)
@@ -1010,7 +1010,8 @@ def _grid_shape(n):
     return int(np.ceil(n / 3)), 3
 
 
-def plot_results(stats, results, tests, class_names, n_perm, output_file, note=None):
+def plot_results(stats, results, tests, class_names, n_perm, output_file, note=None,
+                 label_all_subjects=False):
     """Publication figure (183 mm wide). Only panels whose data exist are drawn:
     per-sample probabilities enable ROC/calibration; the confusion matrix and
     label-based metrics only need predicted labels (or the saved summary)."""
@@ -1027,7 +1028,7 @@ def plot_results(stats, results, tests, class_names, n_perm, output_file, note=N
 
     # (title, draw(ax, fig)); order = reading order, unavailable panels skipped
     panels = [
-        ('per-subject', lambda ax, fig: plot_per_subject(ax, stats, metric, chance)),
+        ('per-subject', lambda ax, fig: plot_per_subject(ax, stats, metric, chance, label_all_subjects)),
         ('kde', lambda ax, fig: plot_kde(ax, stats, n_classes)),
     ]
     # The null histogram is only informative with enough permutations; with fewer
@@ -1132,7 +1133,8 @@ def main():
         if args.include_incomplete and agg.get('n_null_folds', 0) != len(results):
             note = (f"PRELIMINARY: {len(results)} subjects; permutation null from "
                     f"{agg.get('n_null_folds', 0)} subjects with permutations")
-        plot_results(stats, results, tests, class_names, agg['n_permutations'], args.plot_file, note)
+        plot_results(stats, results, tests, class_names, agg['n_permutations'], args.plot_file, note,
+                     label_all_subjects=args.include_incomplete)
     return 0
 
 

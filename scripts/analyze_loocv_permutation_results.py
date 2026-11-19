@@ -134,7 +134,17 @@ def parse_predictions(preds):
         probs = np.array([p['softmax_probs'] for p in preds], dtype=float)
     names = {int(p['true_label']): p['true_label_name']
              for p in preds if 'true_label_name' in p}
-    return {'y': y, 'yhat': yhat, 'probs': probs, 'names': names}
+    subs = sorted({str(p['subject']) for p in preds if p.get('subject') is not None})
+    return {'y': y, 'yhat': yhat, 'probs': probs, 'names': names,
+            'subject': subs[0] if len(subs) == 1 else None}   # LOOCV: one held-out subject
+
+
+def participant_label(subject, fold_id):
+    """'sub-22' -> '22' (participant number); falls back to the fold id if unknown."""
+    if not subject:
+        return str(fold_id)
+    t = str(subject).strip()
+    return t[4:] if t.lower().startswith('sub-') else t
 
 
 def preds_from_summary(summary):
@@ -389,6 +399,7 @@ def compute_statistics(results, n_classes):
                 'perm_min': np.nan, 'perm_max': np.nan, 'effect_size': np.nan,
                 'effect_size_std': np.nan, 'p_value': np.nan, 'significant_p05': False,
                 'n_samples': int(len(data['real_preds']['y'])) if data['real_preds'] else None,
+                'subject': (data['real_preds'] or {}).get('subject'),
                 'real_metrics': real_m, 'perm_metrics': {},
             }
             continue
@@ -407,6 +418,7 @@ def compute_statistics(results, n_classes):
             'p_value': float(p_value),
             'significant_p05': bool(p_value < 0.05),
             'n_samples': int(len(data['real_preds']['y'])) if data['real_preds'] else None,
+            'subject': (data['real_preds'] or {}).get('subject'),
             'real_metrics': real_m,
             'perm_metrics': {int(k): v for k, v in perm_m.items()},
         }
@@ -626,13 +638,13 @@ def save_per_fold_csv(stats, output_file):
     cols = list(METRICS)
     with open(path, 'w', newline='') as f:
         w = csv.writer(f)
-        w.writerow(['fold', 'n_samples']
+        w.writerow(['fold', 'subject', 'n_samples']
                    + [f'real_{c}' for c in cols] + [f'perm_mean_{c}' for c in cols]
                    + ['p_pooled', 'q_fdr', 'significant_fdr'])
         for fid in sorted(stats):
             s = stats[fid]
             perm = s['perm_metrics'].values()
-            w.writerow([fid, s['n_samples']]
+            w.writerow([fid, s.get('subject'), s['n_samples']]
                        + [s['real_metrics'][c] for c in cols]
                        + [np.nanmean([p[c] for p in perm]) for c in cols]
                        + [s.get('p_value_pooled'), s.get('q_value_fdr'), s.get('significant_fdr')])
@@ -749,9 +761,10 @@ def plot_per_subject(ax, stats, metric, chance, label_all=False):
     ax.set_ylim(0, 1.02)
     if len(fold_ids) <= 24 or label_all:
         ax.set_xticks(x)
-        ax.set_xticklabels([str(fold_ids[i]) for i in order], rotation=90, fontsize=6)
+        ax.set_xticklabels([participant_label(stats[fold_ids[i]].get('subject'), fold_ids[i])
+                            for i in order], rotation=90, fontsize=6)
         ax.tick_params(axis='x', length=0, pad=2)
-        ax.set_xlabel('Held-out subject (sorted)')
+        ax.set_xlabel('Held-out participant (sorted)')
     else:
         ax.set_xticks([])
         ax.set_xlabel(f'Held-out subjects (n = {len(fold_ids)}, sorted)')

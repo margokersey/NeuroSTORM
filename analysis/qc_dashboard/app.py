@@ -18,6 +18,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 from streamlit.delta_generator import DeltaGenerator
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -71,6 +72,24 @@ def load_table(path):
 def load_series_npz(path, mtime):
     with np.load(path) as z:
         return {k: z[k] for k in z.files}
+
+
+def show_html(html: str, height: int):
+    """Embed trusted local HTML (your own derivatives). st.iframe on new Streamlit, components.html on old."""
+    if hasattr(st, "iframe"):
+        st.iframe(html, height=height)
+    else:
+        components.html(html, height=height, scrolling=True)
+
+
+@st.cache_data(show_spinner="Reading report...", max_entries=3)
+def get_report_html(path, mtime):
+    return Q.inline_report(path)
+
+
+@st.cache_data(show_spinner=False, max_entries=96)
+def get_figure(path, mtime):
+    return Q.figure_data_uri(path)
 
 
 @st.cache_resource(max_entries=2)
@@ -192,7 +211,7 @@ if dp is not None:
 
 focus = st.sidebar.selectbox("Focus subject (Subject detail tab)", subjects) if subjects else None
 
-tabs = st.tabs(["Overview", "fMRIPrep", "XCP-D", "data.pt", "Cross-stage", "Subject detail"])
+tabs = st.tabs(["Overview", "fMRIPrep", "XCP-D", "data.pt", "Cross-stage", "Subject detail", "Reports (images)"])
 
 
 # ------------------------------------------------------------------ helpers
@@ -468,3 +487,52 @@ with tabs[5]:
                     st.dataframe(kv(row.drop(labels=["path"], errors="ignore")))
                 if st.checkbox("Load volume viewer (reads this subject's data.pt)", value=False):
                     vol_view(row["path"])
+
+
+# ------------------------------------------------------------------ Reports
+with tabs[6]:
+    if not focus:
+        st.info("No subjects selected.")
+    else:
+        avail = [(lbl, k) for lbl, k in (("fMRIPrep", "fmriprep"), ("XCP-D", "xcpd")) if man["paths"].get(k)]
+        if not avail:
+            st.info("This dataset has no fMRIPrep or XCP-D path.")
+        else:
+            c = st.columns(2)
+            lbl = c[0].radio("Stage", [a[0] for a in avail], horizontal=True, key="rep_stage")
+            mode = c[1].radio("View", ["Figures", "Full HTML report"], horizontal=True, key="rep_mode")
+            key = dict(avail)[lbl]
+            try:
+                rep = Q.find_reports(Q.resolve_bids_root(man["paths"][key]), focus)
+            except FileNotFoundError as e:
+                rep = None
+                st.error(str(e))
+            if rep is not None:
+                if mode == "Full HTML report":
+                    if not rep["html"]:
+                        st.warning(f"No report HTML found for sub-{focus}. Looked for: " + ", ".join(rep["searched"][:1]))
+                    else:
+                        hp = st.selectbox("Report file", rep["html"], key="rep_html") if len(rep["html"]) > 1 else rep["html"][0]
+                        st.caption(hp)
+                        show_html(get_report_html(hp, os.path.getmtime(hp)), 900)
+                else:
+                    figs = rep["figures"]
+                    if not figs:
+                        st.warning(f"No figures found for sub-{focus}. Looked in: " + ", ".join(rep["searched"][1:]))
+                    else:
+                        cats = sorted({Q.figure_category(f) for f in figs})
+                        pick = st.multiselect("Figure type", cats, default=cats[:3], key="rep_cats")
+                        txt = st.text_input("File name contains (e.g. task-imagery_run-1)", "", key="rep_txt")
+                        cap = st.slider("Max figures", 1, 40, 8, key="rep_cap")
+                        show = [f for f in figs if Q.figure_category(f) in pick and txt in os.path.basename(f)][:cap]
+                        st.caption(f"{len(show)} of {len(figs)} figures shown")
+                        for f in show:
+                            st.markdown(f"**{os.path.basename(f)}**")
+                            uri, aspect = get_figure(f, os.path.getmtime(f))
+                            if uri is None:
+                                st.warning(f"Skipped (larger than {Q.MAX_EMBED_MB} MB): {f}")
+                            elif f.lower().endswith(".svg"):
+                                show_html(f'<img src="{uri}" style="width:100%">',
+                                          int(min(1200, max(200, 1000 * aspect + 20))))
+                            else:
+                                st.image(f)

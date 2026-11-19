@@ -345,3 +345,69 @@ ID_COLS = {c: str for c in ("sub", "ses", "task", "acq", "run", "subject")}
 def read_cache_csv(path):
     """Read a cache CSV keeping BIDS ids (e.g. sub-'01', run-'1') as strings."""
     return pd.read_csv(path, dtype=ID_COLS)
+
+
+# --------------------------------------------------------------------------- #
+# fMRIPrep / XCP-D visual reports (HTML + figures)
+# --------------------------------------------------------------------------- #
+IMG_EXT = (".svg", ".png", ".jpg", ".jpeg", ".gif")
+_MIME = {".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif"}
+MAX_EMBED_MB = 25
+
+
+def find_reports(root: Path, subject: str) -> dict:
+    """{'html': [paths], 'figures': [paths], 'searched': [str]} for one subject (BIDS report layout)."""
+    sub = f"sub-{subject}"
+    html = sorted(root.glob(f"{sub}.html")) + sorted(root.glob(f"{sub}_ses-*.html"))
+    fig_dirs = [root / sub / "figures"] + sorted(root.glob(f"{sub}/ses-*/figures"))
+    figs = [f for d in fig_dirs if d.is_dir() for f in sorted(d.iterdir()) if f.suffix.lower() in IMG_EXT]
+    return {"html": [str(p) for p in html], "figures": [str(p) for p in figs],
+            "searched": [str(root / f"{sub}.html")] + [str(d) for d in fig_dirs]}
+
+
+def figure_category(path: str) -> str:
+    """e.g. sub-01_task-x_run-1_desc-coreg_bold.svg -> 'desc-coreg_bold'."""
+    stem = os.path.basename(path).rsplit(".", 1)[0]
+    parts = [p for p in stem.split("_") if not re.match(r"(sub|ses|task|run|acq|dir|echo|space)-", p)]
+    return "_".join(parts) or stem
+
+
+def _data_uri(path: str):
+    if os.path.getsize(path) > MAX_EMBED_MB * 1e6:
+        return None
+    import base64
+    with open(path, "rb") as f:
+        b = base64.b64encode(f.read()).decode()
+    return f"data:{_MIME[os.path.splitext(path)[1].lower()]};base64,{b}"
+
+
+def figure_data_uri(path: str):
+    """(data URI, aspect h/w) for an image file; aspect parsed from an SVG's viewBox when possible."""
+    uri = _data_uri(path)
+    aspect = 0.6
+    if uri and path.lower().endswith(".svg"):
+        with open(path, "rb") as f:
+            head = f.read(4000).decode("utf-8", "ignore")
+        m = re.search(r'viewBox="[-\d.]+[ ,]+[-\d.]+[ ,]+([\d.]+)[ ,]+([\d.]+)"', head)
+        if m and float(m.group(1)) > 0:
+            aspect = float(m.group(2)) / float(m.group(1))
+    return uri, aspect
+
+
+def inline_report(html_path: str) -> str:
+    """Return the report HTML with relative image references replaced by data URIs (self-contained)."""
+    base = os.path.dirname(html_path)
+    with open(html_path, encoding="utf-8", errors="replace") as f:
+        txt = f.read()
+    pat = re.compile(r"""(?P<attr>src|data|href)=(?P<q>["'])(?P<u>(?!https?:|data:|#|mailto:|//)[^"']+?\.(?:svg|png|jpe?g|gif))(?P=q)""",
+                     re.I)
+
+    def sub(m):
+        p = os.path.normpath(os.path.join(base, m.group("u")))
+        if os.path.isfile(p):
+            uri = _data_uri(p)
+            if uri:
+                return f'{m.group("attr")}={m.group("q")}{uri}{m.group("q")}'
+        return m.group(0)
+
+    return pat.sub(sub, txt)

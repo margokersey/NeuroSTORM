@@ -61,6 +61,13 @@ per-subject series; rescans only recompute files whose mtime changed).
 - Subject detail: FD/DVARS/GS/motion traces (fMRIPrep), FD with censored volumes shaded (XCP-D), data.pt series, and a
   volume viewer (frame / temporal mean / std / tSNR, 3 orthogonal slices, voxel time series, histogram).
 
+## Reports tab (fMRIPrep / XCP-D images)
+
+"Reports (images)" shows, for the focus subject, either the **figures** (`sub-XX/figures/*.svg|png`, filterable by type and by file
+name such as `run-1`) or the **full HTML report** (`sub-XX.html` at the derivatives root, with its relative images inlined). Files are
+read live from turbo; HTML runs in an iframe with JavaScript enabled, so only point it at your own derivatives. If nothing is
+found it lists the exact paths it looked in.
+
 ## Caveats
 
 - Built and tested on synthetic trees only (the laptop has no turbo access): file-name patterns for XCP-D 26.1.1's QC file and

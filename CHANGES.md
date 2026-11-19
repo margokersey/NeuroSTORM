@@ -2,6 +2,8 @@
 
 ## QC dashboard for fMRIPrep, XCP-D and data.pt
 
+- QC dashboard: new "Reports (images)" tab shows the fMRIPrep / XCP-D report figures and full HTML reports per subject (tested on synthetic reports only).
+
 - New `analysis/qc_dashboard/` (`scan.py`, `app.py`, `qc_lib.py`, `sbatch_qc_dashboard.sh`): point it at the three folders and browse per-run/per-subject QC, group summaries, cross-stage comparisons and a `data.pt` slice viewer. Runs on a compute node bound to 127.0.0.1 with a random access token; reached through an SSH tunnel. Docs: `notes/QC_DASHBOARD.md`. Tested on synthetic data only; not yet run on the real turbo folders.
 
 ## Two-stage figure: branching flow figure replaces the end-to-end confusion matrix

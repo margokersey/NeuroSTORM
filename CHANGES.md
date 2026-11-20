@@ -1,5 +1,9 @@
 # Changes
 
+## Tennis/nav permutation seeds are now fold-specific
+
+- `sbatch_loocv_tennisnav_permutation.sh`, `sbatch_loocv_tennisnav_vs_rest_permutation.sh`: `perm_seed = 1234 + 1000*fold + perm_idx` (was `1234 + perm_idx`). With the old rule a training subject at the same sorted position got the identical label shuffle in many folds, so null accuracies for one permutation index were correlated across folds and the pooled per-subject p-values were optimistic. Neither script had been run on real data. The 3-way and Task-vs-Rest permutation scripts are unchanged (their finished runs use the old rule); do not pool nulls from the two rules. Notes in `notes/LABEL_PERMUTATION_TESTING.md`.
+
 ## QC dashboard for fMRIPrep, XCP-D and data.pt
 
 - QC dashboard: new "Reports (images)" tab shows the fMRIPrep / XCP-D report figures and full HTML reports per subject (tested on synthetic reports only).

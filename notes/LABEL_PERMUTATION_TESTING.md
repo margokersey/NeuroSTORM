@@ -206,7 +206,8 @@ descriptive; the numbers to report are the subject-mean metrics in panel d / `me
 
 ## Notes
 
-- **Seed strategy**: Base seed is 1234; each permutation gets `seed + perm_idx`
+- **Seed strategy (tennis-vs-nav scripts)**: `seed = 1234 + 1000*fold + perm_idx`, so every (fold, permutation) run draws an independent shuffle. The older 3-way and Task-vs-Rest scripts use the legacy rule below, which repeats the same shuffle for a subject across folds (null accuracies from one permutation index are then correlated across folds, so pooled per-subject p-values are optimistic). Do not mix the two seed rules in one pooled null.
+- **Legacy seed strategy**: Base seed is 1234; each permutation gets `seed + perm_idx`
   - Permutation 1: seed = 1235
   - Permutation 2: seed = 1236
   - Permutation 3: seed = 1237

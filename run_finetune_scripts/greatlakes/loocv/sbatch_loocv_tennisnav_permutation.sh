@@ -6,7 +6,9 @@
 # each a single fine-tune on within-subject-shuffled labels, so every fold and
 # every permutation can run in parallel. Task id -> fold/perm:
 #     fold = 101 + id / N_PERMS        perm = PERM_START + id % N_PERMS
-# Seeds are 1234+perm, matching the other permutation scripts. Output folders:
+# Seeds are 1234 + 1000*fold + perm, so every (fold, perm) run gets an independent label shuffle
+# (the older 3-way / Task-vs-Rest scripts use 1234+perm, which repeats shuffles across folds).
+# Output folders:
 #     FIXED_mich_xcpd_nosmooth_tennisnav_tpt_strategy-none_loocv_fold-<fold>_perm<perm>
 #
 # Prerequisites: none beyond the splits (real runs are independent of these).
@@ -55,7 +57,7 @@ if (( TASK_ID >= N_FOLDS * N_PERMS )); then
 fi
 FOLD_ID=$((FIRST_FOLD + TASK_ID / N_PERMS))
 perm_idx=$((PERM_START + TASK_ID % N_PERMS))
-perm_seed=$((1234 + perm_idx))
+perm_seed=$((1234 + 1000 * FOLD_ID + perm_idx))   # fold-specific: independent shuffle per (fold, perm)
 
 # ── Modules ──────────────────────────────────────────────────────────────────
 module load gcc/11.2.0 cuda/12.8.1

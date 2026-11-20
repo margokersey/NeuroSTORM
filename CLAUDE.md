@@ -61,6 +61,6 @@ Rules for Claude:
 - **Never commit**: data, checkpoints (`*.ckpt`, `*.pt`, `*.pth`), Slurm logs (`slurm-*.out`), `output/`, wheels, `__pycache__`, credentials/tokens (Neptune API keys etc.). Check `.gitignore` and add patterns rather than committing such files. Flag any file over ~5 MB before adding it.
 - Commit messages: short imperative summary line (≤72 chars, e.g. `Add LOOCV permutation testing scripts`), optional body explaining why. Group unrelated changes into separate commits (code vs. docs vs. scripts).
 - Moves/renames: use `git mv` or stage both sides so history shows a rename.
-- Pull requests: end the description with the attribution line the harness specifies. Commits end with the Co-Authored-By trailer the harness specifies.
+- Pull requests: end the description with the attribution line the harness specifies. Do NOT add a Co-Authored-By (or any Claude attribution) trailer to commit messages; the user does not want Claude listed as a co-author on GitHub.
 - Upstream: `https://github.com/CUHK-AIM-Group/NeuroSTORM` is not configured as a remote. Add it as `upstream` only if the user asks to sync from it.
 - Documentation: when changing experiment behavior (LOOCV, permutation tests, prediction outputs), add a short entry to `CHANGES.md` in the same commit.

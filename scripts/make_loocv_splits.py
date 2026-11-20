@@ -15,11 +15,11 @@ files. --start_index puts LOOCV splits at a disjoint range (101..126 for 26
 subjects) in the SAME directory, so both the 5-fold CV and LOOCV splits
 coexist under one --dataset_name with zero collision risk.
 
-Each LOOCV fold i holds out exactly one subject as the test set, and rotates
-to the NEXT subject (wrapping around) as a single-subject validation set
-(used only for best-checkpoint selection via valid_acc) -- the remaining 24
-subjects are train. Using a val subject distinct from the test subject avoids
-leaking the held-out subject into checkpoint selection.
+Each LOOCV fold i holds out exactly one subject as the test set, and uses the
+NEXT 3 subjects (wrapping around) as the validation set (used only for
+best-checkpoint selection via valid_acc) -- the remaining 22 subjects are
+train. Using val subjects distinct from the test subject avoids leaking the
+held-out subject into checkpoint selection.
 
 Usage:
     python scripts/make_loocv_splits.py \

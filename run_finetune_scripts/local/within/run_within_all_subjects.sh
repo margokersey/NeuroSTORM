@@ -68,8 +68,7 @@ for k in $(seq 1 "$N_SUBJECTS"); do
 done
 
 echo ""
-echo "Done. analysis/compare_conditions.py can treat michigan_within_fold-1..${N_SUBJECTS} as"
-echo "the 'folds' of a single condition -- each one is a different SUBJECT rather"
-echo "than a different partition of subjects, but the fold-aggregation (mean +/-"
-echo "SEM across folds) works the same way and is the right way to read this,"
+echo "Done. Treat michigan_within_fold-1..${N_SUBJECTS} as the 'folds' of a single condition --"
+echo "each one is a different SUBJECT rather than a different partition of subjects,"
+echo "so summarize as mean +/- SEM across folds, which is the right way to read this,"
 echo "since any single subject's 6-block test set is too small to trust alone."

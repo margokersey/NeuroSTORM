@@ -20,9 +20,9 @@
 # It writes into the SAME --project_name as the original training run, so
 # PyTorch Lightning creates a new, later lightning_logs/version_N there for
 # the test-only pass's event log (the checkpoint dir itself is untouched --
-# testing doesn't write new checkpoints). compare_conditions.py /
-# evaluate_cv_thorough.py already pick the LATEST version_N per project, so
-# they'll automatically start reading this corrected result with no changes
+# testing doesn't write new checkpoints). evaluate_cv_thorough.py
+# already picks the LATEST version_N per project, so
+# it'll automatically start reading this corrected result with no changes
 # needed on their end.
 #
 # Usage:
@@ -103,6 +103,6 @@ for i in $(seq "$START_FOLD_NUM" "$END_FOLD_NUM"); do
 done
 
 echo ""
-echo "Done. Re-run compare_conditions.py / evaluate_cv_thorough.py -- they pick the"
-echo "LATEST lightning_logs/version_N per project automatically, so they'll now read"
+echo "Done. Re-run evaluate_cv_thorough.py -- it picks the"
+echo "LATEST lightning_logs/version_N per project automatically, so it'll now read"
 echo "these best-checkpoint results instead of the original last-epoch ones."

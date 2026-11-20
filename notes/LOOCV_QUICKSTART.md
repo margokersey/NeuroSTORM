@@ -52,8 +52,9 @@ bash run_finetune_scripts/greatlakes/loocv/run_loocv_xcpd.sh --start_index 101 -
 ## After Completion: Aggregate Results
 ```bash
 # Summarize all 26 held-out subjects
-python analysis/compare_conditions_v2.py \
-  --condition "LOOCV (best model)|FIXED_mich_xcpd_nosmooth_tpt_strategy-none_loocv_fold-*"
+# Per-fold predictions are in <output_root>/<project>_fold-<N>/lightning_logs/version_*/test_predictions/.
+# With the permutation runs, aggregate with scripts/analyze_loocv_permutation_results.py
+# (see notes/LABEL_PERMUTATION_TESTING.md).
 ```
 
 ## Job Management

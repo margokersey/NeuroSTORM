@@ -1050,7 +1050,7 @@ class MichiganSampleSplit(Michigan):
     (only 4 possible accuracy values). Still very little data for a
     ~5M-parameter full fine-tune per subject (MICHIGAN_WITHIN) -- treat
     any single subject's number as noisy and look at the distribution
-    across all 26 subjects (e.g. via compare_conditions.py, treating each
+    across all 26 subjects (treating each
     subject as a "fold") rather than trusting one subject's result alone.
     """
     BLOCK_SPLIT_FRACS = {"train": 0.7, "val": 0.1, "test": 0.2}

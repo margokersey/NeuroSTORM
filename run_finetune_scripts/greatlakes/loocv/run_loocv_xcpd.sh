@@ -1,6 +1,6 @@
 #!/bin/bash
 # Leave-one-subject-out (LOOCV) fine-tune of the WINNING condition
-# identified by compare_conditions_v2.py -- FIXED_mich_xcpd_nosmooth_tpt_
+# identified in the earlier 5-fold comparison -- FIXED_mich_xcpd_nosmooth_tpt_
 # strategy-none (XCP-D-denoised data, NeuroSTORM's general MAE-pretrained
 # checkpoint, --tpt_strategy none / full fine-tune) -- same model, same
 # data, same hyperparameters as the 5-fold CV in 5fold/run_finetune_xcpd_cv.sh, just
@@ -161,12 +161,11 @@ for i in $(seq "$START_INDEX" "$END_INDEX"); do
 done
 
 echo ""
-echo "All $N_FOLDS folds done. Summarize with:"
-echo "  python analysis/compare_conditions_v2.py \\"
-echo "    --condition \"LOOCV (best model)|${PROJECT_PREFIX}_fold-*\""
+echo "All $N_FOLDS folds done. Per-fold predictions are in ${OUTPUT_ROOT}/${PROJECT_PREFIX}_fold-<N>/lightning_logs/version_*/test_predictions/."
+echo "Aggregate with scripts/analyze_loocv_permutation_results.py once the permutation runs finish."
 echo ""
 echo "Note: this is a standalone condition (26 folds, fold numbers ${START_INDEX}-${END_INDEX})"
-echo "-- it won't be paired-tested against the 5-fold CV conditions (different fold"
+echo "-- it isn't paired with the 5-fold CV results (different fold"
 echo "identities / different train-set sizes per fold), but its mean/SEM accuracy and"
 echo "AUROC across all 26 held-out subjects, plus the per-class breakdown, is the"
 echo "cleanest read on this model's ceiling given all the data you have."

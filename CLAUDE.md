@@ -11,7 +11,7 @@ Fork of CUHK-AIM-Group/NeuroSTORM (fMRI foundation model, PyTorch Lightning), us
 - [utils/](utils/) — argument parser (`parser.py`), losses, metrics, LR schedulers, Neptune logging
 - [scripts/](scripts/) — split generation (`make_*_splits.py`), result aggregation/plotting (`extract_loocv_metrics.py`, `plot_loocv_results.py`, `analyze_loocv_permutation_results.py`), baselines, dataset download/preprocessing
 - [run_finetune_scripts/](run_finetune_scripts/) — launch scripts; `local/{5fold,loocv,reid,within}/` are the workstation runners, `greatlakes/{5fold,loocv}/` hold Slurm (`sbatch_*`) and runner (`run_*`) scripts for Great Lakes, and `lib/common.sh` has the shared preflight helpers
-- [analysis/](analysis/) — our custom analysis/backfill scripts (not upstream): `compare_conditions*.py`, `backfill_*best_ckpt_test.sh`
+- [analysis/](analysis/) — our custom analysis/backfill scripts (not upstream): `backfill_*best_ckpt_test.sh`, two-stage decoding and plotting scripts
 - [notes/](notes/) — our LOOCV / permutation / label workflow docs (not upstream)
 - [tests/](tests/) — pytest suite (`make test`, `make test-fast`; see [Makefile](Makefile))
 - [docs/](docs/) — upstream project website (HTML)

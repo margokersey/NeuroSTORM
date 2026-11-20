@@ -13,8 +13,8 @@ existing between-subject 5-fold CV (/nfs/turbo/umms-huanglab/mkersey/neurostorm_
     train/val/test (see MichiganSampleSplit.assign_blocks_to_parts in
     fmri_datasets.py), giving 5 genuinely different pooled models rather
     than 5 copies of the same split. This is what makes "5-fold metrics for
-    pooled" meaningful, and what compare_conditions_v2.py's raincloud plots
-    and statistical tests (which need 5 paired folds) actually need.
+    pooled" meaningful, and what per-fold plots
+    and paired statistical tests (which need 5 paired folds) actually need.
     Requires patch_michigan_pooled_multifold.py to be applied (adds the
     optional "::<seed>" key segment) -- without it, every fold would
     silently use the same fixed split.

@@ -137,8 +137,11 @@ def draw_breakdown(df, bad, out, noun_bar, noun_title, rate_title, suptitle):
     order = ['squeezed', 'weak', 'early', 'missed']
     names = {'squeezed': 'Squeezed normally', 'weak': 'Weak squeeze', 'early': 'Squeezed at wrong time\n(early)', 'missed': "Didn't squeeze\n(missed)"}
     col = {c: k for c, _, k in CATS}
-    fig, axes = plt.subplots(len(runs), 2, figsize=(15, 2.9 * len(runs)), squeeze=False,
-                             gridspec_kw={'width_ratios': [1.5, 1], 'wspace': 0.28, 'hspace': 0.75})
+    # margins in inches so the title/legend never collide with the rows, whatever the number of runs
+    top_in, bot_in, row_in = 1.5, 0.9, 3.2
+    H = top_in + bot_in + row_in * len(runs)
+    fig, axes = plt.subplots(len(runs), 2, figsize=(15, H), squeeze=False,
+                             gridspec_kw={'width_ratios': [1.5, 1], 'wspace': 0.3, 'hspace': 0.85})
     summ = []
     for i, r in enumerate(runs):
         d = df[df.run == r]
@@ -160,8 +163,8 @@ def draw_breakdown(df, bad, out, noun_bar, noun_title, rate_title, suptitle):
         axL.set_ylim(-0.5, 1.5)
         axL.axis('off')
         n_err_missed = int((err.cat == 'missed').sum())
-        axL.set_title(f'Run {r}: {n_err_missed} of {len(err)} {noun_title} ({100 * n_err_missed / max(len(err), 1):.0f}%) '
-                      f'were blocks where the squeeze was missed', fontsize=10, loc='left', fontweight='bold')
+        axL.set_title(f'Run {r}: {n_err_missed} of {len(err)} {noun_title}\n'
+                      f'({100 * n_err_missed / max(len(err), 1):.0f}%) were blocks where the squeeze was missed', fontsize=10, loc='left', fontweight='bold')
         # right: how often is the model wrong, per participant behaviour
         for j, c in enumerate(order):
             dc = d[d.cat == c]
@@ -192,11 +195,11 @@ def draw_breakdown(df, bad, out, noun_bar, noun_title, rate_title, suptitle):
         axR.set_title(ttl, fontsize=8.5, loc='left')
         for sp in ('top', 'right'):
             axR.spines[sp].set_visible(False)
-    fig.suptitle(suptitle, fontsize=10.5, y=0.995)
+    fig.suptitle(suptitle, fontsize=10.5, y=1 - 0.12 / H, va='top')
     from matplotlib.patches import Patch
-    fig.legend(handles=[Patch(color=col[c], label=names[c]) for c in order], loc='lower center', ncol=4,
-               frameon=False, fontsize=10)
-    fig.subplots_adjust(left=0.1, right=0.95, top=0.9, bottom=0.07)
+    fig.legend(handles=[Patch(color=col[c], label=names[c].replace('\n', ' ')) for c in order],
+               loc='lower center', bbox_to_anchor=(0.5, 0.2 / H), ncol=4, frameon=False, fontsize=10)
+    fig.subplots_adjust(left=0.12, right=0.95, top=1 - top_in / H, bottom=bot_in / H)
     for ext in ('png', 'pdf'):
         fig.savefig(out.with_suffix('.' + ext), dpi=200 if ext == 'png' else None)
     pd.DataFrame(summ).to_csv(f'{out}_summary.csv', index=False)

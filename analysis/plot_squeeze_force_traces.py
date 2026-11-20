@@ -50,8 +50,8 @@ def load_lor_ror(path):
 def draw_subject(sub, blocks, model, force_dir, has_model, lor_ror=None):
     runs = [r for r in (1, 2, 3, 4) if (force_dir / sub / f'{sub}_task{r}_cut.1D').exists()
             and (force_dir / sub / f'{sub}_task{r}_cut.1D').stat().st_size > 0]
-    h = [3, 0.9, 0.55] if has_model else [3, 0.55]   # force, model strip, spacer
-    fig = plt.figure(figsize=(17, 4.0 * len(runs)))
+    h = [3, 0.9, 0.95] if has_model else [3, 0.7]   # force, model strip, spacer
+    fig = plt.figure(figsize=(17, 4.4 * len(runs)))
     gs = fig.add_gridspec(len(runs) * len(h), 1, height_ratios=h * len(runs), hspace=0.08)
     xmax = 2270 * TR / 60
     for i, r in enumerate(runs):
@@ -133,7 +133,7 @@ def draw_subject(sub, blocks, model, force_dir, has_model, lor_ror=None):
     if has_model:
         handles += [Line2D([], [], marker='o', ms=9, ls='', color='#55A868', label='Model correct (said squeeze)'),
                     Line2D([], [], marker='o', ms=9, ls='', color='#C44E52', label='Model wrong (predicted class below)')]
-    fig.legend(handles=handles, loc='upper center', ncol=len(handles), frameon=False, fontsize=9,
+    fig.legend(handles=handles, loc='upper center', ncol=min(len(handles), 4), frameon=False, fontsize=9,
                bbox_to_anchor=(0.5, 0.995))
     fig.suptitle(f'{sub}: squeeze force and 3-way model result on each squeeze block', y=1.005, fontsize=13)
     return fig

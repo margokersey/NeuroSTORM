@@ -13,11 +13,12 @@ own typical squeeze: ref_amp = median peak-to-peak force in the action window of
   ratio_early = max |force - run median| in the imagery window / ref_amp
 
   category (mutually exclusive, in this order):
-    early    ratio_early >= SQUEEZE_RATIO  (squeezed while still meant to be imagining; the cue
+    early    ratio_early >= EARLY_RATIO  (squeezed while still meant to be imagining; the cue
              squeeze, if any, is in cue_squeeze)
-    squeezed ratio_cue >= WEAK_RATIO
+    squeezed ratio_cue >= MISSED_BELOW
     missed   otherwise
-  weak = squeezed (or early with a cue squeeze) and ratio_cue < SQUEEZE_RATIO: a real but small squeeze.
+  weak = squeezed (or early with a cue squeeze) and MISSED_BELOW <= ratio_cue < --weak_below: a real but
+  small squeeze. 0.3 is an arbitrary cutoff (the ratios have no natural break above ~0.1); see --weak_below.
   no_data  the force file ends before the block (P29 run 3, P29 run 4).
 
     python analysis/classify_squeeze_force.py
@@ -31,8 +32,9 @@ import pandas as pd
 REPO = Path(__file__).resolve().parent.parent
 RUNS = [1, 2, 3, 4]
 ACTION_LAG = 3        # TR after the end of the action window still counted as the response
-SQUEEZE_RATIO = 0.3   # >= this fraction of the subject's run-1 squeeze size = a normal squeeze
-WEAK_RATIO = 0.05     # below this = no squeeze (flat line); between WEAK and SQUEEZE = weak squeeze
+EARLY_RATIO = 0.3     # imagery-window deflection >= this fraction of the subject's run-1 squeeze size = early squeeze
+MISSED_BELOW = 0.05   # cue-window ratio below this = no squeeze (flat line)
+WEAK_BELOW = 0.3      # default (--weak_below): cue-window ratio from MISSED_BELOW up to this = weak squeeze
 
 
 def blocks(tsv):
@@ -54,6 +56,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--force_dir', default=str(REPO / 'data' / 'squeeze_force'))
     ap.add_argument('--timing_dir', default=str(REPO / 'data' / 'task_timing'))
+    ap.add_argument('--weak_below', type=float, default=WEAK_BELOW,
+                    help='squeezes whose cue-window size is below this fraction of the subject\'s median '
+                         'run-1 squeeze are flagged weak (default %(default)s)')
     ap.add_argument('--out', default=str(REPO / 'output' / 'squeeze_force' / 'squeeze_block_response.csv'))
     a = ap.parse_args()
 
@@ -92,14 +97,14 @@ def main():
                 img = x[s:e]
                 rc = float(np.ptp(cue)) / ref
                 re_ = float(np.abs(img - base).max()) / ref
-                if re_ >= SQUEEZE_RATIO:
+                if re_ >= EARLY_RATIO:
                     cat = 'early'
-                elif rc >= WEAK_RATIO:
+                elif rc >= MISSED_BELOW:
                     cat = 'squeezed'
                 else:
                     cat = 'missed'
-                rec.update(category=cat, ratio_cue=rc, ratio_early=re_, cue_squeeze=rc >= WEAK_RATIO,
-                           weak=bool(cat != 'missed' and WEAK_RATIO <= rc < SQUEEZE_RATIO))
+                rec.update(category=cat, ratio_cue=rc, ratio_early=re_, cue_squeeze=rc >= MISSED_BELOW,
+                           weak=bool(cat != 'missed' and MISSED_BELOW <= rc < a.weak_below))
                 rows.append(rec)
     df = pd.DataFrame(rows)
     out = Path(a.out)

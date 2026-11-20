@@ -36,7 +36,18 @@ PRED_NAME = {0: 'tennis', 1: 'nav', 2: 'squeeze'}
 IMAGERY, CUE = 13, 7   # TR per squeeze block
 
 
-def draw_subject(sub, blocks, model, force_dir, has_model):
+def load_lor_ror(path):
+    """{subject: (LOR TR in run 2 or None, ROR TR in run 3 or None)} from LOR_ROR_timing.csv."""
+    out = {}
+    if path and Path(path).exists():
+        d = pd.read_csv(path, encoding='utf-8-sig')
+        for _, r in d.iterrows():
+            v = [pd.to_numeric(r.iloc[1], errors='coerce'), pd.to_numeric(r.iloc[2], errors='coerce')]
+            out[str(r.iloc[0]).strip()] = tuple(None if pd.isna(x) else float(x) for x in v)
+    return out
+
+
+def draw_subject(sub, blocks, model, force_dir, has_model, lor_ror=None):
     runs = [r for r in (1, 2, 3, 4) if (force_dir / sub / f'{sub}_task{r}_cut.1D').exists()
             and (force_dir / sub / f'{sub}_task{r}_cut.1D').stat().st_size > 0]
     h = [3, 0.9, 0.55] if has_model else [3, 0.55]   # force, model strip, spacer
@@ -84,6 +95,14 @@ def draw_subject(sub, blocks, model, force_dir, has_model):
                                  fontsize=7, color='#C44E52')
                 else:
                     axm.plot(xc, 0.62, 'o', ms=15, color='#d9d9d9', zorder=3)
+        # LOR (loss of responsiveness, in run 2) and ROR (return, in run 3), TR -> minutes
+        mark = {2: (lor_ror or (None, None))[0], 3: (lor_ror or (None, None))[1]}.get(r)
+        if mark is not None:
+            lab, c = ('LOR', '#7b1fa2') if r == 2 else ('ROR', '#1565c0')
+            for a_ in [ax] + ([axm] if axm is not None else []):
+                a_.axvline(mark * TR / 60, color=c, lw=2, ls='--', zorder=5)
+            ax.text(mark * TR / 60, ax.get_ylim()[1], f' {lab}', color=c, fontsize=10, fontweight='bold',
+                    va='top', ha='left', zorder=6, bbox=dict(fc='white', ec='none', alpha=0.8, pad=1))
         ax.set_xlim(0, xmax)
         ax.set_ylabel(f'Run {r}\nforce (vs rest)', fontsize=9)
         nm = int((b.category == 'missed').sum())
@@ -108,6 +127,8 @@ def draw_subject(sub, blocks, model, force_dir, has_model):
     handles = [Patch(color=CAT_COLOR['squeezed'], alpha=0.4, label='Squeezed at the cue'),
                Patch(color=CAT_COLOR['missed'], alpha=0.4, label='Missed (flat line)'),
                Patch(color=CAT_COLOR['early'], alpha=0.4, label='Early squeeze (during imagery)'),
+               Line2D([], [], color='#7b1fa2', lw=2, ls='--', label='LOR (run 2)'),
+               Line2D([], [], color='#1565c0', lw=2, ls='--', label='ROR (run 3)'),
                Patch(color='none', label='WEAK tag = small squeeze (still counts as squeezed)')]
     if has_model:
         handles += [Line2D([], [], marker='o', ms=9, ls='', color='#55A868', label='Model correct (said squeeze)'),
@@ -123,19 +144,21 @@ def main():
     ap.add_argument('--csv', default=str(REPO / 'output/squeeze_force/squeeze_block_response.csv'))
     ap.add_argument('--model_csv', default=None, help='per-block CSV from plot_squeeze_missed_vs_model.py')
     ap.add_argument('--force_dir', default=str(REPO / 'data/squeeze_force'))
+    ap.add_argument('--lor_csv', default=str(REPO / 'data/lor_ror/LOR_ROR_timing.csv'))
     ap.add_argument('--out_dir', default=str(REPO / 'output/squeeze_force/traces'))
     ap.add_argument('--subjects', nargs='*', default=None)
     a = ap.parse_args()
 
     blocks = pd.read_csv(a.csv)
     model = pd.read_csv(a.model_csv) if a.model_csv else None
+    lor = load_lor_ror(a.lor_csv)
     subs = a.subjects or sorted(blocks.subject.unique())
     out = Path(a.out_dir)
     out.mkdir(parents=True, exist_ok=True)
     with PdfPages(out / 'all_subjects.pdf') as pdf:
         for s in subs:
             m = model[model.subject == s] if model is not None else None
-            fig = draw_subject(s, blocks[blocks.subject == s], m, Path(a.force_dir), model is not None)
+            fig = draw_subject(s, blocks[blocks.subject == s], m, Path(a.force_dir), model is not None, lor.get(s))
             fig.savefig(out / f'{s}.png', dpi=110, bbox_inches='tight')
             pdf.savefig(fig, bbox_inches='tight')
             plt.close(fig)

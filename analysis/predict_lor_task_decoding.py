@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """Test 3: task decoding (tennis / navigation / squeeze) during loss of responsiveness (LOR).
 
+--task taskvsrest applies the Stage A Task-vs-No-Task model (predicted_label 0 = no task) to the same
+blocks; outputs go to FIXED_mich_xcpd_nosmooth_lor_taskvsrest_decoding_fold-<N>.
+
 --task tennisnav applies the 2-class tennis-vs-navigation model instead (fair for LOR, where
 nobody is squeezing): same segments, but squeeze blocks are not scored, outputs go to
 FIXED_mich_xcpd_nosmooth_lor_tennisnav_decoding_fold-<N>, and logits[1] / softmax_probs[2].
@@ -54,6 +57,13 @@ TASKS = {
                       out_prefix="FIXED_mich_xcpd_nosmooth_lor_tennisnav_decoding",
                       dataset="MICHIGAN_LOR_TENNIS_NAV", task_name='tennis_vs_nav_classification', num_classes=2,
                       names={0: 'tennis', 1: 'navigation'}, trims={'MICHIGAN_TENNIS_NAV': 0}),
+    # Stage A (Task vs No Task) model: 1 sigmoid logit, predicted_label 1 = task, 0 = no task. Every block is
+    # scored (true_label in the file is still the 3-class label, squeeze = 2); used by
+    # analysis/plot_squeeze_notask_vs_force.py. NOT yet run on the cluster.
+    'taskvsrest': dict(stage_b_prefix="FIXED_mich_xcpd_nosmooth_taskvsrest_loocv",
+                       out_prefix="FIXED_mich_xcpd_nosmooth_lor_taskvsrest_decoding",
+                       dataset="MICHIGAN_LOR", task_name='taskvsrest_classification', num_classes=2,
+                       names={0: 'no_task', 1: 'task'}, trims={'MICHIGAN_TASK_VS_REST': 0}),
 }
 
 
@@ -64,7 +74,8 @@ def main():
                     help='LOR_ROR_timing.csv (columns: Subject, LOR time (TR in task2), ROR time (TR in task3))')
     ap.add_argument('--output_root', default='/nfs/turbo/umms-huanglab/mkersey/neurostorm_output/output')
     ap.add_argument('--task', choices=sorted(TASKS), default='3way',
-                    help="which model to apply: '3way' (tennis/navigation/squeeze) or 'tennisnav' (2-class, squeeze not scored)")
+                    help="which model to apply: '3way' (tennis/navigation/squeeze), 'tennisnav' (2-class, squeeze not "
+                         "scored) or 'taskvsrest' (Stage A task vs no task, every block scored)")
     ap.add_argument('--stage_b_prefix', default=None,
                     help='project-name prefix of the 3-way LOOCV runs (<prefix>_fold-<N>)')
     ap.add_argument('--runs', default='2,3',
@@ -167,7 +178,7 @@ def main():
                 if str(s) != meta['subject'] or int(t) != test_ds.LABEL_MAP[meta['true_label_name']]:
                     raise RuntimeError(f"sample {len(preds)}: loader order differs from dataset order "
                                        f"({s}/{t} vs {meta['subject']}/{meta['true_label_name']})")
-                if n_out == 1:      # binary head: one logit, P(navigation) = sigmoid(logit)
+                if n_out == 1:      # binary head: one logit, P(class 1: navigation or task) = sigmoid(logit)
                     p1 = float(1.0 / (1.0 + np.exp(-lg[0])))
                     probs = [1.0 - p1, p1]
                     pred = int(p1 >= 0.5)

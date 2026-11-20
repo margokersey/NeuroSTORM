@@ -15,6 +15,7 @@
 #   LOR_RUNS=4 sbatch --array=101 analysis/sbatch_lor_task_decoding.sh   # run 4 (recovery) only; writes
 #                                                                        # lor_predictions_run4_fold_<N>.json
 #   LOR_TASK=tennisnav sbatch --array=101-126 analysis/sbatch_lor_task_decoding.sh   # 2-class tennis-vs-navigation model
+#   LOR_TASK=taskvsrest sbatch --array=101-126 analysis/sbatch_lor_task_decoding.sh  # Stage A task-vs-no-task model (LOR_RUNS=4 for run 4)
 #                                  (add LOR_RUNS=4 for run 4; outputs go to ..._lor_tennisnav_decoding_fold-<N>)
 # Watch:   squeue -u mkersey      tail -f logs/lor_decode_<jobid>_<fold>.log
 # =============================================================================

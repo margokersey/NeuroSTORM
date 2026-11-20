@@ -1,5 +1,10 @@
 # Changes
 
+## Squeeze blocks called "No Task" (Stage A) vs what the participant did
+
+- New `analysis/plot_squeeze_notask_vs_force.py`: for each run, the squeeze blocks the Stage A Task-vs-No-Task model called "No Task", split by squeezed / weak / early (wrong time) / missed. Run 1 uses Stage A's saved test predictions; runs 2-4 need the new `--task taskvsrest` option of `predict_lor_task_decoding.py` (`LOR_TASK=taskvsrest sbatch analysis/sbatch_lor_task_decoding.sh`, `LOR_RUNS=4` for run 4), which has NOT been run on the cluster. Tested on synthetic predictions only.
+- `plot_squeeze_missed_vs_model.py`: the model-error figure now shows what the participant did on the misclassified blocks vs all blocks (stacked bars + error rate per behaviour); drawing code is shared with the No-Task figure.
+
 ## Squeeze force: missed-squeeze classification and link to 3-way model accuracy
 
 - New `analysis/classify_squeeze_force.py` (force traces in `data/squeeze_force` -> per-block CSV: squeezed / early / missed, weak flag, scaled by each subject's run-1 squeeze size), `analysis/plot_missed_squeezes.py` (missed squeezes per subject per run) and `analysis/plot_squeeze_missed_vs_model.py` (3-way model correctness on squeeze blocks by response category, runs 1-4). New `analysis/plot_squeeze_force_traces.py`: per-subject force-line figure with squeezed/missed/early/weak blocks labelled and the 3-way model's correct/wrong call per block underneath (needs `--model_csv` from the linking script). Traces now mark LOR (run 2) and ROR (run 3) from `data/lor_ror/LOR_ROR_timing.csv`; `classify_squeeze_force.py` gained `--weak_below` (default 0.3, an arbitrary cutoff) for the weak-squeeze flag. The model-linking script has only been tested on synthetic predictions; run it against the turbo outputs.

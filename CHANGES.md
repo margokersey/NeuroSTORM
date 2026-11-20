@@ -2,7 +2,7 @@
 
 ## Squeeze force: missed-squeeze classification and link to 3-way model accuracy
 
-- New `analysis/classify_squeeze_force.py` (force traces in `data/squeeze_force` -> per-block CSV: squeezed / early / missed, weak flag, scaled by each subject's run-1 squeeze size), `analysis/plot_missed_squeezes.py` (missed squeezes per subject per run) and `analysis/plot_squeeze_missed_vs_model.py` (3-way model correctness on squeeze blocks by response category, runs 1-4). The model-linking script has only been tested on synthetic predictions; run it against the turbo outputs.
+- New `analysis/classify_squeeze_force.py` (force traces in `data/squeeze_force` -> per-block CSV: squeezed / early / missed, weak flag, scaled by each subject's run-1 squeeze size), `analysis/plot_missed_squeezes.py` (missed squeezes per subject per run) and `analysis/plot_squeeze_missed_vs_model.py` (3-way model correctness on squeeze blocks by response category, runs 1-4). New `analysis/plot_squeeze_force_traces.py`: per-subject force-line figure with squeezed/missed/early/weak blocks labelled and the 3-way model's correct/wrong call per block underneath (needs `--model_csv` from the linking script). The model-linking script has only been tested on synthetic predictions; run it against the turbo outputs.
 
 ## Tennis/nav permutation seeds are now fold-specific
 

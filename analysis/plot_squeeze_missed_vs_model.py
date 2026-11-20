@@ -89,11 +89,20 @@ def collect_model_rows(output_root, prefix, lor_prefix):
 
 
 def join(force, model):
-    m1 = model[model.run == 1].drop(columns=['start'], errors='ignore')
-    f1 = force[force.run == 1].merge(m1, on=['subject', 'run', 'squeeze_block'], how='left')
-    mr = model[model.run != 1].drop(columns=['squeeze_block'], errors='ignore')
+    """Attach model rows to force rows: run 1 on (subject, squeeze_block), runs 2-4 on (subject, run, start).
+    Works when the model table has only run-1 rows (e.g. runs 2-4 not predicted yet)."""
+    model = model.copy()
+    for c in ('start', 'squeeze_block'):
+        if c not in model.columns:
+            model[c] = np.nan
+        model[c] = model[c].astype('Int64')
+    m1 = model[model.run == 1].drop(columns=['start'])
+    f1 = force[force.run == 1].copy()
+    f1['squeeze_block'] = f1.squeeze_block.astype('Int64')
+    f1 = f1.merge(m1, on=['subject', 'run', 'squeeze_block'], how='left')
+    mr = model[model.run != 1].drop(columns=['squeeze_block'])
     fr = force[force.run != 1].copy()
-    fr['start'] = fr.imagery_start_tr
+    fr['start'] = fr.imagery_start_tr.astype('Int64')
     fr = fr.merge(mr, on=['subject', 'run', 'start'], how='left')
     return pd.concat([f1, fr], ignore_index=True)
 
@@ -128,7 +137,7 @@ def draw_breakdown(df, bad, out, noun_bar, noun_title, rate_title, suptitle):
     order = ['squeezed', 'weak', 'early', 'missed']
     names = {'squeezed': 'Squeezed normally', 'weak': 'Weak squeeze', 'early': 'Squeezed at wrong time\n(early)', 'missed': "Didn't squeeze\n(missed)"}
     col = {c: k for c, _, k in CATS}
-    fig, axes = plt.subplots(len(runs), 2, figsize=(15, 2.9 * len(runs)),
+    fig, axes = plt.subplots(len(runs), 2, figsize=(15, 2.9 * len(runs)), squeeze=False,
                              gridspec_kw={'width_ratios': [1.5, 1], 'wspace': 0.28, 'hspace': 0.75})
     summ = []
     for i, r in enumerate(runs):

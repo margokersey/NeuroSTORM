@@ -1,5 +1,9 @@
 # Changes
 
+## Squeeze force: missed-squeeze classification and link to 3-way model accuracy
+
+- New `analysis/classify_squeeze_force.py` (force traces in `data/squeeze_force` -> per-block CSV: squeezed / early / missed, weak flag, scaled by each subject's run-1 squeeze size), `analysis/plot_missed_squeezes.py` (missed squeezes per subject per run) and `analysis/plot_squeeze_missed_vs_model.py` (3-way model correctness on squeeze blocks by response category, runs 1-4). The model-linking script has only been tested on synthetic predictions; run it against the turbo outputs.
+
 ## Tennis/nav permutation seeds are now fold-specific
 
 - `sbatch_loocv_tennisnav_permutation.sh`, `sbatch_loocv_tennisnav_vs_rest_permutation.sh`: `perm_seed = 1234 + 1000*fold + perm_idx` (was `1234 + perm_idx`). With the old rule a training subject at the same sorted position got the identical label shuffle in many folds, so null accuracies for one permutation index were correlated across folds and the pooled per-subject p-values were optimistic. Neither script had been run on real data. The 3-way and Task-vs-Rest permutation scripts are unchanged (their finished runs use the old rule); do not pool nulls from the two rules. Notes in `notes/LABEL_PERMUTATION_TESTING.md`.

@@ -4,8 +4,8 @@
 Same data and styling as analysis/plot_lor_task_decoding.py, but for a single held-out subject
 (e.g. P04 / sub-04 / 4), so there is no group mean or statistics: the black line is the subject's
 overall block accuracy in each segment and the coloured lines are the per-class accuracy (recall).
-A confusion matrix (true x predicted, % of true-class blocks plus counts) is drawn to the right, pooled
-over the segments shown; its counts are also written to the CSV (cm_<true>_as_<pred>).
+A small confusion matrix (true x predicted, % of true-class blocks plus counts) is drawn under each
+segment; its counts are also written to the CSV (cm_<segment>_<true>_as_<pred>).
 The number of blocks in each segment is printed under its tick label. Segments with no blocks are
 left out; the after-ROR segment is also left out if the subject is not in the ROR include list
 (use --no_ror_filter to keep it). Per-class accuracy rests on only a handful of blocks, so it moves in
@@ -78,24 +78,30 @@ def plot_subject(sub, fold_file, args, ror_ok, out, png_only=False):
     plt.rcParams.update({'font.size': 10, 'axes.labelsize': 10.5, 'axes.titlesize': 11.5, 'xtick.labelsize': 9.5,
                          'ytick.labelsize': 9.5, 'legend.fontsize': 9.5, 'axes.linewidth': 0.9,
                          'xtick.major.width': 0.9, 'ytick.major.width': 0.9})
-    # Confusion matrix pooled over the segments drawn (true = rows, predicted = columns), counts of blocks.
+    # One confusion matrix per segment (true = rows, predicted = columns), drawn under that segment's column.
     k = len(L.CLASS_NAMES)
-    cm = np.zeros((k, k), dtype=int)
+    cms = {}
     for seg, _ in segs:
+        cm = np.zeros((k, k), dtype=int)
         for p in seg_preds[seg]:
             t, pr = int(p['true_label']), int(p['predicted_label'])
             if t < k and pr < k:
                 cm[t, pr] += 1
-    for i, ti in enumerate(L.CLASS_NAMES):          # also into the CSV
-        for j, pj in enumerate(L.CLASS_NAMES):
-            rec[f'cm_{ti}_as_{pj}'] = int(cm[i, j])
+        cms[seg] = cm
+        for i, ti in enumerate(L.CLASS_NAMES):      # also into the CSV
+            for j, pj in enumerate(L.CLASS_NAMES):
+                rec[f'cm_{seg}_{ti}_as_{pj}'] = int(cm[i, j])
 
-    # inches: line plot | gap (legend + the matrix's y tick labels / axis label) | confusion matrix
-    main_w, legend_w, cm_w = 1.25 * len(segs) + 0.6, 2.8, 3.1
-    fig = plt.figure(figsize=(main_w + legend_w + cm_w + 0.3, 4.3))
-    gs = fig.add_gridspec(1, 3, width_ratios=[main_w, legend_w, cm_w], wspace=0.0)
+    # Figure: line plot on top (column 0) with the legend to its right (column 1); below it an empty row for the
+    # tick labels, then one small confusion matrix per segment, centred under that segment's tick.
+    main_w, legend_w = 1.25 * len(segs) + 0.6, 1.5          # inches
+    line_h, gap_h, cm_h = 4.3, 1.35, 1.9
+    fig_w = main_w + legend_w + 1.1
+    fig = plt.figure(figsize=(fig_w, line_h + gap_h + cm_h))
+    gs = fig.add_gridspec(3, 2, width_ratios=[main_w, legend_w], height_ratios=[line_h, gap_h, cm_h],
+                          hspace=0.0, wspace=0.0, left=0.95 / fig_w, right=1 - 0.1 / fig_w,
+                          top=1 - 0.1 / (line_h + gap_h + cm_h), bottom=0.05)
     ax = fig.add_subplot(gs[0, 0])
-    ax_cm = fig.add_subplot(gs[0, 2])
     x = np.arange(len(segs))
     for name in L.CLASS_NAMES:
         y = np.array([rec[f'{seg}_{name}_acc'] for seg, _ in segs])
@@ -122,28 +128,39 @@ def plot_subject(sub, fold_file, args, ror_ok, out, png_only=False):
     if 'recovery' in dict(segs) and rec['ror_na']:
         ax.set_xlabel('Run 4: subject woken manually before run 4.', fontsize=9, color=S.INK_2, loc='left', labelpad=8)
 
-    cmn = cm / np.maximum(cm.sum(1, keepdims=True), 1)
     cmap = S.LinearSegmentedColormap.from_list('seq_blue', S.SEQ_BLUE)
-    ax_cm.pcolormesh(cmn, cmap=cmap, vmin=0, vmax=1, edgecolors='white', linewidth=1.5)
-    for i in range(k):
-        for j in range(k):
-            ax_cm.text(j + 0.5, i + 0.5, f"{100 * cmn[i, j]:.0f}%\n{cm[i, j]}/{cm[i].sum()}", ha='center',
-                       va='center', fontsize=9.5, color='white' if cmn[i, j] > 0.55 else S.INK,
-                       fontweight='bold' if i == j else 'normal', linespacing=1.3)
-    ax_cm.set_xlim(0, k)
-    ax_cm.set_ylim(k, 0)
-    ax_cm.set_aspect('equal')
-    names = [c.capitalize() for c in L.CLASS_NAMES]
-    ax_cm.set_xticks(np.arange(k) + 0.5)
-    ax_cm.set_xticklabels(names, rotation=30, ha='right', rotation_mode='anchor')
-    ax_cm.set_yticks(np.arange(k) + 0.5)
-    ax_cm.set_yticklabels(names)
-    ax_cm.tick_params(length=0)
-    for sp in ax_cm.spines.values():
-        sp.set_visible(False)
-    ax_cm.set_xlabel('Predicted class')
-    ax_cm.set_ylabel('True class')
-    ax_cm.set_title(f'Confusion matrix\n(blocks pooled over the {len(segs)} segments shown)', pad=12, fontsize=10.5)
+    short = [c[:3].capitalize() for c in L.CLASS_NAMES]      # Ten / Nav / Squ
+    sub_gs = gs[2, 0].subgridspec(1, len(segs), wspace=0.5)   # equal columns => centred under the ticks
+    for c, (seg, lab) in enumerate(segs):
+        axc = fig.add_subplot(sub_gs[0, c])
+        cm = cms[seg]
+        cmn = cm / np.maximum(cm.sum(1, keepdims=True), 1)
+        axc.pcolormesh(cmn, cmap=cmap, vmin=0, vmax=1, edgecolors='white', linewidth=1.2)
+        for i in range(k):
+            for j in range(k):
+                axc.text(j + 0.5, i + 0.5, f"{100 * cmn[i, j]:.0f}%\n{cm[i, j]}/{cm[i].sum()}", ha='center',
+                         va='center', fontsize=7.5 if k == 2 else 6.3, linespacing=1.15,
+                         color='white' if cmn[i, j] > 0.55 else S.INK,
+                         fontweight='bold' if i == j else 'normal')
+        axc.set_xlim(0, k)
+        axc.set_ylim(k, 0)
+        axc.set_aspect('equal')
+        axc.set_anchor('N')
+        axc.set_xticks(np.arange(k) + 0.5)
+        axc.set_xticklabels(short, fontsize=7)
+        axc.set_yticks(np.arange(k) + 0.5)
+        axc.set_yticklabels(short, fontsize=7)
+        axc.tick_params(length=0, pad=2)
+        for sp in axc.spines.values():
+            sp.set_visible(False)
+        axc.set_xlabel('Predicted', fontsize=7.5, labelpad=2)
+        if c == 0:
+            axc.set_ylabel('True', fontsize=7.5, labelpad=2)
+    ax_note = fig.add_subplot(gs[2, 1])
+    ax_note.axis('off')
+    ax_note.text(0.08, 0.97, 'Confusion matrices\n(one per segment)\n\nrows = true class,\ncolumns = predicted;\n'
+                 '% of that class\'s\nblocks, then count', fontsize=8, color=S.INK_2, ha='left', va='top',
+                 linespacing=1.3, transform=ax_note.transAxes)
 
     out.parent.mkdir(parents=True, exist_ok=True)
     for ext in (('.png',) if png_only else ('.png', '.pdf', '.svg')):

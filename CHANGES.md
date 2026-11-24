@@ -2,7 +2,7 @@
 
 ## Per-subject LOR figures: add confusion matrix
 
-- `analysis/plot_lor_task_decoding_subject.py`: a confusion matrix (true x predicted, row % and block counts) is drawn to the right of the segment plot, pooled over the segments shown (so it respects the ROR include list); counts are also in the CSV as `cm_<true>_as_<pred>`. `--task tennisnav` figures now default to `output/lor_task_decoding/by_subject/tennisnav/` (single-subject: `lor_tennisnav_accuracy_by_segment_<sub>`), so 3-way figures are not overwritten. `plot_lor_task_decoding.load` gained `keep_preds`. Not yet run on real data.
+- `analysis/plot_lor_task_decoding_subject.py`: a small confusion matrix (true x predicted, row % and block counts) is drawn under each segment of the line plot; counts are also in the CSV as `cm_<segment>_<true>_as_<pred>`. `--task tennisnav` figures now default to `output/lor_task_decoding/by_subject/tennisnav/` (single-subject: `lor_tennisnav_accuracy_by_segment_<sub>`), so 3-way figures are not overwritten. `plot_lor_task_decoding.load` gained `keep_preds`. Not yet run on real data.
 
 ## tpt prompt_ln vs. none comparison figure
 

@@ -81,7 +81,7 @@ def load_run1(output_root, prefix, fold):
     return latest_saved_predictions(str(Path(output_root) / f"{prefix}_fold-{fold}"))
 
 
-def load(pred_glob, exclude, output_root=None, prefix=None, run4_glob=None):
+def load(pred_glob, exclude, output_root=None, prefix=None, run4_glob=None, keep_preds=False):
     files = sorted(glob(pred_glob))
     if not files:
         raise SystemExit(f"no files match {pred_glob}")
@@ -118,6 +118,8 @@ def load(pred_glob, exclude, output_root=None, prefix=None, run4_glob=None):
                 ps = [p for p in d4['predictions'] if p['segment'] == 'recovery'] if d4 is not None else []
             else:
                 ps = [p for p in d['predictions'] if p['segment'] == seg]
+            if keep_preds:    # raw per-block predictions per segment, e.g. for confusion matrices (not CSV-safe)
+                rec.setdefault('_preds', {})[seg] = ps
             rec[f'{seg}_n'] = len(ps)
             rec[f'{seg}_acc'] = float(np.mean([p['predicted_label'] == p['true_label'] for p in ps])) if ps else np.nan
             for k in range(len(CLASS_NAMES)):   # per-class accuracy (recall); nan if no blocks of that class

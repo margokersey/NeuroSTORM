@@ -4,6 +4,8 @@
 Same data and styling as analysis/plot_lor_task_decoding.py, but for a single held-out subject
 (e.g. P04 / sub-04 / 4), so there is no group mean or statistics: the black line is the subject's
 overall block accuracy in each segment and the coloured lines are the per-class accuracy (recall).
+A confusion matrix (true x predicted, % of true-class blocks plus counts) is drawn to the right, pooled
+over the segments shown; its counts are also written to the CSV (cm_<true>_as_<pred>).
 The number of blocks in each segment is printed under its tick label. Segments with no blocks are
 left out; the after-ROR segment is also left out if the subject is not in the ROR include list
 (use --no_ror_filter to keep it). Per-class accuracy rests on only a handful of blocks, so it moves in
@@ -56,7 +58,9 @@ def fold_files_by_subject(pred_glob):
 def plot_subject(sub, fold_file, args, ror_ok, out, png_only=False):
     """Draw one subject's figure to <out>.png (+ .pdf/.svg/.csv unless png_only). Returns False if no data."""
     run4_file = args.run4_glob or fold_file.replace('lor_predictions_fold_', 'lor_predictions_run4_fold_')
-    rec = L.load(fold_file, set(), None if args.no_run1 else args.output_root, args.stage_b_prefix, run4_file)[0]
+    rec = L.load(fold_file, set(), None if args.no_run1 else args.output_root, args.stage_b_prefix, run4_file,
+                 keep_preds=True)[0]
+    seg_preds = rec.pop('_preds')
     segs = []
     for seg, label in L.SEGMENTS:
         if not rec[f'{seg}_n']:
@@ -74,7 +78,23 @@ def plot_subject(sub, fold_file, args, ror_ok, out, png_only=False):
     plt.rcParams.update({'font.size': 10, 'axes.labelsize': 10.5, 'axes.titlesize': 11.5, 'xtick.labelsize': 9.5,
                          'ytick.labelsize': 9.5, 'legend.fontsize': 9.5, 'axes.linewidth': 0.9,
                          'xtick.major.width': 0.9, 'ytick.major.width': 0.9})
-    fig, ax = plt.subplots(figsize=(1.25 * len(segs) + 2.1, 4.3))
+    # Confusion matrix pooled over the segments drawn (true = rows, predicted = columns), counts of blocks.
+    k = len(L.CLASS_NAMES)
+    cm = np.zeros((k, k), dtype=int)
+    for seg, _ in segs:
+        for p in seg_preds[seg]:
+            t, pr = int(p['true_label']), int(p['predicted_label'])
+            if t < k and pr < k:
+                cm[t, pr] += 1
+    for i, ti in enumerate(L.CLASS_NAMES):          # also into the CSV
+        for j, pj in enumerate(L.CLASS_NAMES):
+            rec[f'cm_{ti}_as_{pj}'] = int(cm[i, j])
+
+    main_w, legend_w, cm_w = 1.25 * len(segs) + 0.6, 1.5, 3.1    # inches: line plot | legend gap | confusion matrix
+    fig = plt.figure(figsize=(main_w + legend_w + cm_w + 0.3, 4.3))
+    gs = fig.add_gridspec(1, 3, width_ratios=[main_w, legend_w, cm_w], wspace=0.0)
+    ax = fig.add_subplot(gs[0, 0])
+    ax_cm = fig.add_subplot(gs[0, 2])
     x = np.arange(len(segs))
     for name in L.CLASS_NAMES:
         y = np.array([rec[f'{seg}_{name}_acc'] for seg, _ in segs])
@@ -100,6 +120,29 @@ def plot_subject(sub, fold_file, args, ror_ok, out, png_only=False):
     ax.set_title(f'Task decoding by responsiveness segment: {sub.replace("sub-", "P")}', pad=12)
     if 'recovery' in dict(segs) and rec['ror_na']:
         ax.set_xlabel('Run 4: subject woken manually before run 4.', fontsize=9, color=S.INK_2, loc='left', labelpad=8)
+
+    cmn = cm / np.maximum(cm.sum(1, keepdims=True), 1)
+    cmap = S.LinearSegmentedColormap.from_list('seq_blue', S.SEQ_BLUE)
+    ax_cm.pcolormesh(cmn, cmap=cmap, vmin=0, vmax=1, edgecolors='white', linewidth=1.5)
+    for i in range(k):
+        for j in range(k):
+            ax_cm.text(j + 0.5, i + 0.5, f"{100 * cmn[i, j]:.0f}%\n{cm[i, j]}/{cm[i].sum()}", ha='center',
+                       va='center', fontsize=9.5, color='white' if cmn[i, j] > 0.55 else S.INK,
+                       fontweight='bold' if i == j else 'normal', linespacing=1.3)
+    ax_cm.set_xlim(0, k)
+    ax_cm.set_ylim(k, 0)
+    ax_cm.set_aspect('equal')
+    names = [c.capitalize() for c in L.CLASS_NAMES]
+    ax_cm.set_xticks(np.arange(k) + 0.5)
+    ax_cm.set_xticklabels(names, rotation=30, ha='right', rotation_mode='anchor')
+    ax_cm.set_yticks(np.arange(k) + 0.5)
+    ax_cm.set_yticklabels(names)
+    ax_cm.tick_params(length=0)
+    for sp in ax_cm.spines.values():
+        sp.set_visible(False)
+    ax_cm.set_xlabel('Predicted class')
+    ax_cm.set_ylabel('True class')
+    ax_cm.set_title(f'Confusion matrix\n(blocks pooled over the {len(segs)} segments shown)', pad=12, fontsize=10.5)
 
     out.parent.mkdir(parents=True, exist_ok=True)
     for ext in (('.png',) if png_only else ('.png', '.pdf', '.svg')):

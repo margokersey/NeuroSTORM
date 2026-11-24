@@ -1,5 +1,9 @@
 # Changes
 
+## Per-subject LOR figures: add confusion matrix
+
+- `analysis/plot_lor_task_decoding_subject.py`: a confusion matrix (true x predicted, row % and block counts) is drawn to the right of the segment plot, pooled over the segments shown (so it respects the ROR include list); counts are also in the CSV as `cm_<true>_as_<pred>`. `--task tennisnav` figures now default to `output/lor_task_decoding/by_subject/tennisnav/` (single-subject: `lor_tennisnav_accuracy_by_segment_<sub>`), so 3-way figures are not overwritten. `plot_lor_task_decoding.load` gained `keep_preds`. Not yet run on real data.
+
 ## tpt prompt_ln vs. none comparison figure
 
 - New `analysis/plot_tpt_comparison.py`: LOOCV figure comparing two conditions over the same folds (default prompt_ln vs. none), in the style of `loocv_permutation_figure` but with the second condition in place of the permutation null. Panels: per-subject balanced accuracy (paired), accuracy distributions with paired Wilcoxon, summary metrics with subject-bootstrap CIs, pooled confusion matrix and ROC (prompt_ln), calibration (both). Writes png/pdf/svg/csv to `output/tpt_prompt_ln/`. Only tested on synthetic predictions so far.

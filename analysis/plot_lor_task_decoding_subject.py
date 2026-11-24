@@ -90,7 +90,8 @@ def plot_subject(sub, fold_file, args, ror_ok, out, png_only=False):
         for j, pj in enumerate(L.CLASS_NAMES):
             rec[f'cm_{ti}_as_{pj}'] = int(cm[i, j])
 
-    main_w, legend_w, cm_w = 1.25 * len(segs) + 0.6, 1.5, 3.1    # inches: line plot | legend gap | confusion matrix
+    # inches: line plot | gap (legend + the matrix's y tick labels / axis label) | confusion matrix
+    main_w, legend_w, cm_w = 1.25 * len(segs) + 0.6, 2.8, 3.1
     fig = plt.figure(figsize=(main_w + legend_w + cm_w + 0.3, 4.3))
     gs = fig.add_gridspec(1, 3, width_ratios=[main_w, legend_w, cm_w], wspace=0.0)
     ax = fig.add_subplot(gs[0, 0])

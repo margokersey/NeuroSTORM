@@ -1,5 +1,9 @@
 # Changes
 
+## tpt prompt_ln vs. none comparison figure
+
+- New `analysis/plot_tpt_comparison.py`: LOOCV figure comparing two conditions over the same folds (default prompt_ln vs. none), in the style of `loocv_permutation_figure` but with the second condition in place of the permutation null. Panels: per-subject balanced accuracy (paired), accuracy distributions with paired Wilcoxon, summary metrics with subject-bootstrap CIs, pooled confusion matrix and ROC (prompt_ln), calibration (both). Writes png/pdf/svg/csv to `output/tpt_prompt_ln/`. Only tested on synthetic predictions so far.
+
 ## Window-size screen (3-way) and 28-TR LOOCV
 
 - New `analysis/window_sweep_cached.py` (cache stage pools every TR to 216 features once; sweep stage does leave-one-subject-out logistic regression for each window length x start shift, seconds, no I/O) and `analysis/plot_window_sweep.py` (accuracy vs window, one line per shift, subject-SEM bars). Linear-probe result: 13 TR (imagery only) 0.51-0.67, 20 TR 0.69-0.77, plateau at 24-28 TR (~0.79), 37 TR 0.75; differences inside the plateau are within subject SEM (~0.03). This is a screen: the best window was chosen on the same 26 subjects it was scored on.

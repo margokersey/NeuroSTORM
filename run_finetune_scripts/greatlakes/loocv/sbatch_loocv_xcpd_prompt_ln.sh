@@ -18,7 +18,7 @@
 #SBATCH --job-name=xcpd_prompt_ln_loocv
 #SBATCH --chdir=/scratch/huangzu_root/huangzu0/mkersey
 #SBATCH --partition=spgpu              # A40s -- your Mamba build is sm_86 only
-#SBATCH --array=101-126                # one task per fold; %2 suffix (101-126%2) = max 2 at once
+#SBATCH --array=101-126%5                # one task per fold; %2 suffix (101-126%2) = max 2 at once
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1            # must equal --gpus-per-node
 #SBATCH --gpus-per-node=1

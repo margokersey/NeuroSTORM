@@ -613,9 +613,6 @@ def print_summary(stats):
         print(f"{f:>6d} {participant_label(s.get('subject'), f):>9s} {n:>4d} {s['real_accuracy']:>7.3f} "
               f"{rm['balanced_accuracy']:>7.3f} {rm['macro_auroc']:>7.3f} {s['perm_mean']:>8.3f} "
               f"{s['effect_size']:>+7.3f} {s['p_value']:>7.3f}")
-    worst = sorted(fold_ids, key=lambda f: stats[f]['real_accuracy'])[:5]
-    print("\nLowest 5 by accuracy: " + ", ".join(
-        f"{participant_label(stats[f].get('subject'), f)} ({stats[f]['real_accuracy']:.3f})" for f in worst))
 
 
 def _clean(x):

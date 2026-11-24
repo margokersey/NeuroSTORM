@@ -1,5 +1,12 @@
 # Changes
 
+## Record: earlier 3-way LOOCV runs had val == test (invalid held-out results)
+
+- Found 2026-11-24 from `figure_outputs/loocv/condition_raw.csv`: for "Best model LOOCV" `valid_acc` equals `test_acc` exactly in all 26 folds (5-fold differs, as it should).
+- Cause (from commit `a4d579b`, 2026-11-11): `MICHIGAN_FULL_BLOCK` used to read its own split folder `splits/MICHIGAN_FULL_BLOCK/`, which held randomly generated LOOCV files (2 test subjects, with val == test). The LOOCV launcher defaults to `michigan_xcpd_nosmooth_fullblock`, so LOOCV and permutation runs made before that commit were validated and tested on the same subjects, and the best checkpoint was picked by `valid_acc` on the data it was then scored on. Their test accuracy is optimistic and is not a held-out estimate. Not yet confirmed from the run folders (turbo not reachable when this was written): check a fold's date/`hparams.yaml` and the old `splits/MICHIGAN_FULL_BLOCK/` files.
+- Fix already in the code (`a4d579b`): `MICHIGAN_FULL_BLOCK` now reads `splits/MICHIGAN/split_fixed_101..126.txt` (val = next 3 subjects, test = 1 held-out subject), and `validate_premade_split` rejects empty sets or any train/val/test overlap.
+- To do: rerun the affected LOOCV and permutation runs with the current code and do not use the old ones in comparisons or figures (including `condition_raincloud` / `condition_validation_raincloud`). The 5-fold condition looks unaffected. Consider deleting/renaming the stale `splits/MICHIGAN_FULL_BLOCK/` folder.
+
 ## Squeeze blocks called "No Task" (Stage A) vs what the participant did
 
 - New `analysis/plot_squeeze_notask_vs_force.py`: for each run, the squeeze blocks the Stage A Task-vs-No-Task model called "No Task", split by squeezed / weak / early (wrong time) / missed. Run 1 uses Stage A's saved test predictions; runs 2-4 need the new `--task taskvsrest` option of `predict_lor_task_decoding.py` (`LOR_TASK=taskvsrest sbatch analysis/sbatch_lor_task_decoding.sh`, `LOR_RUNS=4` for run 4), which has NOT been run on the cluster. Tested on synthetic predictions only.

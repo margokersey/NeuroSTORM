@@ -17,6 +17,7 @@ All subjects, PNG only, one per subject into output/lor_task_decoding/by_subject
     python analysis/plot_lor_task_decoding_subject.py --all --pred_glob "..."
 
 2-class model: add --task tennisnav and the tennisnav --pred_glob (see plot_lor_task_decoding.py).
+With --all it writes to output/lor_task_decoding/by_subject/tennisnav/ so the 3-way figures are not touched.
 Writes .png (600 dpi), .pdf, .svg and .csv.
 """
 import argparse
@@ -120,8 +121,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('subject', nargs='?', help='subject ID: P04, sub-04 or 4 (omit with --all)')
     ap.add_argument('--all', action='store_true', help='one figure per subject found in --pred_glob, PNG only')
-    ap.add_argument('--output_dir', default='output/lor_task_decoding/by_subject',
-                    help='--all: folder for lor_accuracy_by_segment_<subject>.png')
+    ap.add_argument('--output_dir', default=None,
+                    help='--all: folder for lor_accuracy_by_segment_<subject>.png '
+                         '(default: output/lor_task_decoding/by_subject, or by_subject/tennisnav with --task tennisnav)')
     ap.add_argument('--pred_glob', required=True)
     ap.add_argument('--output_file', default=None,
                     help='single subject; default: output/lor_task_decoding/lor_accuracy_by_segment_<subject>')
@@ -143,6 +145,8 @@ def main():
         args.stage_b_prefix = args.stage_b_prefix or 'FIXED_mich_xcpd_nosmooth_tennisnav_tpt_strategy-none_loocv'
     else:
         args.stage_b_prefix = args.stage_b_prefix or L.STAGE_B_PREFIX
+    args.output_dir = args.output_dir or ('output/lor_task_decoding/by_subject/tennisnav'
+                                          if args.task == 'tennisnav' else 'output/lor_task_decoding/by_subject')
     ror_ok = None if args.no_ror_filter else L.load_ror_include(args.ror_include)
     if args.no_run1:
         L.SEGMENTS[:] = [x for x in L.SEGMENTS if x[0] != 'run1']
@@ -156,7 +160,9 @@ def main():
     sub = norm_subject(args.subject)
     if sub not in files:
         raise SystemExit(f"no prediction file for {sub} matches {args.pred_glob}")
-    out = Path(args.output_file or f'output/lor_task_decoding/lor_accuracy_by_segment_{sub}')
+    out = Path(args.output_file or (f'output/lor_task_decoding/lor_tennisnav_accuracy_by_segment_{sub}'
+                                    if args.task == 'tennisnav'
+                                    else f'output/lor_task_decoding/lor_accuracy_by_segment_{sub}'))
     plot_subject(sub, files[sub], args, ror_ok, out)
 
 

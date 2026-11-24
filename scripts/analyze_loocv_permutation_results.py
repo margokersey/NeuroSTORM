@@ -666,6 +666,7 @@ PERM_DARK = '#B35F2D'
 CHANCE = '#8c8c8c'
 CLASS_COLORS = ['#8172B3', '#55A868', '#937860']
 SEQ_BLUE = ['#f6f9fc', '#d6e2f1', '#a9c1e0', '#7b9ccc', '#4C72B0', '#34568c', '#1f3a66']
+FIG_WIDTH = 9.6   # inches; wide enough for ~26 rotated subject labels under panel a
 TITLE_PAD = 27   # points; leaves room for a two-row legend between title and axes
 
 
@@ -762,7 +763,8 @@ def plot_per_subject(ax, stats, metric, chance, label_all=False):
     if len(fold_ids) <= 24 or label_all:
         ax.set_xticks(x)
         ax.set_xticklabels([participant_label(stats[fold_ids[i]].get('subject'), fold_ids[i])
-                            for i in order], rotation=90, fontsize=6)
+                            for i in order], rotation=90,
+                           fontsize=6 if len(fold_ids) <= 24 else 5.5)
         ax.tick_params(axis='x', length=0, pad=2)
         ax.set_xlabel('Held-out participant (sorted)')
     else:
@@ -1025,7 +1027,7 @@ def _grid_shape(n):
 
 def plot_results(stats, results, tests, class_names, n_perm, output_file, note=None,
                  label_all_subjects=False):
-    """Publication figure (183 mm wide). Only panels whose data exist are drawn:
+    """Publication figure (FIG_WIDTH inches wide). Only panels whose data exist are drawn:
     per-sample probabilities enable ROC/calibration; the confusion matrix and
     label-based metrics only need predicted labels (or the saved summary)."""
     if not HAS_MATPLOTLIB:
@@ -1061,7 +1063,7 @@ def plot_results(stats, results, tests, class_names, n_perm, output_file, note=N
         print(f"Note: omitted panels with no data: {', '.join(skipped)}")
 
     nrows, ncols = _grid_shape(len(panels))
-    fig = plt.figure(figsize=(7.2, 2.55 * nrows + 0.3))
+    fig = plt.figure(figsize=(FIG_WIDTH, 2.55 * nrows + 0.3))
     gs = fig.add_gridspec(nrows, ncols, hspace=0.85, wspace=0.7,
                           left=0.08, right=0.97, top=0.93, bottom=0.08)
     for i, (name, draw) in enumerate(panels):

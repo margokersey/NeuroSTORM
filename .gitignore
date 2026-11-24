@@ -78,3 +78,6 @@ slurm-*.out
 /*.png
 /*.jpg
 .ipynb_checkpoints/
+
+# Local figure exports (not tracked)
+figure_outputs_linux/

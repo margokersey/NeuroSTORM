@@ -603,16 +603,19 @@ def print_metric_table(tests):
 def print_summary(stats):
     fold_ids = sorted(stats)
     print("\nPer-fold breakdown (per-fold p-values are descriptive only):")
-    print(f"{'Fold':>6s} {'n':>4s} {'Acc':>7s} {'BalAcc':>7s} {'AUROC':>7s} "
+    print(f"{'Fold':>6s} {'Subject':>9s} {'n':>4s} {'Acc':>7s} {'BalAcc':>7s} {'AUROC':>7s} "
           f"{'PermAcc':>8s} {'Δacc':>7s} {'p':>7s}")
-    print("-" * 60)
+    print("-" * 70)
     for f in fold_ids:
         s = stats[f]
         rm = s['real_metrics']
         n = s['n_samples'] if s['n_samples'] is not None else 0
-        print(f"{f:>6d} {n:>4d} {s['real_accuracy']:>7.3f} {rm['balanced_accuracy']:>7.3f} "
-              f"{rm['macro_auroc']:>7.3f} {s['perm_mean']:>8.3f} {s['effect_size']:>+7.3f} "
-              f"{s['p_value']:>7.3f}")
+        print(f"{f:>6d} {participant_label(s.get('subject'), f):>9s} {n:>4d} {s['real_accuracy']:>7.3f} "
+              f"{rm['balanced_accuracy']:>7.3f} {rm['macro_auroc']:>7.3f} {s['perm_mean']:>8.3f} "
+              f"{s['effect_size']:>+7.3f} {s['p_value']:>7.3f}")
+    worst = sorted(fold_ids, key=lambda f: stats[f]['real_accuracy'])[:5]
+    print("\nLowest 5 by accuracy: " + ", ".join(
+        f"{participant_label(stats[f].get('subject'), f)} ({stats[f]['real_accuracy']:.3f})" for f in worst))
 
 
 def _clean(x):
@@ -1099,6 +1102,9 @@ def main():
                         help='Subject-level bootstrap resamples for 95%% CIs')
     parser.add_argument('--seed', type=int, default=0, help='Seed for the bootstrap')
     parser.add_argument('--no_plot', action='store_true', help='Skip plot generation')
+    parser.add_argument('--label_subjects', action='store_true',
+                        help='Label every subject (participant number) on the x-axis of panel a, '
+                             'even with more than 24 subjects. (--include_incomplete implies this.)')
     parser.add_argument('--include_incomplete', action='store_true',
                         help='Keep every fold with a real run even if it has fewer than '
                              '--n_permutations permutations (default: such folds are skipped). '
@@ -1147,7 +1153,7 @@ def main():
             note = (f"PRELIMINARY: {len(results)} subjects; permutation null from "
                     f"{agg.get('n_null_folds', 0)} subjects with permutations")
         plot_results(stats, results, tests, class_names, agg['n_permutations'], args.plot_file, note,
-                     label_all_subjects=args.include_incomplete)
+                     label_all_subjects=args.include_incomplete or args.label_subjects)
     return 0
 
 

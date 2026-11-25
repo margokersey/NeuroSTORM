@@ -144,7 +144,7 @@ def plot(acc, labels, stats, boot_ci, out_dir):
     n = len(d)
 
     fig, (a, b) = plt.subplots(1, 2, figsize=(7.2, 3.1), gridspec_kw=dict(width_ratios=[1, 1.35]))
-    fig.subplots_adjust(left=0.09, right=0.985, bottom=0.17, top=0.88, wspace=0.32)
+    fig.subplots_adjust(left=0.09, right=0.965, bottom=0.2, top=0.88, wspace=0.32)
 
     # (a) accuracy per window
     for i, lab in enumerate((ref, k)):
@@ -197,8 +197,8 @@ def plot(acc, labels, stats, boot_ci, out_dir):
         ax.tick_params(width=0.8, length=3)
     a.text(-0.2, 1.06, 'a', transform=a.transAxes, fontsize=11, fontweight='bold')
     b.text(-0.07, 1.06, 'b', transform=b.transAxes, fontsize=11, fontweight='bold')
-    fig.text(0.5, 0.005, f'Leave-one-subject-out, n = {n} subjects, 30 blocks each. Dots are single subjects '
-             '(identical values placed side by side). Open circles: mean with 95% bootstrap CI.',
+    fig.text(0.5, 0.005, f'Leave-one-subject-out, n = {n} subjects, 30 blocks each.\n'
+             'Dots are single subjects (identical values placed side by side). Open circles: mean with 95% bootstrap CI.',
              ha='center', va='bottom', fontsize=6.5, color=MUTED)
     for ext in ('png', 'pdf', 'svg'):
         fig.savefig(os.path.join(out_dir, f'window_compare.{ext}'), dpi=300)
